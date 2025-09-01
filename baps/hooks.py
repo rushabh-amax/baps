@@ -5,6 +5,9 @@ app_description = "baps theme"
 app_email = "rushabh.amax@gmail.com"
 app_license = "mit"
 
+
+app_include_css = ["theme.bundle.css" , "assets/hims/css/css-rtl/translatons.ar_eg.css"]
+app_include_js = ["theme.bundle.js"]
 # Apps
 # ------------------
 
@@ -242,3 +245,16 @@ app_license = "mit"
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
 
+override_whitelisted_methods = {
+    "frappe.core.doctype.user.user.switch_theme": "baps.override.switch_theme"
+}
+
+fixtures = [
+    {
+        "dt": "Property Setter",
+        "filters": [
+            ["doc_type", "=", "User"],
+            ["field_name", "=", "desk_theme"]
+        ]
+    }
+]

@@ -1,0 +1,297 @@
+/* body{
+    background: red !important;
+} */
+
+
+@import url('https://fonts.googleapis.com/css2?family=Didact+Gothic&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');    
+*{
+    
+    
+
+
+
+    /* gloabal font */
+    font-family: "Poppins", sans-serif;
+}
+h1,h2,h3,h4,h5,h6{
+    font-family: "Didact Gothic", sans-serif;
+}
+
+:root{
+    --navbar_searchbar_radius:1em;
+    --body_clr:#fefcf9;
+    
+}
+
+body{
+    background: var(--body_clr) !important;
+}
+
+
+/* ===================================================================================
+navbar's style's
+=================================================================================== */
+
+.navbar .vertical-bar {
+display: none !important;
+}
+
+.navbar .navbar-nav{
+  gap: .5em;
+}
+.navbar .navbar-nav li{
+  margin-left: unset !important;
+
+}
+[data-original-title="Notifications"]{
+  height: 50px;
+  aspect-ratio:  1;
+  border-radius: 50em;
+  text-align: center;
+  transition: 250ms ease all;
+}
+
+[data-original-title="Notifications"]:hover{
+  background: var(--active_txt_clr);
+} 
+
+ .navbar{
+        height: 90px;
+}
+ [role="search"],
+[data-theme="light"] [role="search"],
+[data-theme="dark"] [role="search"]
+{
+    margin-left: auto;
+    display: flex !important;
+    align-items: center;
+    justify-content: end ;
+}
+ [role="search"] .search-bar{
+    max-width: 350px !important;
+}
+  .like-disabled-input {
+
+    background-color: var(--disabled-control-bg);
+        filter: grayscale(.5);
+}
+ .frappe-control[data-fieldtype=Data] .control-input, .control-value input {
+  height:40px !important;
+}
+[data-fieldname="password"]{
+  margin-bottom: 40px;
+}
+input[type="text"],
+[data-fieldname="status"] .input-xs,
+select,
+.input-xs:not(input[type="checkbox"]),
+[data-fieldname="password"],
+.like-disabled-input{
+  height: 40px !important;
+}
+.like-disabled-input  a,
+.like-disabled-input,
+[data-fieldname="root_type"]
+{
+      line-height: 2;
+}
+
+[data-fieldname="status"] ,
+[data-fieldname="status"] .input-xs .status-text.ellipsis{
+  line-height: 2 !important;
+}
+ .list-sidebar .list-filters input:not([data-fieldtype=Check]) {
+    height: 100%;
+}
+ .search-bar input{
+    height: 50px !important;
+    width: 100%;
+    border-radius: var(--navbar_searchbar_radius);
+}
+
+ .search-bar input:focus{
+    border-radius: var(--navbar_searchbar_radius) !important  ;
+}
+ .list-sidebar .list-filters input:not([data-fieldtype=Check]){
+  background-color:#dae75dc2;
+}
+ .dropdown-help{
+  order:2;
+}
+ .dropdown-navbar-user{
+    height: 50px;
+    aspect-ratio: 1;
+    border-radius: 15px;
+}
+ .dropdown-navbar-user button{
+    height: 100%;
+    width: 100%;
+    border-radius: inherit;
+    padding: 0;
+}
+ .avatar .standard-image {
+    border-radius: inherit;
+    height: 100%;
+    width: 100%;
+}
+ .navbar-expand .navbar-nav .avatar-medium {
+    height: 100%;
+    width: 100%;
+    border-radius: inherit;
+}
+
+ .navbar-expand .navbar-nav .avatar-frame{
+    height: 100%;
+    width: 100%;
+    border-radius: inherit;
+
+}
+
+/* btn */
+
+
+.btn-sm{
+    height: fit-content !important;
+    width: fit-content !important;
+    padding: .5em .75em !important;
+}
+.btn-default,
+.btn-primary,
+.btn-primary-light{
+    height: fit-content !important;
+    width: fit-content !important;
+    padding: .75em 1em !important;
+}
+.btn-primary{
+    background: #ffbb6e !important;
+    color: #000 !important;
+}
+.btn-primary svg{
+    --icon-stroke:#000;
+    --icon-fil:#000;
+}
+
+
+/* inputs */
+select span{
+    line-height: 1.5 !important;
+}
+
+
+
+/* indicator */
+.indicator-pill, .indicator-pill-right{
+    height: fit-content !important;
+}
+
+
+
+/* sidbar */
+[data-original-title="Toggle Sidebar"]{
+  display: none !important;
+}
+.custom-sidebar-toggle{
+  border: unset;
+  outline: unset;
+  height: 40px;
+  aspect-ratio: 1;
+  border-radius: .5em;
+  font-size: 1.35em;
+  cursor: pointer;
+  margin-left: .75em !important;
+  background: transparent !important;
+}
+.custom-sidebar-toggle:hover{
+  background: #036100 !important;
+  color: white !important;
+}
+
+
+
+ .w-60px{
+  width: 110px !important;
+ }
+
+
+
+/* ==========================================================================
+ sidebar's styl's 
+ ===========================================================================*/
+
+ [data-page-route=Workspaces] .layout-main .layout-side-section {
+        padding-right: 15px;
+        width: 200px;
+}
+.standard-actions{
+  height: 40px;
+}
+.layout-main-section.frappe-card {
+  --card-bg:transparent;
+    background-color: var(--card-bg);
+ }
+ .sidebar-item-container{
+  /* height: var(--height_bi); */
+  margin-block: .25em;
+  margin-left: 0px; 
+}
+
+ .sidebar-item-container .desk-sidebar-item{
+  /* height: 100%; */
+      padding: .5em 0em;
+
+  border-radius: .5em !important;
+  transition: 250ms cubic-bezier(0.075, 0.82, 0.165, 1) scale;
+  position: relative;
+}
+/* Target the down arrow if its parent .desk-sidebar-item has a sibling .sidebar-child-item */
+.desk-sidebar-item:has(+ .sidebar-child-item) .drop-icon {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+
+
+/* [data-theme="healthcare_theme"] 
+.sidebar-item-container 
+.desk-sidebar-item:not(.standard-sidebar-item.selected ):hover {
+  scale: 0.95;
+} */
+
+
+ .standard-sidebar-item.selected,
+ .standard-sidebar-item.active.selected
+{
+
+  background: var(--active_bg_clr) !important;
+  color: var(--active_txt_clr);
+      overflow: unset;
+}
+[data-theme="healthcare_theme"] .standard-sidebar-item:hover:not(.standard-sidebar-item.selected:hover){
+  scale: .95;
+}
+
+[data-theme="healthcare_theme"] .standard-sidebar-item.selected .item-anchor .sidebar-item-label,
+[data-theme="healthcare_theme"] .standard-sidebar-item.active.selected .sidebar-link
+{
+  /* color: var(--active_txt_clr) !important; */
+  color: white !important;
+
+}
+[data-theme="healthcare_theme"] .desk-sidebar-item.standard-sidebar-item.selected .sidebar-item-icon svg,
+[data-theme="healthcare_theme"] .standard-sidebar-item.active.selected svg.icon  use {
+  --icon-stroke:white !important;
+
+  /* --icon-stroke:var(--active_txt_clr); */
+  /* color: var(--active_txt_clr) !important; */
+}
+[data-theme="healthcare_theme"] .desk-sidebar-item.standard-sidebar-item.selected .sidebar-item-icon svg.drop-icon use,
+[data-theme="healthcare_theme"] .standard-sidebar-item.active.selected svg.drop-icon use {
+  stroke: var(--active_txt_clr) !important;
+}
+
+[data-theme="healthcare_theme"] .desk-sidebar-item.standard-sidebar-item.selected .sidebar-item-icon .icon .es-icon {
+  --icon-stroke:var(--active_txt_clr);
+  /* color: var(--active_txt_clr) !important; */
+}
