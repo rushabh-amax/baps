@@ -21,15 +21,10 @@ frappe.ui.ThemeSwitcher = class CustomThemeSwitcher extends frappe.ui.ThemeSwitc
 					info:"Uses system's theme to switch between light and dark mode",
 				},
                 {
-                    name:"hims",
-                    label: "hims",
-                    info: "Purple Theme"
-                },
-			    {
-                    name:"ayush",
-                    label: "ayush",
-                    info: "ayush Theme"
-                },
+                    name:"baps",
+                    label: "baps",
+                    info: "baps Theme"
+                }
               
 			];
 

@@ -6,8 +6,10 @@ app_email = "rushabh.amax@gmail.com"
 app_license = "mit"
 
 
-app_include_css = ["theme.bundle.css" , "assets/hims/css/css-rtl/translatons.ar_eg.css"]
+app_include_css = ["theme.bundle.css" , "assets/baps/css/css-rtl/translatons.ar_eg.css"]
 app_include_js = ["theme.bundle.js"]
+
+home_page = "/modules"
 # Apps
 # ------------------
 

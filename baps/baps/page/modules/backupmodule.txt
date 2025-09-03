@@ -1,0 +1,113 @@
+
+frappe.pages['modules'].on_page_load = function(wrapper) {
+	var page = frappe.ui.make_app_page({
+		parent: wrapper,
+		title: 'collection of all modules 1',
+		single_column: true
+	});
+
+
+	const module_API_ROUTE = `/api/method/hims.api.login_api.login_with_permissions`;
+
+	// /home/amex/frappe-setup/frappe-bench/apps/
+	
+	console.log("hims module api")
+
+	fetch(module_API_ROUTE, {
+		method: "GET",
+		credentials: "include"
+	})
+		.then(r => r.json())
+		.then(data => console.log(data));
+
+	
+
+}
+
+
+
+
+
+	// const module_API_ROUTE = `/api/method/hims.api.login_api.login_with_permissions?usr=Administrator&pwd=12345`;
+	// fetch(module_API_ROUTE, {
+	// 	headers: {
+	// 		'Accept': 'application/json'
+	// 	}
+	// })
+
+
+
+
+working
+
+frappe.pages['modules'].on_page_load = function (wrapper) {
+    var page = frappe.ui.make_app_page({
+        parent: wrapper,
+        title: 'Collection of All Modules',
+        single_column: true
+    });
+
+    const module_API_ROUTE = `/api/method/hims.api.login_api.login_with_permissions`;
+
+    // Container for modules grid
+    let container = $(`
+        <div class="container mt-4">
+            <div class="row" id="modules-container"></div>
+        </div>
+    `).appendTo(page.body);
+
+    console.log("Fetching modules from API...");
+
+    fetch(module_API_ROUTE, {
+        method: "GET",
+        credentials: "include"
+    })
+        .then(r => r.json())
+        .then(data => {
+            console.log("Modules API Response:", data);
+
+            let modules = data.message ? data.message.modules : data.modules; 
+            // support both {message:{modules:[]}} and {modules:[]} response styles
+
+            if (modules && modules.length) {
+                let moduleContainer = $("#modules-container");
+
+                modules.forEach(mod => {
+                    // handle if API returns string vs object
+                    let modName = typeof mod === "string" ? mod : mod.name;
+                    let modIcon = typeof mod === "string" ? "fa fa-cube" : (mod.icon || "fa fa-cube");
+                    let modRoute = typeof mod === "string" ? `Module/${modName}` : (mod.route || null);
+
+                    // Create module card
+                    let card = $(`
+                        <div class="col-md-3 col-sm-6 mb-4">
+                            <div class="card shadow-sm text-center h-100 module-card" style="cursor:pointer;">
+                                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                                    <div class="mb-2">
+                                        <i class="${modIcon} fa-2x"></i>
+                                    </div>
+                                    <h6 class="card-title">${modName}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+
+                    // click → navigate
+                    card.on("click", function () {
+                        if (modRoute) {
+                            frappe.set_route(modRoute);
+                        }
+                    });
+
+                    moduleContainer.append(card);
+                });
+            } else {
+                $("#modules-container").html("<p class='text-muted'>No modules available</p>");
+            }
+        })
+        .catch(err => {
+            console.error("Error fetching modules:", err);
+            $("#modules-container").html("<p class='text-danger'>Failed to load modules</p>");
+        });
+};
+
