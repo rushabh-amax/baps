@@ -30,38 +30,90 @@ body{
 }
 
 [data-theme=baps]{
-  --_primary-bg-color:#86B6F6;
-  --_primary-txt-color:#FBFBFB;
-  --active_txt_clr:darkblue;
+/* --_primary-bg-color: #F6A623;
+  --_primary-txt-color: #FFFFFF;
+  --active_txt_clr: #8B4513;
 
+  --_default-bg-color: #FFF8F0;
+  --_default-txt-color: #2C2C2C;
 
-  --_default-bg-color:#EEF5FF;
-  --_default-txt-color:black;
+  --_default-bg-color-f_h: #ffd18d;
+  --_default-txt-color-f_h: #311e00;
 
-   --_default-bg-color-f_h:#a1c3f1;
-   --_default-txt-color-f_h:#EEF5FF;
+  --disabled-control-bg: #E6E2DD;
 
+  --cancel: 200, 50, 50;
+    --filter_Solie_Color: #D97B2D;
 
-   --disabled-control-bg:whitesmoke;
+   --control-bg: #FFF8F0; */
 
-   
-   
-   
-   --cancel: 255, 45, 45; /* rgb values */
-  /* color's */
-  --filter_Solie_Color:#caa93a;
+      /* ---------- Primary (Saffron / Spiritual) ---------- */
+  --_primary-bg-gradient: linear-gradient(
+    90deg,
+    #F6B732 0%,   /* saffron yellow */
+    #FB9E3A 50%,  /* saffron orange */
+    #E6521F 100%  /* deep orange-red */
+  );
+  --_primary-txt-color: #FFFFFF;    /* text on saffron */
+  --active_txt_clr: #E6521F;        /* deeper orange */
+
+  /* ---------- Default / Neutral Backgrounds ---------- */
+  --_default-bg-color: #F6F4EF;     /* warm stone beige */
+  --_default-txt-color: #2C2C2C;    /* soft black */
+
+  --_default-bg-color-f_h: #E5DACF; 
+  --_default-txt-color-f_h: #FFFFFF;
+
+  /* ---------- Secondary / Accents ---------- */
+  --secondary-accent: #B85C38;
+  --highlight-accent: #A83232;
+
+  /* ---------- Utility ---------- */
+  --disabled-control-bg: #D8D3CC;
+  --cancel: 220, 55, 55;
+  --filter_Solie_Color: #C97B2D;
+
+  /* ---------- Controls / Panels ---------- */
+  --control-bg: #F3EEE7;
+
 }
 
 /* ===================================================================================
 navbar's style's
 =================================================================================== */
+#navbar-breadcrumbs {
+  background: white;
+  padding-block: .5em;
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem; /* space between items and > */
+  padding: 1.5em 6em;
+  margin: 0;
+  list-style: none;
+}
 
+#navbar-breadcrumbs li {
+  display: flex;
+  align-items: center;
+}
+
+
+
+ #btn-back-to-modules{
+  padding-block: 1em !important;
+ }
+[aria-label="Help Dropdown"]{
+  display: none !important;
+}
 .navbar .vertical-bar {
 display: none !important;
 }
-
+.sticky-top:has(.navbar){
+  position: relative !important;
+}
 .navbar .navbar-nav{
   gap: .5em;
+  position: relative;
 }
 .navbar .navbar-nav li{
   margin-left: unset !important;
@@ -93,6 +145,7 @@ display: none !important;
 }
  [role="search"] .search-bar{
     max-width: 350px !important;
+    margin-inline:auto;
 }
   .like-disabled-input {
 
@@ -103,6 +156,7 @@ display: none !important;
  .frappe-control[data-fieldtype=Data] .control-input, 
  .control-value input {
   height:40px !important;
+  background: var(--_default-bg-color ) !important;
 }
 [data-fieldname="password"]{
   margin-bottom: 40px;
@@ -212,8 +266,8 @@ select,
   background: var(--_default-bg-color-f_h) !important;
   color: var(--_default-txt-color-f_h) !important;
   transition: 250ms ease background;
-
 }
+
 
 .btn-sm:hover,
 .btn-default:hover,
@@ -251,19 +305,24 @@ select,
     width: fit-content !important;
     padding: .75em 1em !important;
   }
-.btn-primary:active,
-.btn-primary:focus,
-.btn-primary:hover{
-  background: black !important;
+
+.btn-primary.primary-action{
+     background: var(--_primary-bg-gradient) !important;
+  color: var(--_primary-txt-color) !important;
+   background-size: 200% auto;  /* for gradient movement */
+  transition: background-position 0.4s ease, transform 0.2s ease;
 }
-.btn-primary{
-    background: var(--_primary-bg-color) !important;
-    color: var(--_primary-txt-color) !important;
-}
-.btn-primary svg{
+
+.btn-primary.primary-action svg{
     --icon-stroke: var(--_primary-txt-color) !important;
     --icon-fil: var(--_primary-txt-color) !important;
 }
+
+.btn-primary.primary-action:active,
+.btn-primary.primary-action:focus,
+.btn-primary.primary-action:hover{
+   background-position: 100% 100% !important; /* shifts gradient */
+} 
 
 
 /* inputs */
@@ -642,3 +701,103 @@ display: none !important;
   right: 0% !important; 
   z-index: 3 !important;
 } */
+
+
+.layout-side-section{
+  display: none;   /* or width: 0; transition can be added */
+}
+
+
+.links-widget-box .onboard-spotlight  .widget-body  .link-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding-block: 1em;
+    border-radius: 0;
+    border-bottom: 1.4px solid var(--_default-bg-color);
+    margin-bottom: .5em;
+}
+.link-content span{
+  flex: 1;
+}
+
+/* ==========================================================================
+ shortcuts styl's 
+ ===========================================================================*/
+
+/* shortcut-widget-box */
+
+
+/*  */
+
+
+[data-theme="baps"] .links-widget-box .widget-body{
+    display: flex
+;
+    align-self: start;
+    justify-content: space-between;
+    flex-direction: column;
+    gap: 1em;
+    width: 100%;
+}
+[data-theme="baps"] .widget.links-widget-box .link-item:first-child {
+    margin-top: 0px !important;
+}
+
+[data-theme="baps"] .links-widget-box .widget-body a{
+  border-radius: unset;
+  /* padding:.75em 6em !important; */
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+    border-bottom: 1.4px solid var(--_default-bg-color);
+}
+
+[data-theme="baps"] .links-widget-box .widget-body a:hover span{
+  color: var(--_primary-bg-color) !important;
+  /* letter-spacing: 0.4px; */
+}
+[data-theme="baps"] .links-widget-box .link-content{
+      display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+[data-theme="baps"] .links-widget-box  .widget-body a span{
+line-height: 2;
+    transition: 250ms letter-spacing cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+
+}
+
+[data-theme="baps"] #toolbar-user:last-child{
+    color: rgba(var(--cancle),.25) !important;
+  }
+  
+[data-theme="baps"] .widget.links-widget-box{
+        background: transparent;
+    border-radius: 2em;
+    padding: 2em;
+  }
+
+[data-theme="baps"] .widget .widget-head .widget-title span{
+    line-height: 2.5;
+  }
+
+
+  /* Hide breadcrumb bar when body has no-breadcrumbs (e.g., /app/modules) */
+/* body.no-breadcrumbs #navbar-breadcrumbs,
+body.no-breadcrumbs .navbar-breadcrumb {
+    display: none !important;
+} */
+/* body.no-breadcrumbs #navbar-breadcrumbs {
+    display: none !important;
+} */
+
+/* Force hide with !important */
+/* This will actually hide it */
+.datatable .dt-row-filter .dt-filter.dt-input  input[type=text]{
+  height: 20px !important;
+}
+.hide-breadcrumb-force { display: none !important; }

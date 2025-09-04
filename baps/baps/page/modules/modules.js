@@ -1,9 +1,11 @@
 frappe.pages['modules'].on_page_load = function (wrapper) {
     var page = frappe.ui.make_app_page({
         parent: wrapper,
-        title: 'All Workspaces',
+        title: '',
         single_column: true
     });
+
+$('<style>.page-modules #navbar-breadcrumbs { display: none !important; }</style>').appendTo('head');
 
     const module_API_ROUTE = `/api/method/baps.api.login_api.login_with_permissions`;
 
