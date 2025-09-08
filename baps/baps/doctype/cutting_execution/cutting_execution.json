@@ -1,0 +1,148 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "CUT-EXE-.#####",
+ "creation": "2025-08-13 21:16:00.871705",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "block_number",
+  "baps_project",
+  "start_time",
+  "machine_no",
+  "form_no",
+  "block_volume",
+  "column_break_hvip",
+  "stone_no",
+  "cutting_planning",
+  "end_time",
+  "execution_date",
+  "site",
+  "section_break_qvhr",
+  "cutting_exceution_process",
+  "residue_table"
+ ],
+ "fields": [
+  {
+   "fieldname": "cutting_planning",
+   "fieldtype": "Link",
+   "label": "Cutting Planning",
+   "options": "Cutting Planning"
+  },
+  {
+   "fieldname": "execution_date",
+   "fieldtype": "Date",
+   "label": "Execution Date"
+  },
+  {
+   "fieldname": "column_break_hvip",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "start_time",
+   "fieldtype": "Time",
+   "label": "Start Time"
+  },
+  {
+   "fieldname": "end_time",
+   "fieldtype": "Time",
+   "label": "End Time"
+  },
+  {
+   "fieldname": "section_break_qvhr",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "residue_table",
+   "fieldtype": "Table",
+   "label": "Residue Table",
+   "options": "Cutting Residue Details"
+  },
+  {
+   "fieldname": "baps_project",
+   "fieldtype": "Link",
+   "label": "Project",
+   "options": "Baps Project"
+  },
+  {
+   "fetch_from": "cutting_planning.block_number",
+   "fieldname": "block_number",
+   "fieldtype": "Link",
+   "label": "Block Number",
+   "options": "Cutting Planning"
+  },
+  {
+   "fieldname": "stone_no",
+   "fieldtype": "Int",
+   "label": "Stone No"
+  },
+  {
+   "fieldname": "machine_no",
+   "fieldtype": "Data",
+   "label": "Machine No"
+  },
+  {
+   "fetch_from": "cutting_planning.form_no",
+   "fieldname": "form_no",
+   "fieldtype": "Link",
+   "label": "Form No",
+   "options": "Cutting Planning"
+  },
+  {
+   "fetch_from": "cutting_planning.block_volume",
+   "fieldname": "block_volume",
+   "fieldtype": "Link",
+   "label": "Block Volume",
+   "options": "Cutting Planning"
+  },
+  {
+   "fieldname": "site",
+   "fieldtype": "Link",
+   "label": "Site",
+   "options": "Site"
+  },
+  {
+   "description": "cut or ignore button will add ",
+   "fieldname": "cutting_exceution_process",
+   "fieldtype": "Table",
+   "label": "Cutting Execution Process",
+   "options": "Cutting Execution Process"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "Cutting Residue Details",
+   "link_fieldname": "residue_volume"
+  },
+  {
+   "link_doctype": "Pre Carving QC",
+   "link_fieldname": "cutting_execution"
+  }
+ ],
+ "modified": "2025-09-04 21:29:51.045142",
+ "modified_by": "admin@gmail.com",
+ "module": "Baps",
+ "name": "Cutting Execution",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

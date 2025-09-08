@@ -18,6 +18,7 @@ const eyeSlashSVG = `
 
 // Add a custom toggle button next to password inputs
 function addCustomPasswordToggle(input) {
+  console.log("in login file : in custom toggle funton");
   // Skip if already added
   if (input.parentNode.querySelector(".custom-toggle-password")) return;
 
@@ -29,6 +30,9 @@ function addCustomPasswordToggle(input) {
   button.innerHTML = eyeSlashSVG;
 
   wrapper.appendChild(button);
+
+  console.log("in login file : apped");
+
 
   button.addEventListener("click", () => {
     if (input.type === "password") {
@@ -76,3 +80,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   observer.observe(document.body, { childList: true, subtree: true });
 });
+
+

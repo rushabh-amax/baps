@@ -17,6 +17,13 @@ app_include_js = ["theme.bundle.js"]
 after_login = ["baps.utils.set_default_redirect"]
 
 
+# ]
+web_include_js = [
+    "theme.bundle.js",
+    "assets/hims/js/login.bundle.js"
+]
+
+home_page = "/modules"
 # Apps
 # ------------------
 
