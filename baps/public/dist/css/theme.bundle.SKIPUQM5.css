@@ -1,6 +1,6 @@
 @import "https://fonts.googleapis.com/css2?family=Didact+Gothic&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap";
 
-/* ../../../../../../tmp/tmp-43065-uP58UTrTv21O/19928e1e7862c/baps.bundle.css */
+/* ../../../../../../tmp/tmp-43065-362FJhc0YNey/199293f9349df/baps.bundle.css */
 * {
   font-family: "Poppins", sans-serif;
 }
@@ -378,7 +378,7 @@ select span {
 }
 .standard-sidebar-item.selected,
 .standard-sidebar-item.active.selected {
-  background: #5791c7left 1 top 50%f !important;
+  background: #5791c71f !important;
   color: var(--active_txt_clr);
   overflow: unset;
 }
@@ -669,6 +669,17 @@ select,
 .field-area > div {
   flex: 1;
 }
+.awesomplete ul [role=option]:hover {
+  background: rgba(196, 196, 226, 0.25) !important;
+}
+.awesomplete ul > div[role=option] {
+  padding-block: 6px;
+  border-radius: .5em;
+  background: red !important;
+  height: 32px;
+  padding-top: auto !important;
+  padding-inline: 7px;
+}
 
-/* ../../../../../../tmp/tmp-43065-uP58UTrTv21O/baps/baps/public/css/theme.bundle.css */
-/*# sourceMappingURL=theme.bundle.AEN4F6QH.css.map */
+/* ../../../../../../tmp/tmp-43065-362FJhc0YNey/baps/baps/public/css/theme.bundle.css */
+/*# sourceMappingURL=theme.bundle.SKIPUQM5.css.map */

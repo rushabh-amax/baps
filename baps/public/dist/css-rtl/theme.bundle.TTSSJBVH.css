@@ -1,6 +1,6 @@
 @import "https://fonts.googleapis.com/css2?family=Didact+Gothic&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap";
 
-/* ../../../../../../tmp/tmp-43065-362FJhc0YNey/19928e1e78526/baps.bundle.css */
+/* ../../../../../../tmp/tmp-43065-uP58UTrTv21O/199293f792dd2/baps.bundle.css */
 * {
   font-family: "Poppins", sans-serif;
 }
@@ -378,7 +378,7 @@ select span {
 }
 .standard-sidebar-item.selected,
 .standard-sidebar-item.active.selected {
-  background: #5791c71f !important;
+  background: #5791c7left 1 top 50%f !important;
   color: var(--active_txt_clr);
   overflow: unset;
 }
@@ -670,5 +670,5 @@ select,
   flex: 1;
 }
 
-/* ../../../../../../tmp/tmp-43065-362FJhc0YNey/baps/baps/public/css/theme.bundle.css */
-/*# sourceMappingURL=theme.bundle.CMHF7BPU.css.map */
+/* ../../../../../../tmp/tmp-43065-uP58UTrTv21O/baps/baps/public/css/theme.bundle.css */
+/*# sourceMappingURL=theme.bundle.TTSSJBVH.css.map */

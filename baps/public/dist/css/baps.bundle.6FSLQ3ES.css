@@ -669,4 +669,15 @@ select,
 .field-area > div {
   flex: 1;
 }
-/*# sourceMappingURL=baps.bundle.TN5IWWMO.css.map */
+.awesomplete ul [role=option]:hover {
+  background: rgba(196, 196, 226, 0.25) !important;
+}
+.awesomplete ul > div[role=option] {
+  padding-block: 6px;
+  border-radius: .5em;
+  background: red !important;
+  height: 32px;
+  padding-top: auto !important;
+  padding-inline: 7px;
+}
+/*# sourceMappingURL=baps.bundle.6FSLQ3ES.css.map */
