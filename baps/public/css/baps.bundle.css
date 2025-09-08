@@ -979,3 +979,18 @@ body.no-breadcrumbs .navbar-breadcrumb {
 .field-area > div{
   flex: 1;
 }
+
+
+
+.awesomplete ul [role="option"]:hover{
+  background: rgba(196, 196, 226, 0.25) !important;
+}
+.awesomplete ul > div[role="option"]{
+  padding-block: 6px;
+    border-radius: .5em;
+    background: red !important;
+    /* padding: 0px 7px; */
+    height: 32px;
+    padding-top: auto !important;
+    padding-inline: 7px;
+}
