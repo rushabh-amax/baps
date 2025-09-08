@@ -51,7 +51,7 @@ body{
       /* ---------- Primary (Saffron / Spiritual) ---------- */
   --_primary-bg-gradient: linear-gradient(
     to bottom,
-    #F6B732 0%,   /* saffron yellow */
+    #F6B732 8%,   /* saffron yellow */
     #FB9E3A 50%,  /* saffron orange */
     #E6521F 100%  /* deep orange-red */
   );
