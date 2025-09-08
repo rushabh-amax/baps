@@ -1,3 +1,5 @@
+
+
 app_name = "baps"
 app_title = "Baps"
 app_publisher = "rushabh@gmail.com"
@@ -8,6 +10,18 @@ app_license = "mit"
 
 app_include_css = ["theme.bundle.css" , "assets/baps/css/css-rtl/translatons.ar_eg.css"]
 app_include_js = ["theme.bundle.js"]
+
+# hooks.py
+
+# hooks.py
+after_login = ["baps.utils.set_default_redirect"]
+
+
+# ]
+web_include_js = [
+    "theme.bundle.js",
+    "assets/hims/js/login.bundle.js"
+]
 
 home_page = "/modules"
 # Apps

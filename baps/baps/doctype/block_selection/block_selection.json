@@ -1,0 +1,164 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "BKSL-.####",
+ "creation": "2025-08-29 12:20:42.605206",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "date",
+  "trade_partner",
+  "block_type",
+  "trade_partner_site",
+  "size_list_creation",
+  "region",
+  "column_break_bknz",
+  "party",
+  "baps_project",
+  "link_ptvs",
+  "invoice_after_receipt",
+  "selected_by",
+  "selected_by_name",
+  "status",
+  "section_break_sqot",
+  "block_selection_details"
+ ],
+ "fields": [
+  {
+   "fieldname": "trade_partner",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Trade Partner",
+   "options": "Trade Partner",
+   "reqd": 1
+  },
+  {
+   "fieldname": "region",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Region",
+   "options": "Region",
+   "reqd": 1
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "party",
+   "fieldtype": "Link",
+   "label": "Party",
+   "options": "Party"
+  },
+  {
+   "fieldname": "baps_project",
+   "fieldtype": "Link",
+   "label": "Baps Project",
+   "options": "Baps Project"
+  },
+  {
+   "fieldname": "block_type",
+   "fieldtype": "Select",
+   "label": "Material Type",
+   "options": "\nBlock\nStone\nWood"
+  },
+  {
+   "default": "0",
+   "fieldname": "invoice_after_receipt",
+   "fieldtype": "Check",
+   "label": "Invoice to be paid after block receipt"
+  },
+  {
+   "fieldname": "column_break_bknz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_sqot",
+   "fieldtype": "Section Break",
+   "label": "details"
+  },
+  {
+   "fieldname": "block_selection_details",
+   "fieldtype": "Table",
+   "label": "Block Selection Details",
+   "options": "Block Selection Detail",
+   "reqd": 1
+  },
+  {
+   "fieldname": "trade_partner_site",
+   "fieldtype": "Data",
+   "label": "Trade partner site"
+  },
+  {
+   "fieldname": "selected_by",
+   "fieldtype": "Link",
+   "label": "Selected By",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "size_list_creation",
+   "fieldtype": "Link",
+   "label": "Size List Creation",
+   "options": "Size List Creation"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nSubmitted"
+  },
+  {
+   "fetch_from": "selected_by.employee_name",
+   "fieldname": "selected_by_name",
+   "fieldtype": "Data",
+   "label": "Full Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "baps_project.project_name",
+   "fieldname": "link_ptvs",
+   "fieldtype": "Link",
+   "label": "Project Name",
+   "options": "Baps Project"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "Transportation Sender",
+   "link_fieldname": "block_selection"
+  },
+  {
+   "link_doctype": "Inspection",
+   "link_fieldname": "block_selection"
+  }
+ ],
+ "modified": "2025-09-04 23:05:32.813578",
+ "modified_by": "admin@gmail.com",
+ "module": "Baps",
+ "name": "Block Selection",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

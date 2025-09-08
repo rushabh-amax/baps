@@ -1,0 +1,183 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "TRANS-SND-.####",
+ "creation": "2025-08-29 12:33:17.271806",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_jvcy",
+  "date",
+  "from_site",
+  "gate_pass_bookno",
+  "vehicle_number",
+  "block_selection",
+  "column_break_cgtg",
+  "sender_name",
+  "to_site",
+  "gate_pass_no",
+  "vehicle_service_provider",
+  "section_break_bxox",
+  "driver_name",
+  "column_break_xtgv",
+  "driver_number",
+  "section_break_spbc",
+  "transport_material_type",
+  "section_break_cieb",
+  "is_received",
+  "column_break_rjoi",
+  "receiver_reference"
+ ],
+ "fields": [
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "fieldname": "section_break_bxox",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "from_site",
+   "fieldtype": "Link",
+   "label": "From Site",
+   "options": "Site"
+  },
+  {
+   "fieldname": "column_break_xtgv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "to_site",
+   "fieldtype": "Link",
+   "label": "To Site",
+   "options": "Site"
+  },
+  {
+   "fieldname": "section_break_jvcy",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "vehicle_number",
+   "fieldtype": "Data",
+   "label": "Vehicle Number"
+  },
+  {
+   "fieldname": "driver_name",
+   "fieldtype": "Data",
+   "label": "Driver Name"
+  },
+  {
+   "fieldname": "column_break_cgtg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sender_name",
+   "fieldtype": "Data",
+   "label": "Sender Name"
+  },
+  {
+   "fieldname": "gate_pass_no",
+   "fieldtype": "Link",
+   "label": "Gate Pass No",
+   "options": "Gate Pass No"
+  },
+  {
+   "fieldname": "section_break_cieb",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_received",
+   "fieldtype": "Check",
+   "label": "Is Received"
+  },
+  {
+   "fieldname": "receiver_reference",
+   "fieldtype": "Link",
+   "label": "Receiver Ref",
+   "options": "Transportation Receiver"
+  },
+  {
+   "fieldname": "vehicle_service_provider",
+   "fieldtype": "Data",
+   "label": "Vehicle Service Provider"
+  },
+  {
+   "fieldname": "driver_number",
+   "fieldtype": "Phone",
+   "label": "Driver Number"
+  },
+  {
+   "fieldname": "gate_pass_bookno",
+   "fieldtype": "Link",
+   "label": "Gate Pass BookNo",
+   "options": "Gate Pass BookNo"
+  },
+  {
+   "fieldname": "column_break_rjoi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_spbc",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "transport_material_type",
+   "fieldtype": "Table",
+   "label": "Transport Material Type",
+   "options": "Transport Material Table"
+  },
+  {
+   "fieldname": "block_selection",
+   "fieldtype": "Link",
+   "label": "Block Selection",
+   "options": "Block Selection"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "Region",
+   "link_fieldname": "region"
+  },
+  {
+   "link_doctype": "Site",
+   "link_fieldname": "site_name"
+  },
+  {
+   "link_doctype": "Transportation Receiver",
+   "link_fieldname": "transport_sender_reference"
+  },
+  {
+   "link_doctype": "Billing Type",
+   "link_fieldname": "billing_type"
+  }
+ ],
+ "modified": "2025-09-03 23:00:19.169306",
+ "modified_by": "Administrator",
+ "module": "Baps",
+ "name": "Transportation Sender",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,208 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-08-29 11:57:52.931263",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "stone_name",
+  "stone_code",
+  "column_break_xebs",
+  "status",
+  "number",
+  "section_break_dajh",
+  "machining_required",
+  "roopkam_required",
+  "nakashikam_required",
+  "polishing_required",
+  "dry_fixing_required",
+  "packing",
+  "chemical",
+  "section_break_czut",
+  "l1",
+  "column_break_bwll",
+  "l2",
+  "column_break_wexp",
+  "b1",
+  "column_break_iofp",
+  "b2",
+  "column_break_lpnc",
+  "h1",
+  "column_break_iusg",
+  "h2",
+  "section_break_andd",
+  "volume"
+ ],
+ "fields": [
+  {
+   "fieldname": "stone_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Stone Name"
+  },
+  {
+   "fieldname": "volume",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Volume (CFT)"
+  },
+  {
+   "fieldname": "column_break_xebs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "machining_required",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Machining Required"
+  },
+  {
+   "default": "0",
+   "fieldname": "nakashikam_required",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Nakashikam Required"
+  },
+  {
+   "default": "0",
+   "fieldname": "roopkam_required",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Roopkam Required"
+  },
+  {
+   "default": "0",
+   "fieldname": "polishing_required",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Polishing Required"
+  },
+  {
+   "default": "0",
+   "fieldname": "dry_fixing_required",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Dry Fixing Required"
+  },
+  {
+   "default": "Planned",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Planned\nCut\nReceived\nRejected"
+  },
+  {
+   "fieldname": "section_break_czut",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "l1",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "L1",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "column_break_bwll",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "l2",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "L2",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "column_break_wexp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "b1",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "B1",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "column_break_iofp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "b2",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "B2",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "column_break_lpnc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "h1",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "H1",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "column_break_iusg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "h2",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "H2",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "section_break_andd",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "packing",
+   "fieldtype": "Check",
+   "label": "Packing Required"
+  },
+  {
+   "default": "0",
+   "fieldname": "chemical",
+   "fieldtype": "Check",
+   "label": "Chemical Required"
+  },
+  {
+   "fieldname": "stone_code",
+   "fieldtype": "Data",
+   "label": "Stone Code "
+  },
+  {
+   "fieldname": "number",
+   "fieldtype": "Int",
+   "label": "Number"
+  },
+  {
+   "fieldname": "section_break_dajh",
+   "fieldtype": "Section Break"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-09-03 16:49:58.916900",
+ "modified_by": "Administrator",
+ "module": "Baps",
+ "name": "Size List Details",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

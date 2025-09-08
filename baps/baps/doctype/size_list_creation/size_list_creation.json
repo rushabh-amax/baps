@@ -1,0 +1,191 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "SZLST-.####",
+ "creation": "2025-08-29 12:12:37.228042",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "project_section",
+  "prep_date",
+  "baps_project",
+  "project_name",
+  "main_part",
+  "cutting_region",
+  "column_break_slc",
+  "form_number",
+  "stone_type",
+  "sub_part",
+  "total_volume",
+  "section_break_txix",
+  "stone_details",
+  "section_break_qxve",
+  "prepared_by",
+  "data_eipo",
+  "column_break_akpv",
+  "approved_date",
+  "column_break_uklj",
+  "checked_by",
+  "data_yptw"
+ ],
+ "fields": [
+  {
+   "fieldname": "project_section",
+   "fieldtype": "Section Break",
+   "label": "Project Reference"
+  },
+  {
+   "fieldname": "baps_project",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Baps Project",
+   "options": "Baps Project",
+   "reqd": 1
+  },
+  {
+   "fieldname": "main_part",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Main Part",
+   "options": "Main Part",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sub_part",
+   "fieldtype": "Link",
+   "label": "Sub Part",
+   "options": "Sub Part",
+   "reqd": 1
+  },
+  {
+   "fieldname": "form_number",
+   "fieldtype": "Data",
+   "label": "Form Number"
+  },
+  {
+   "fieldname": "column_break_slc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "prepared_by",
+   "fieldtype": "Link",
+   "label": "Prepared By",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "checked_by",
+   "fieldtype": "Link",
+   "label": "Checked By",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "total_volume",
+   "fieldtype": "Float",
+   "label": "Total Volume (CFT)"
+  },
+  {
+   "fieldname": "section_break_txix",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "stone_details",
+   "fieldtype": "Table",
+   "label": "Stone Details",
+   "options": "Size List Details"
+  },
+  {
+   "fieldname": "prep_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Prep Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "stone_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Block/Stone Type",
+   "options": "Stone Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cutting_region",
+   "fieldtype": "Link",
+   "label": "Cutting Region",
+   "options": "Region"
+  },
+  {
+   "fieldname": "approved_date",
+   "fieldtype": "Date",
+   "label": "Approved Date"
+  },
+  {
+   "fieldname": "section_break_qxve",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_akpv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_uklj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "baps_project.project_name",
+   "fieldname": "project_name",
+   "fieldtype": "Data",
+   "label": "Project Name"
+  },
+  {
+   "fetch_from": "prepared_by.employee_name",
+   "fieldname": "data_eipo",
+   "fieldtype": "Data"
+  },
+  {
+   "fetch_from": "checked_by.employee_name",
+   "fieldname": "data_yptw",
+   "fieldtype": "Data"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "Block Selection",
+   "link_fieldname": "size_list_creation"
+  },
+  {
+   "link_doctype": "Direct Cut Stone Purchase",
+   "link_fieldname": "size_list_creation"
+  },
+  {
+   "link_doctype": "Cutting Planning",
+   "link_fieldname": "size_list_creation"
+  }
+ ],
+ "modified": "2025-09-04 14:51:09.328054",
+ "modified_by": "Administrator",
+ "module": "Baps",
+ "name": "Size List Creation",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
