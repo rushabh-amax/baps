@@ -1,6 +1,6 @@
 @import "https://fonts.googleapis.com/css2?family=Didact+Gothic&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap";
 
-/* ../../../../../../tmp/tmp-43065-uP58UTrTv21O/199293f792dd2/baps.bundle.css */
+/* ../../../../../../tmp/tmp-147413-B4y2ReTlNWLt/baps/baps/public/css/baps.bundle.css */
 * {
   font-family: "Poppins", sans-serif;
 }
@@ -47,6 +47,18 @@ select:not(.dt-filter),
 [data-fieldname=password]:not(.dt-filter input),
 .like-disabled-input:not(.dt-filter input) {
   height: 50px !important;
+}
+.search-box .clear-button[data-v-0923e05b],
+.search-box span,
+.control-input select ~ .select-icon {
+  top: 14px !important;
+  right: 11px !important;
+  background: transparent;
+}
+.sidebar-container .header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .like-disabled-input a,
 .like-disabled-input,
@@ -210,6 +222,9 @@ select,
   width: 100%;
   border-radius: 15px;
 }
+.custom-actions {
+  margin-top: -14px;
+}
 .badge-link {
   line-height: 2;
 }
@@ -316,6 +331,12 @@ select::placeholder,
 .input-xs:not(input[type="checkbox"])::placeholder {
   color: rgba(58, 48, 30, 0.466) !important;
 }
+.page-form .form-group.frappe-control[data-fieldtype=Check] {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+}
 input[type=text],
 [data-fieldname=status] .input-xs,
 select,
@@ -378,7 +399,7 @@ select span {
 }
 .standard-sidebar-item.selected,
 .standard-sidebar-item.active.selected {
-  background: #5791c7left 1 top 50%f !important;
+  background: #c784571f !important;
   color: var(--active_txt_clr);
   overflow: unset;
 }
@@ -387,11 +408,11 @@ select span {
 }
 [data-theme=baps] .standard-sidebar-item.selected .item-anchor .sidebar-item-label,
 [data-theme=baps] .standard-sidebar-item.active.selected .sidebar-link {
-  color: #1D5D9B !important;
+  color: var(--active_txt_clr) !important;
 }
 [data-theme=baps] .desk-sidebar-item.standard-sidebar-item.selected .sidebar-item-icon svg,
 [data-theme=baps] .standard-sidebar-item.active.selected svg.icon use {
-  --icon-stroke:#1D5D9B !important;
+  --icon-stroke:orange !important;
 }
 [data-theme=baps] .desk-sidebar-item.standard-sidebar-item.selected .sidebar-item-icon svg.drop-icon use,
 [data-theme=baps] .standard-sidebar-item.active.selected svg.drop-icon use {
@@ -462,6 +483,10 @@ svg:has(> use.close) {
   font-weight: 500;
   border-bottom: unset;
   color: var(--text-color);
+}
+.frappe-control[data-fieldtype=Select].form-group .select-icon.xs {
+  top: 15px;
+  right: 10px;
 }
 .input-with-feedback .form-control span {
   top: 6px !important;
@@ -669,6 +694,15 @@ select,
 .field-area > div {
   flex: 1;
 }
-
-/* ../../../../../../tmp/tmp-43065-uP58UTrTv21O/baps/baps/public/css/theme.bundle.css */
-/*# sourceMappingURL=theme.bundle.TTSSJBVH.css.map */
+.awesomplete ul [role=option]:hover {
+  background: rgba(196, 196, 226, 0.25) !important;
+}
+.awesomplete ul > div[role=option] {
+  padding-block: 6px;
+  border-radius: .5em;
+  background: red !important;
+  height: 32px;
+  padding-top: auto !important;
+  padding-inline: 7px;
+}
+/*# sourceMappingURL=baps.bundle.JOQ6CLMM.css.map */
