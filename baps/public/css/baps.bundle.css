@@ -3,6 +3,8 @@
 } */
 
 
+/* update the input inner icons */
+
 @import url('https://fonts.googleapis.com/css2?family=Didact+Gothic&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');    
 *{
     
@@ -88,6 +90,18 @@ select:not(.dt-filter),
 [data-fieldname="password"]:not(.dt-filter input),
 .like-disabled-input:not(.dt-filter input) {
   height: 50px !important;
+}
+.search-box .clear-button[data-v-0923e05b],
+.search-box span,
+.control-input select ~ .select-icon {
+    top: 14px !important;
+  right: 11px !important;
+  background: transparent;
+}
+.sidebar-container .header{
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Special line-height rules */
@@ -282,6 +296,9 @@ select,
 }
 
 /* btn */
+.custom-actions{
+  margin-top: -14px;
+}
 .badge-link{
   line-height: 2;
 }
@@ -391,6 +408,13 @@ select::placeholder,
 .input-xs:not(input[type="checkbox"])::placeholder {
   color: rgba(58, 48, 30, 0.466) !important;
 }
+.page-form .form-group.frappe-control[data-fieldtype="Check"] {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+}
+
 
 /* Actual input text color when user types */
 input[type="text"],
@@ -472,7 +496,7 @@ select span{
  .standard-sidebar-item.active.selected
 {
 
-  background:#5791c71f !important;
+  background:#c784571f !important;
   color: var(--active_txt_clr);
       overflow: unset;
       
@@ -484,13 +508,12 @@ select span{
 [data-theme="baps"] .standard-sidebar-item.selected .item-anchor .sidebar-item-label,
 [data-theme="baps"] .standard-sidebar-item.active.selected .sidebar-link
 {
-  /* color: var(--active_txt_clr) !important; */
-  color: #1D5D9B !important;
+  color: var(--active_txt_clr) !important;
 
 }
 [data-theme="baps"] .desk-sidebar-item.standard-sidebar-item.selected .sidebar-item-icon svg,
 [data-theme="baps"] .standard-sidebar-item.active.selected svg.icon  use {
-  --icon-stroke:#1D5D9B !important;
+  --icon-stroke:orange !important;
 
   /* --icon-stroke:var(--active_txt_clr); */
   /* color: var(--active_txt_clr) !important; */
@@ -627,6 +650,10 @@ svg:has(> use.close){
   height: 40px !important;
   border-radius: .5em;
 } */
+ .frappe-control[data-fieldtype=Select].form-group .select-icon.xs {
+    top: 15px;
+    right: 10px;
+  }
 .input-with-feedback .form-control span{
     top: 6px !important;
 }
