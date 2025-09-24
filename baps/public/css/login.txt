@@ -1,0 +1,166 @@
+/* #page-login {
+  
+}
+[frappe-session-status="logged-out"]{
+  height: 100vh;
+  background: url("https://images.pexels.com/photos/40568/medical-appointment-doctor-healthcare-40568.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1") !important;
+  display: grid;
+  place-items: center;
+  width: 500px;
+  margin: 0em auto;
+  padding: unset;
+
+} */
+body[frappe-session-status="logged-out"] .page-card-body{
+margin-bottom: .5em;
+ }
+ [role='search'],
+.dropdown-notifications,
+.dropdown-help,
+.dropdown-navbar-user {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+body[frappe-session-status="logged-out"][data-path="login"] {
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  /* give full path here not ../../ = x : give full /assets/.../img */
+background: url("/assets/hims/images/background-img.jpg") no-repeat center center !important;
+background-size: cover !important;
+
+  /* background: url("../images/bg-hos.jpg") no-repeat center center !important; */
+  /* background: url("https://images.pexels.com/photos/40568/medical-appointment-doctor-healthcare-40568.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1") no-repeat center center !important; */
+  background-size: cover !important;
+}
+
+
+
+body[frappe-session-status="logged-out"] .navbar-light {
+    border-bottom: 1px solid #e2e2e2;
+    background: white;
+    width: 100vw;
+    height: 80px;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+body[frappe-session-status=logged-out] .page-card-actions .btn.btn-sm.btn-primary.btn-block.btn-login,
+body[frappe-session-status=logged-out] .page-card-actions .btn-forgot,
+body[frappe-session-status=logged-out] .page-card-actions .btn-login-with-email-link{
+    height: 40px;
+    background: #010042;
+  margin-top: .25em;
+}
+/* 
+body[frappe-session-status=logged-out]  .login-divider {
+  display: none;
+}
+body[frappe-session-status=logged-out]  .btn-login-with-email-link{
+
+    background: transparent !important;
+    text-align: right;
+} */
+body[frappe-session-status="logged-out"]  .password-field{
+  position: relative;
+ }
+body[frappe-session-status="logged-out"] .custom-toggle-password{
+    position: absolute !important;
+    right: 10px !important;
+}
+body[frappe-session-status="logged-out"][data-path="login"] .for-login,
+body[frappe-session-status="logged-out"] .for-login-with-email-link,
+body[frappe-session-status="logged-out"] .for-forgot{
+  max-width: 450px;
+  width: 400px !important;
+  margin: auto;
+  padding: 2rem;
+   border-radius: 1em !important;
+
+  background: rgb(255, 255, 255);
+  /* box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+  backdrop-filter: blur( 6.5px );
+  -webkit-backdrop-filter: blur( 6.5px );
+  border-radius: 1;
+  border: 1px solid rgba( 255, 255, 255, 0.18 ); */
+}
+body[frappe-session-status="logged-out"][data-path="login"] .web-footer
+{
+  display: none;
+}
+body[frappe-session-status="logged-out"][data-path="login"]  .form-group input,
+body[frappe-session-status="logged-out"][data-path="login"] #forgot_email,
+body[frappe-session-status="logged-out"][data-path="login"]  #login_with_email_link_email
+{
+ flex: 1;
+ height: 40px !important;
+ background: #e9f2ff !important;
+}
+
+body[frappe-session-status="logged-out"]
+.btn.btn-default {
+    background-color: #e9f2ff;
+    color: #000;
+    /* height: 40px; */
+    /* line-height: 2.3; */
+}
+body[frappe-session-status="logged-out"][data-path="login"] .form-group > div,
+body[frappe-session-status="logged-out"] .email-field,
+body[frappe-session-status="logged-out"] .for-forgot .email-field
+{
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row-reverse;
+    gap: .5em;
+    width: 100%;
+    margin: 0em auto;
+}
+
+body[frappe-session-status="logged-out"][data-path="login"] .form-group > div > svg
+{
+order: 1;
+}
+
+
+
+
+body[frappe-session-status=logged-out] .navbar-light {
+  display: none !important;
+}
+
+
+
+
+body[frappe-session-status="logged-out"][data-path="login"] .form-group > div >  .text-muted {
+    order: -1;
+}
+body[frappe-session-status="logged-out"][data-path="login"] .page-card-head{
+  display: grid
+;
+    place-items: center;
+    gap: 0em;
+    height: fit-content;
+}
+
+
+body[frappe-session-status="logged-out"][data-path="login"] .page-card-head h4 {
+        font-size: 1.5rem;
+        margin-top: .5em;
+        margin-bottom: 1em;
+    }
+
+/* body {
+    height: 100vh;
+    display: grid;
+    place-items: center;
+     background: url("https://images.pexels.com/photos/40568/medical-appointment-doctor-healthcare-40568.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1") !important;
+    } */
+
+body[frappe-session-status="logged-out"] .app-logo{
+  width: 133px !important;
+}
