@@ -156,7 +156,8 @@ navbar's style's
 height: var(--classic_height);
 }
 [data-theme="baps"] .navbar-home img {
-    max-height: 70px !important;
+        max-height: 65px !important;
+    width: 47px !important;
 }
 .navbar-home img {
     max-height: 70px !important;
@@ -365,12 +366,44 @@ height: var(--classic_height);
 .grid-body .row-check {
     margin-left: 0 !important;
 }
+.grid-static-col div:not(.select-icon ){
+  width: 100%;
+}
+/* .grid-static-col .field-area .form-group:not(.grid-static-col .field-area .form-group:has(select) ){
+  margin-top:10px !important;
+} */
+
+.grid-static-col .field-area .form-group:has(.checkbox) {
+    margin-top: 10px !important;
+}
+.row-index.col.search{
+  display: none;
+}
+.grid-heading-row .filter-row .search:first-of-type{
+  width:55px !important;
+  max-width: 55px !important;
+}
+.filter-row{
+  display:none;
+}
+/* .grid-heading-row .filter-row .search:first-of-type {
+    background-color: red !important;
+    max-width: 43px !important;
+    padding-inline: 43px !important;
+}
+@media (min-width: 768px) {
+    .col-md-3 {
+        flex: 0 0 30%;
+        max-width: 30% !important;
+    }
+} */
 
 
 .scrollable-from-grid{
   width: calc(100% - 10px) !important;
   margin-inline:auto !important;
   overflow-x: scroll !important;
+  overflow-y:hidden !important;
 }
 
 .nowrap-data-row{
@@ -422,7 +455,7 @@ height: var(--classic_height);
   background: transparent !important;
 }
 [data-theme="baps"] .form-tabs-list .form-tabs .nav-item .nav-link.active {
-  --_primary-bg-color:#06A7cb !important;
+  --_primary-bg-color:#ea582d !important;
   --text-color:var(--_primary-bg-color);
     font-weight: 500;
     border-bottom: unset;
@@ -442,6 +475,24 @@ height: var(--classic_height);
   --icon-stroke:black  !important;
   --icon-fill:black !important;
 } */
+
+[data-fieldname="new_password"] .control-input-wrapper .control-input{
+  height: 40px;
+  position: relative;
+}
+[data-fieldname="new_password"] .control-input-wrapper .control-input input{
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .15em;
+}
+[data-fieldname="new_password"] .control-input-wrapper .control-input .custom-toggle-password{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
 
 .page-form .checkbox {
     margin-top: 17px !important;
@@ -699,34 +750,32 @@ modules override classes
   transition: all 0.2s ease-in-out;
 }
 
-/* Primary Button: subtle white → cyan */
+  /* color: color-mix(in srgb, black 70%, white);   */
 [data-theme="baps"] .btn-primary {
-  /* background: linear-gradient(
-    to bottom, 
-    rgba(var(--clr1), 1) 5%,
-    rgba(var(--clr2), 1) 95%,
-    rgba(var(--clr3), 1)
-  );
-  color: color-mix(in srgb, black 70%, white);  */
-  background: rgba(var(--clr1));
-  color: color-mix(in srgb, black 70%, white);  
-
+    background: linear-gradient(to bottom right, rgba(var(--clr3)), rgba(var(--clr1)));
+    color: #fff !important;
+    background-size: 200% 200%; /* make the background bigger to animate */
+    background-position: 0% 0%;
+    transition: background-position 0.5s ease, color 0.2s ease;
 }
 
 [data-theme="baps"] .btn-primary:hover {
-  background: linear-gradient(to bottom, rgba(var(--clr3)) , rgba(var(--clr1)));
-  color: #fff !important;
-  transition: all 0.2s ease-in-out;
-
+    background-position: 100% 100%; /* move gradient on hover */
+    color: #fff !important;
 }
+
 
 [data-theme="baps"] .btn-primary:active,
 [data-theme="baps"] .btn-primary:focus {
-  background: rgba(var(--clr1));
+  background-position: 100% 100%; /* move gradient on hover */
   color: #fff !important;
 }
 
 /* Default Button: Neutral Gray → Warm Glow on Interaction */
+[data-theme="baps"] .btn.btn-secondary.btn-default:hover {
+  background: linear-gradient(135deg, #eb963c, #e67d3c) !important;
+}
+
 [data-theme="baps"] .btn-default {
   background: #F5F5F5; /* soft neutral between #FFFFFF and #DADADA */
   color: #000 !important; /* solid text for readability */
@@ -735,39 +784,47 @@ modules override classes
 }
 
 [data-theme="baps"] .btn-default:hover {
-  background: #EDEDED; /* slightly deeper hover state */
-  border-color: #CFCFCF;
+  background: #ffdbd2; /* slightly deeper hover state */
+
+  border-color: unset;
   color: #222 !important;
 }
 
 [data-theme="baps"] .btn-default:active,
 [data-theme="baps"] .btn-default:focus {
-  background: linear-gradient(135deg, #F5E1D6, #EECFC0); /* soft peach warmth */
+  background: linear-gradient(135deg, #F5E1D6, #EECFC0); 
+      /* background: linear-gradient(135deg, #eb963c, #e67d3c); */
   border-color: #C8AA96; /* warm border tone */
+  color: #000;;
   box-shadow: 0 0 0 0.2rem rgba(6, 167, 203, 0.25); /* cyan glow matches primary */
 }
 
 
 
-
-
-
-
-/* Secondary Button: solid soft blue */
+/* Adjusted secondary button to match primary palette */
 [data-theme="baps"] .btn-secondary {
-  background: #6c8ef5;
-  color: #fff !important;
-  border: 1px solid #5c7de5;
+    --sec1: 240, 180, 60;   /* softer gold/orange */
+    --sec2: 250, 220, 140;  /* light creamy shade */
+    --sec3: 220, 70, 60;    /* muted red */
+
+    background: linear-gradient(to bottom right, rgba(var(--sec1)), rgba(var(--sec3)), rgba(var(--sec2)));
+    color: #fff !important;
+    background-size: 200% 200%;
+    background-position: 0% 0%;
+    transition: all 0.4s ease;
 }
 
 [data-theme="baps"] .btn-secondary:hover {
-  background: #5c7de5;
-  border-color: #4b6dd6;
+    background-position: 100% 100%; /* animate gradient */
+    color: #fff !important;
 }
 
 [data-theme="baps"] .btn-secondary:active,
 [data-theme="baps"] .btn-secondary:focus {
-  background: #4b6dd6;
-  border-color: #3a5cc7;
-  box-shadow: 0 0 0 0.2rem rgba(108, 142, 245, 0.25);
+    background: linear-gradient(to bottom right, rgba(var(--sec3)), rgba(var(--sec1)), rgba(var(--sec2)));
+    box-shadow: 0 0 0 0.2rem rgba(var(--sec3), 0.25);
 }
+
+[data-theme="baps"] .notification-null-state{
+  padding-inline: .25em;
+ }

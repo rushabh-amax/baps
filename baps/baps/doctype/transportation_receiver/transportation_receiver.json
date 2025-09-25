@@ -8,13 +8,10 @@
  "field_order": [
   "site",
   "gate_pass_bookno",
-  "transport_sender_reference",
+  "gate_pass_no",
   "wt_of_material",
   "column_break_ftbm",
   "date",
-  "gate_pass_no",
-  "received_by",
-  "status",
   "section_break_mfov",
   "column_break_gwvv",
   "gate_pass_book_no",
@@ -26,6 +23,7 @@
   "to_site",
   "section_break_tpft",
   "transportation_status_r",
+  "additional_material_receiver",
   "section_break_vbpu",
   "additional_items",
   "missing_items",
@@ -33,20 +31,9 @@
  ],
  "fields": [
   {
-   "fieldname": "transport_sender_reference",
-   "fieldtype": "Link",
-   "label": "Transport Sender",
-   "options": "Transportation Sender"
-  },
-  {
    "fieldname": "date",
    "fieldtype": "Date",
    "label": "Date"
-  },
-  {
-   "fieldname": "received_by",
-   "fieldtype": "Data",
-   "label": "Received By"
   },
   {
    "fieldname": "remarks",
@@ -54,25 +41,21 @@
    "label": "Remarks"
   },
   {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Status",
-   "options": "\nAll Received\nPartial\nExtra Items\nNot Received"
-  },
-  {
-   "description": "if required then it will use not every time required",
+   "depends_on": "eval:doc.additional_material_receiver == 1",
    "fieldname": "additional_items",
    "fieldtype": "Table",
-   "label": "Additonal Material Receiver",
+   "label": "Additional Material Receiver",
    "options": "Additional Material Received"
   },
   {
    "fieldname": "missing_items",
    "fieldtype": "Table",
+   "hidden": 1,
    "label": "Missing Items",
    "options": "Missing Material List"
   },
   {
+   "fetch_from": "transport_sender_reference.to_site",
    "fieldname": "site",
    "fieldtype": "Link",
    "label": "Site",
@@ -102,12 +85,14 @@
    "fieldtype": "Section Break"
   },
   {
+   "fetch_from": "transport_sender_reference.from_site",
    "fieldname": "from_site",
    "fieldtype": "Link",
    "label": "From Site",
    "options": "Site"
   },
   {
+   "fetch_from": "transport_sender_reference.to_site",
    "fieldname": "to_site",
    "fieldtype": "Link",
    "label": "To Site",
@@ -134,6 +119,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "fetch_from": "gate_pass_bookno.gate_pass_bookno",
    "fieldname": "gate_pass_book_no",
    "fieldtype": "Data",
    "label": "Gate Pass Book NO"
@@ -143,6 +129,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "fetch_from": "gate_pass_no.gate_pass_no",
    "fieldname": "gate_passno",
    "fieldtype": "Data",
    "label": "Gate PassNo"
@@ -154,27 +141,20 @@
   {
    "fieldname": "column_break_qbmw",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "additional_material_receiver",
+   "fieldtype": "Check",
+   "label": "Additional Material Receiver"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
- "links": [
-  {
-   "link_doctype": "Region",
-   "link_fieldname": "region"
-  },
-  {
-   "link_doctype": "Site",
-   "link_fieldname": "site_name"
-  },
-  {
-   "link_doctype": "Cutting Planning",
-   "link_fieldname": "block_number"
-  }
- ],
- "modified": "2025-09-03 17:08:30.280986",
+ "links": [],
+ "modified": "2025-09-09 18:29:44.253861",
  "modified_by": "Administrator",
- "module": "Baps",
+ "module": "BAPS",
  "name": "Transportation Receiver",
  "naming_rule": "Expression (old style)",
  "owner": "Administrator",

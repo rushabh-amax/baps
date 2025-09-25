@@ -8,20 +8,22 @@
  "field_order": [
   "date",
   "trade_partner",
-  "block_type",
   "trade_partner_site",
-  "size_list_creation",
-  "region",
-  "column_break_bknz",
   "party",
+  "column_break_crfq",
   "baps_project",
-  "link_ptvs",
-  "invoice_after_receipt",
+  "project_name",
+  "material_type",
+  "column_break_bknz",
+  "status",
   "selected_by",
   "selected_by_name",
-  "status",
+  "invoice_after_receipt",
+  "last_block_number",
+  "last_blocknumber",
   "section_break_sqot",
-  "block_selection_details"
+  "block_selection_details",
+  "amended_from"
  ],
  "fields": [
   {
@@ -29,23 +31,13 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Trade Partner",
-   "options": "Trade Partner",
-   "reqd": 1
-  },
-  {
-   "fieldname": "region",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Region",
-   "options": "Region",
-   "reqd": 1
+   "options": "Trade Partner"
   },
   {
    "fieldname": "date",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Date",
-   "reqd": 1
+   "label": "Date"
   },
   {
    "fieldname": "party",
@@ -58,12 +50,6 @@
    "fieldtype": "Link",
    "label": "Baps Project",
    "options": "Baps Project"
-  },
-  {
-   "fieldname": "block_type",
-   "fieldtype": "Select",
-   "label": "Material Type",
-   "options": "\nBlock\nStone\nWood"
   },
   {
    "default": "0",
@@ -84,31 +70,19 @@
    "fieldname": "block_selection_details",
    "fieldtype": "Table",
    "label": "Block Selection Details",
-   "options": "Block Selection Detail",
-   "reqd": 1
+   "options": "Block Selection Detail"
   },
   {
    "fieldname": "trade_partner_site",
-   "fieldtype": "Data",
-   "label": "Trade partner site"
+   "fieldtype": "Link",
+   "label": "Trade partner site",
+   "options": "Site"
   },
   {
    "fieldname": "selected_by",
    "fieldtype": "Link",
    "label": "Selected By",
    "options": "Employee"
-  },
-  {
-   "fieldname": "size_list_creation",
-   "fieldtype": "Link",
-   "label": "Size List Creation",
-   "options": "Size List Creation"
-  },
-  {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Status",
-   "options": "Draft\nSubmitted"
   },
   {
    "fetch_from": "selected_by.employee_name",
@@ -118,27 +92,53 @@
    "read_only": 1
   },
   {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Status",
+   "options": "Draft\nSubmitted"
+  },
+  {
    "fetch_from": "baps_project.project_name",
-   "fieldname": "link_ptvs",
+   "fieldname": "project_name",
+   "fieldtype": "Data",
+   "label": "Project Name"
+  },
+  {
+   "fieldname": "material_type",
    "fieldtype": "Link",
-   "label": "Project Name",
-   "options": "Baps Project"
+   "label": "Material Type",
+   "options": "Material Type"
+  },
+  {
+   "fieldname": "column_break_crfq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_block_number",
+   "fieldtype": "Button",
+   "label": "Last Block Number"
+  },
+  {
+   "fieldname": "last_blocknumber",
+   "fieldtype": "Data"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Block Selection",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
- "links": [
-  {
-   "link_doctype": "Transportation Sender",
-   "link_fieldname": "block_selection"
-  },
-  {
-   "link_doctype": "Inspection",
-   "link_fieldname": "block_selection"
-  }
- ],
- "modified": "2025-09-04 23:05:32.813578",
- "modified_by": "admin@gmail.com",
+ "links": [],
+ "modified": "2025-09-25 14:33:44.307940",
+ "modified_by": "Administrator",
  "module": "Baps",
  "name": "Block Selection",
  "naming_rule": "Expression (old style)",

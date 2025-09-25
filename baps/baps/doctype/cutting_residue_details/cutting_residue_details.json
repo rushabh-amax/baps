@@ -20,14 +20,11 @@
   "column_break_akun",
   "h2",
   "section_break_umug",
-  "volume",
-  "column_break_qlmr",
-  "usable_status",
-  "residue_volume"
+  "usable_status"
  ],
  "fields": [
   {
-   "description": "auto genearte ",
+   "description": "Auto genearte ",
    "fieldname": "suffix",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -36,60 +33,49 @@
   {
    "fieldname": "l1",
    "fieldtype": "Float",
+   "in_list_view": 1,
    "label": "L1",
    "precision": "2"
   },
   {
    "fieldname": "l2",
    "fieldtype": "Float",
+   "in_list_view": 1,
    "label": "L2",
    "precision": "2"
   },
   {
-   "fieldname": "column_break_qlmr",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "b1",
    "fieldtype": "Float",
+   "in_list_view": 1,
    "label": "B1",
    "precision": "2"
   },
   {
    "fieldname": "b2",
    "fieldtype": "Float",
+   "in_list_view": 1,
    "label": "B2",
    "precision": "2"
   },
   {
    "fieldname": "h1",
    "fieldtype": "Float",
+   "in_list_view": 1,
    "label": "H1",
    "precision": "2"
   },
   {
    "fieldname": "h2",
    "fieldtype": "Float",
+   "in_list_view": 1,
    "label": "H2",
-   "precision": "2"
-  },
-  {
-   "fieldname": "volume",
-   "fieldtype": "Float",
-   "in_list_view": 1,
-   "label": "Volume",
-   "precision": "2"
-  },
-  {
-   "fieldname": "residue_volume",
-   "fieldtype": "Float",
-   "in_list_view": 1,
-   "label": "Residue Volume",
    "precision": "2"
   },
   {
    "fieldname": "usable_status",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Usable Status",
    "options": "Usable\nWaste\nTo Decide"
   },
@@ -126,7 +112,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-09-03 17:48:45.755163",
+ "modified": "2025-09-05 12:24:11.211932",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Cutting Residue Details",

@@ -1,0 +1,193 @@
+{
+  "doctype": "DocType",
+  "name": "Size List Verification",
+  "module": "Baps",
+  "autoname": "SZVER-.####",
+  "naming_rule": "Expression (old style)",
+  "engine": "InnoDB",
+  "allow_rename": 1,
+  "creation": "2025-09-24 10:41:39.062353",
+  "modified": "2025-09-25 11:24:41.641324",
+  "owner": "Administrator",
+  "modified_by": "Administrator",
+  "index_web_pages_for_search": 1,
+  "grid_page_length": 50,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "row_format": "Dynamic",
+
+  "field_order": [
+    "prep_date",
+    "baps_project",
+    "project_name",
+    "column_break_kini",
+    "material_type",
+    "main_part",
+    "sub_part",
+    "column_break_wehb",
+    "form_number",
+    "total_volume_cft",
+    "cutting_region",
+    "section_break_mheq",
+    "polishing_required",
+    "dry_fitting_required",
+    "column_break_jzmk",
+    "carving_required",
+    "chemical_required",
+    "section_break_fyst",
+    "stone_details",
+    "section_break_fyte",
+    "checked_by",
+    "data_tilw",
+    "column_break_jwqt",
+    "approved_date"
+  ],
+
+  "fields": [
+    {
+      "fieldname": "prep_date",
+      "fieldtype": "Date",
+      "label": "Prep Date"
+    },
+    {
+      "fieldname": "material_type",
+      "fieldtype": "Link",
+      "label": "Material Type",
+      "options": "Material Type"
+    },
+    {
+      "fieldname": "form_number",
+      "fieldtype": "Data",
+      "label": "Form Number"
+    },
+    {
+      "fieldname": "baps_project",
+      "fieldtype": "Link",
+      "label": "Baps Project",
+      "options": "Baps Project"
+    },
+    {
+      "fieldname": "project_name",
+      "fieldtype": "Data",
+      "label": "Project Name"
+    },
+    {
+      "fieldname": "main_part",
+      "fieldtype": "Link",
+      "label": "Main Part",
+      "options": "Main Part"
+    },
+    {
+      "fieldname": "sub_part",
+      "fieldtype": "Link",
+      "label": "Sub Part",
+      "options": "Sub Part"
+    },
+    {
+      "fieldname": "total_volume_cft",
+      "fieldtype": "Float",
+      "label": "Total Volume (CFT)",
+      "hidden": 1
+    },
+    {
+      "fieldname": "cutting_region",
+      "fieldtype": "Link",
+      "label": "Cutting Region",
+      "options": "Region"
+    },
+    {
+      "fieldname": "section_break_mheq",
+      "fieldtype": "Section Break"
+    },
+    {
+      "fieldname": "polishing_required",
+      "fieldtype": "Check",
+      "label": "Polishing Required",
+      "default": "0"
+    },
+    {
+      "fieldname": "dry_fitting_required",
+      "fieldtype": "Check",
+      "label": "Dry Fitting Required",
+      "default": "0"
+    },
+    {
+      "fieldname": "carving_required",
+      "fieldtype": "Check",
+      "label": "Carving Required",
+      "default": "0"
+    },
+    {
+      "fieldname": "chemical_required",
+      "fieldtype": "Check",
+      "label": "Chemical Required",
+      "default": "0"
+    },
+    {
+      "fieldname": "section_break_fyst",
+      "fieldtype": "Section Break"
+    },
+    {
+      "fieldname": "stone_details",
+      "fieldtype": "Table",
+      "label": "Stone Details",
+      "options": "Size List Verification Details"
+    },
+    {
+      "fieldname": "section_break_fyte",
+      "fieldtype": "Section Break"
+    },
+    {
+      "fieldname": "approved_date",
+      "fieldtype": "Date",
+      "label": "Approved Date",
+      "default": "Today"
+    },
+    {
+      "fieldname": "column_break_kini",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "column_break_wehb",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "column_break_jzmk",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "checked_by",
+      "fieldtype": "Link",
+      "label": "Checked By",
+      "options": "Employee"
+    },
+    {
+      "fieldname": "data_tilw",
+      "fieldtype": "Data",
+      "fetch_from": "checked_by.employee_name"
+    },
+    {
+      "fieldname": "column_break_jwqt",
+      "fieldtype": "Column Break"
+    }
+  ],
+
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "report": 1,
+      "share": 1
+    }
+  ],
+
+  "actions": [],
+  "links": [],
+  "states": []
+}

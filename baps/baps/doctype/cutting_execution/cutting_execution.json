@@ -7,17 +7,13 @@
  "engine": "InnoDB",
  "field_order": [
   "block_number",
-  "baps_project",
-  "start_time",
+  "site",
   "machine_no",
+  "cutting_planning",
+  "column_break_hvip",
+  "execution_date",
   "form_no",
   "block_volume",
-  "column_break_hvip",
-  "stone_no",
-  "cutting_planning",
-  "end_time",
-  "execution_date",
-  "site",
   "section_break_qvhr",
   "cutting_exceution_process",
   "residue_table"
@@ -39,16 +35,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "start_time",
-   "fieldtype": "Time",
-   "label": "Start Time"
-  },
-  {
-   "fieldname": "end_time",
-   "fieldtype": "Time",
-   "label": "End Time"
-  },
-  {
    "fieldname": "section_break_qvhr",
    "fieldtype": "Section Break"
   },
@@ -59,22 +45,9 @@
    "options": "Cutting Residue Details"
   },
   {
-   "fieldname": "baps_project",
-   "fieldtype": "Link",
-   "label": "Project",
-   "options": "Baps Project"
-  },
-  {
-   "fetch_from": "cutting_planning.block_number",
    "fieldname": "block_number",
-   "fieldtype": "Link",
-   "label": "Block Number",
-   "options": "Cutting Planning"
-  },
-  {
-   "fieldname": "stone_no",
-   "fieldtype": "Int",
-   "label": "Stone No"
+   "fieldtype": "Data",
+   "label": "Block Number"
   },
   {
    "fieldname": "machine_no",
@@ -82,18 +55,15 @@
    "label": "Machine No"
   },
   {
-   "fetch_from": "cutting_planning.form_no",
    "fieldname": "form_no",
-   "fieldtype": "Link",
-   "label": "Form No",
-   "options": "Cutting Planning"
+   "fieldtype": "Data",
+   "label": "Form No"
   },
   {
    "fetch_from": "cutting_planning.block_volume",
    "fieldname": "block_volume",
-   "fieldtype": "Link",
-   "label": "Block Volume",
-   "options": "Cutting Planning"
+   "fieldtype": "Data",
+   "label": "Block Volume"
   },
   {
    "fieldname": "site",
@@ -102,7 +72,6 @@
    "options": "Site"
   },
   {
-   "description": "cut or ignore button will add ",
    "fieldname": "cutting_exceution_process",
    "fieldtype": "Table",
    "label": "Cutting Execution Process",
@@ -111,18 +80,9 @@
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
- "links": [
-  {
-   "link_doctype": "Cutting Residue Details",
-   "link_fieldname": "residue_volume"
-  },
-  {
-   "link_doctype": "Pre Carving QC",
-   "link_fieldname": "cutting_execution"
-  }
- ],
- "modified": "2025-09-04 21:29:51.045142",
- "modified_by": "admin@gmail.com",
+ "links": [],
+ "modified": "2025-09-06 14:17:34.255912",
+ "modified_by": "Administrator",
  "module": "Baps",
  "name": "Cutting Execution",
  "naming_rule": "Expression (old style)",

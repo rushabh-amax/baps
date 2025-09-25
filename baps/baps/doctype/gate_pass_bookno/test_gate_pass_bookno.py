@@ -1,4 +1,4 @@
-# Copyright (c) 2025, Tirthan Shah and Contributors
+# Copyright (c) 2025, Amax Consultancy Pvt Ltd and Contributors
 # See license.txt
 
 # import frappe
