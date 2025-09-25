@@ -3,7 +3,6 @@
  "allow_rename": 1,
  "creation": "2025-08-29 14:06:15.250879",
  "doctype": "DocType",
- "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "baps_project",
@@ -25,25 +24,25 @@
   {
    "fieldname": "block_number",
    "fieldtype": "Data",
-   "in_list_view": 1,
+   "hidden": 1,
    "label": "Block ID"
   },
   {
    "fieldname": "volume",
    "fieldtype": "Float",
-   "in_list_view": 1,
+   "hidden": 1,
    "label": "Volume"
   },
   {
    "fieldname": "stone_number",
    "fieldtype": "Data",
-   "in_list_view": 1,
+   "hidden": 1,
    "label": "Stone ID"
   },
   {
    "fieldname": "box_number",
    "fieldtype": "Data",
-   "in_list_view": 1,
+   "hidden": 1,
    "label": "Box ID"
   },
   {
@@ -62,8 +61,8 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-09-01 15:59:52.868002",
- "modified_by": "admin@gmail.com",
+ "modified": "2025-09-10 15:34:58.108669",
+ "modified_by": "Administrator",
  "module": "Baps",
  "name": "Additional Material Received",
  "owner": "Administrator",

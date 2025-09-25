@@ -52,7 +52,7 @@
    "fieldname": "block_type",
    "fieldtype": "Link",
    "label": "Block Type",
-   "options": "Stone Type"
+   "options": "Material Type"
   },
   {
    "fieldname": "invoice_no",
@@ -130,7 +130,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-03 17:54:21.798919",
+ "modified": "2025-09-16 10:36:26.454904",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Billing Type",

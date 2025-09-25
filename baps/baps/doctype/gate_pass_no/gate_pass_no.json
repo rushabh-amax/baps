@@ -6,21 +6,30 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "gate_pass_no"
+  "gate_pass_no",
+  "gate_pass_book_no"
  ],
  "fields": [
   {
    "fieldname": "gate_pass_no",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Gate Pass No"
+  },
+  {
+   "fieldname": "gate_pass_book_no",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Gate Pass Book No",
+   "options": "Gate Pass BookNo"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-03 12:08:23.966262",
+ "modified": "2025-09-09 16:37:30.486128",
  "modified_by": "Administrator",
- "module": "Baps",
+ "module": "BAPS",
  "name": "Gate Pass No",
  "naming_rule": "Expression (old style)",
  "owner": "Administrator",

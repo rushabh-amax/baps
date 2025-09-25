@@ -71,7 +71,7 @@
    "fieldname": "size_list_reference",
    "fieldtype": "Link",
    "label": "Size List",
-   "options": "Size List Creation"
+   "options": "Size List"
   },
   {
    "fieldname": "invoice_number",
@@ -148,22 +148,13 @@
    "fieldname": "size_list_creation",
    "fieldtype": "Link",
    "label": "Size List Creation",
-   "options": "Size List Creation"
+   "options": "Size List"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
- "links": [
-  {
-   "link_doctype": "Pre-Carving QC",
-   "link_fieldname": "stone_number"
-  },
-  {
-   "link_doctype": "Transportation Receiver",
-   "link_fieldname": "transport_sender_reference"
-  }
- ],
- "modified": "2025-09-03 21:49:10.219048",
+ "links": [],
+ "modified": "2025-09-18 17:15:21.644224",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Direct Cut Stone Purchase",

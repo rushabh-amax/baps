@@ -18,13 +18,8 @@
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
- "links": [
-  {
-   "link_doctype": "Sub Part",
-   "link_fieldname": "sub_part_name"
-  }
- ],
- "modified": "2025-09-02 17:31:13.064657",
+ "links": [],
+ "modified": "2025-09-06 14:20:29.145736",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Main Part",

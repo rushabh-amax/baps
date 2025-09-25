@@ -467,3 +467,18 @@ document.addEventListener("DOMContentLoaded", function () {
 //   });
 // });
 
+
+// const module_API_ROUTE1 = `/api/method/baps.api.login_api_userwise.login_with_permissions1?usr=Administrator&pwd=12345`;
+
+// fetch(module_API_ROUTE1, {
+//     method: "GET",
+//     credentials: "include"
+// })
+//     .then(r => r.json())
+//     .then(data => {
+//         console.log("Modules API Response:", data);
+//     })
+//     .catch(err => {
+//         console.error("Modules API Error:", err);
+//     });
+

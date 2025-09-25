@@ -2,7 +2,7 @@ import frappe
 from frappe.auth import LoginManager
 
 @frappe.whitelist(allow_guest=True)
-def login_with_permissions(usr, pwd):
+def login_with_permissions1(usr, pwd):
     """Custom login API with permissions info"""
     # Step 1: Authenticate user
     login_manager = LoginManager()
@@ -34,7 +34,7 @@ def login_with_permissions(usr, pwd):
         }
 
     # Step 3: Get all modules
-    all_modules = frappe.get_all("Module Def", fields=["name"], order_by="name asc")
+    all_modules = frappe.get_all("Module Def", fields=["name" ], order_by="name asc")
     all_module_names = {m.name for m in all_modules}
 
     # Step 4: Get blocked modules from user's settings

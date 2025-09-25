@@ -42,8 +42,10 @@
    "label": "Planning Date"
   },
   {
+   "fetch_from": "size_list_creation.form_number",
    "fieldname": "form_no",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Form No"
   },
   {
@@ -62,6 +64,7 @@
   {
    "fieldname": "machine_no",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "M/C No"
   },
   {
@@ -69,10 +72,10 @@
    "fieldtype": "Column Break"
   },
   {
+   "fetch_from": "size_list_creation.total_volume",
    "fieldname": "block_volume",
-   "fieldtype": "Float",
-   "label": "Block Volume",
-   "precision": "2"
+   "fieldtype": "Data",
+   "label": "Block Volume"
   },
   {
    "fieldname": "total_stone_volume",
@@ -88,6 +91,7 @@
   {
    "fieldname": "planning_status",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Planning Status",
    "options": "Draft\nPlanned\nIn Progress\nCompleted"
   },
@@ -104,6 +108,7 @@
   {
    "fieldname": "project",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Project",
    "options": "Baps Project"
   },
@@ -111,7 +116,7 @@
    "fieldname": "stone_type",
    "fieldtype": "Link",
    "label": "Block/Stone Type",
-   "options": "Stone Type"
+   "options": "Material Type"
   },
   {
    "fieldname": "column_break_qbom",
@@ -131,7 +136,8 @@
   },
   {
    "fieldname": "section_break_lete",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "hidden": 1
   },
   {
    "fieldname": "section_break_kqup",
@@ -163,10 +169,10 @@
   {
    "fieldname": "size_list_creation",
    "fieldtype": "Link",
+   "hidden": 1,
    "in_list_view": 1,
    "label": "Size List",
-   "options": "Size List Creation",
-   "reqd": 1
+   "options": "Size List"
   },
   {
    "fieldname": "status",
@@ -182,18 +188,9 @@
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
- "links": [
-  {
-   "link_doctype": "Cutting Execution",
-   "link_fieldname": "cutting_planning"
-  },
-  {
-   "link_doctype": "Karigar",
-   "link_fieldname": "karigar_name"
-  }
- ],
- "modified": "2025-09-04 20:13:04.590838",
- "modified_by": "admin@gmail.com",
+ "links": [],
+ "modified": "2025-09-18 17:15:22.296631",
+ "modified_by": "Administrator",
  "module": "Baps",
  "name": "Cutting Planning",
  "naming_rule": "Expression (old style)",

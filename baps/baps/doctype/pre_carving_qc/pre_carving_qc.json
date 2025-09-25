@@ -6,34 +6,32 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "site",
   "stone_code",
   "region",
-  "site",
-  "is_size_ok",
-  "is_color_ok",
-  "is_defect_free",
-  "column_break_qpya",
-  "source_type",
-  "baps_project",
+  "transportation_receiver",
   "status",
-  "cutting_execution",
+  "column_break_qpya",
+  "baps_project",
+  "date",
+  "qc_by",
+  "data_qofc",
+  "source_type",
   "section_break_crcp",
   "qc_questions",
-  "section_break_fere",
+  "section_break_agzr",
+  "comments",
+  "photo_evidence",
   "remedies_required",
   "section_break_efyu",
-  "photo_evidence",
-  "section_break_agzr",
-  "qc_by",
-  "comments",
   "amended_from"
  ],
  "fields": [
   {
-   "fieldname": "baps_project",
-   "fieldtype": "Link",
-   "label": "Baps Project",
-   "options": "Baps Project"
+   "description": "stone code auto fetch here ",
+   "fieldname": "stone_code",
+   "fieldtype": "Data",
+   "label": "Stone Code"
   },
   {
    "fieldname": "region",
@@ -48,41 +46,8 @@
    "options": "Site"
   },
   {
-   "default": "0",
-   "fieldname": "is_size_ok",
-   "fieldtype": "Check",
-   "label": "Is Size OK?"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_color_ok",
-   "fieldtype": "Check",
-   "label": "Is Color OK?"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_defect_free",
-   "fieldtype": "Check",
-   "label": "Is Defect-Free?"
-  },
-  {
-   "description": "Show if any \"No\"",
-   "fieldname": "remedies_required",
-   "fieldtype": "Select",
-   "label": "Remedies Required",
-   "options": "\nOn-site Resize\nSend for Resizing\nReject Stone\nLevel 2 QC Required"
-  },
-  {
-   "fieldname": "comments",
-   "fieldtype": "Text Editor",
-   "label": "Comments"
-  },
-  {
-   "description": "auto fill",
-   "fieldname": "qc_by",
-   "fieldtype": "Link",
-   "label": "QC Done By",
-   "options": "Employee"
+   "fieldname": "column_break_qpya",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "source_type",
@@ -91,25 +56,41 @@
    "options": "In-House Cut\nDirect Purchase"
   },
   {
+   "fieldname": "baps_project",
+   "fieldtype": "Link",
+   "label": "Baps Project",
+   "options": "Baps Project"
+  },
+  {
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
    "options": "Passed\nFailed\nAwaiting Remedies"
   },
   {
-   "fieldname": "column_break_qpya",
-   "fieldtype": "Column Break"
+   "fieldname": "transportation_receiver",
+   "fieldtype": "Link",
+   "label": "Transportation Receiver",
+   "options": "Transportation Receiver"
   },
   {
-   "fieldname": "section_break_fere",
+   "fieldname": "section_break_crcp",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "qc_questions",
+   "fieldtype": "Table",
+   "label": "Qc Questions",
+   "options": "Qc Questions"
+  },
+  {
+   "fieldname": "remedies_required",
+   "fieldtype": "Select",
+   "label": "Remedies Required",
+   "options": "\nOn-site Resize\nSend for Resizing\nReject Stone\nLevel 2 QC Required"
   },
   {
    "fieldname": "section_break_efyu",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "section_break_agzr",
    "fieldtype": "Section Break"
   },
   {
@@ -118,42 +99,43 @@
    "label": "Photo Evidence"
   },
   {
+   "fieldname": "section_break_agzr",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "qc_by",
+   "fieldtype": "Link",
+   "label": "QC Done By",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "comments",
+   "fieldtype": "Small Text",
+   "label": "Comments"
+  },
+  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
    "no_copy": 1,
-   "options": "Pre-Carving QC",
+   "options": "Pre Carving QC",
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
   },
   {
-   "fieldname": "section_break_crcp",
-   "fieldtype": "Section Break"
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
   },
   {
-   "description": "when all this will get check to NO then that remedis will get open ",
-   "fieldname": "qc_questions",
-   "fieldtype": "Table",
-   "label": "Qc Questions",
-   "options": "Qc Questions"
-  },
-  {
-   "description": "stone code auto fetch here ",
-   "fieldname": "stone_code",
-   "fieldtype": "Data",
-   "label": "Stone Code"
-  },
-  {
-   "fieldname": "cutting_execution",
-   "fieldtype": "Link",
-   "label": "Cutting Execution",
-   "options": "Cutting Execution"
+   "fieldname": "data_qofc",
+   "fieldtype": "Data"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-03 23:10:03.847179",
+ "modified": "2025-09-05 14:41:53.967209",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Pre Carving QC",

@@ -7,17 +7,20 @@
  "engine": "InnoDB",
  "field_order": [
   "project_name",
-  "region",
   "column_break_mdyp",
-  "project_code",
   "site",
   "project_section",
   "start_date",
-  "expected_end_date",
   "column_break_baps_proj",
+  "expected_end_date",
   "status",
   "section_break_ouvg",
-  "remarks"
+  "dry_fitting",
+  "polishing",
+  "column_break_jqqi",
+  "chemical",
+  "column_break_okjj",
+  "client_inspection"
  ],
  "fields": [
   {
@@ -29,23 +32,12 @@
    "fieldname": "project_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Project Name",
-   "reqd": 1
-  },
-  {
-   "fieldname": "project_code",
-   "fieldtype": "Data",
-   "label": "Project Code"
-  },
-  {
-   "fieldname": "region",
-   "fieldtype": "Link",
-   "label": "Region",
-   "options": "Region"
+   "label": "Project Name"
   },
   {
    "fieldname": "site",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Site",
    "options": "Site"
   },
@@ -57,8 +49,7 @@
    "fieldname": "start_date",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Start Date",
-   "reqd": 1
+   "label": "Start Date"
   },
   {
    "fieldname": "expected_end_date",
@@ -69,13 +60,9 @@
    "default": "Planned",
    "fieldname": "status",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Status",
    "options": "Planned\nIn Progress\nCompleted\nOn Hold\nCancelled"
-  },
-  {
-   "fieldname": "remarks",
-   "fieldtype": "Small Text",
-   "label": "Remarks"
   },
   {
    "fieldname": "column_break_mdyp",
@@ -84,21 +71,44 @@
   {
    "fieldname": "section_break_ouvg",
    "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "dry_fitting",
+   "fieldtype": "Check",
+   "label": "Dry Fitting"
+  },
+  {
+   "fieldname": "column_break_jqqi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "chemical",
+   "fieldtype": "Check",
+   "label": "Chemical"
+  },
+  {
+   "fieldname": "column_break_okjj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "client_inspection",
+   "fieldtype": "Check",
+   "label": "Client Inspection"
+  },
+  {
+   "default": "0",
+   "fieldname": "polishing",
+   "fieldtype": "Check",
+   "label": "Polishing"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
- "links": [
-  {
-   "link_doctype": "Size List Creation",
-   "link_fieldname": "baps_project"
-  },
-  {
-   "link_doctype": "Block Selection",
-   "link_fieldname": "block_number"
-  }
- ],
- "modified": "2025-09-04 14:45:23.189527",
+ "links": [],
+ "modified": "2025-09-19 14:35:15.480825",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Baps Project",
