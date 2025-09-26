@@ -2,7 +2,30 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Size List Verification', {
+    onload: function(frm) {
+        // Auto-set checked_by to current user on form load
+        if (!frm.doc.checked_by) {
+            frm.set_value('checked_by', frappe.session.user);
+        }
+    },
+    
     refresh: function(frm) {
+        // Auto-set checked_by to current user if not set
+        if (!frm.doc.checked_by) {
+            frm.set_value('checked_by', frappe.session.user);
+        }
+        
+        // Make sure the checked_by field is visible and set
+        frm.set_df_property('checked_by', 'hidden', 0);
+        frm.set_df_property('checked_by', 'read_only', 1);
+    },
+    
+    before_save: function(frm) {
+        // Ensure checked_by is always set before saving
+        if (!frm.doc.checked_by) {
+            frm.set_value('checked_by', frappe.session.user);
+        }
+        
         // Add custom CSS for verification status
         if (!$('#verification-styles').length) {
             $('head').append(`

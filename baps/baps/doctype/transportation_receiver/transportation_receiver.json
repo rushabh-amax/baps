@@ -9,9 +9,8 @@
   "site",
   "gate_pass_bookno",
   "gate_pass_no",
-  "wt_of_material",
   "column_break_ftbm",
-  "date",
+  "wt_of_material",
   "section_break_mfov",
   "column_break_gwvv",
   "gate_pass_book_no",
@@ -23,7 +22,7 @@
   "to_site",
   "section_break_tpft",
   "transportation_status_r",
-  "additional_material_receiver",
+  "additional_material_received",
   "section_break_vbpu",
   "additional_items",
   "missing_items",
@@ -31,17 +30,12 @@
  ],
  "fields": [
   {
-   "fieldname": "date",
-   "fieldtype": "Date",
-   "label": "Date"
-  },
-  {
    "fieldname": "remarks",
    "fieldtype": "Small Text",
    "label": "Remarks"
   },
   {
-   "depends_on": "eval:doc.additional_material_receiver == 1",
+   "depends_on": "eval:doc.additional_material_received == 1",
    "fieldname": "additional_items",
    "fieldtype": "Table",
    "label": "Additional Material Receiver",
@@ -64,7 +58,8 @@
   {
    "fieldname": "wt_of_material",
    "fieldtype": "Data",
-   "label": "Wt. of Material"
+   "label": "Wt. of Material",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_ftbm",
@@ -74,13 +69,14 @@
    "fieldname": "gate_pass_no",
    "fieldtype": "Link",
    "label": "Gate Pass No",
-   "options": "Gate Pass No"
+   "options": "Gate Pass"
   },
   {
    "fieldname": "section_break_vbpu",
    "fieldtype": "Section Break"
   },
   {
+   "depends_on": "eval:doc.gate_pass_no",
    "fieldname": "section_break_mfov",
    "fieldtype": "Section Break"
   },
@@ -89,14 +85,16 @@
    "fieldname": "from_site",
    "fieldtype": "Link",
    "label": "From Site",
-   "options": "Site"
+   "options": "Site",
+   "read_only_depends_on": "eval:doc.gate_pass_no"
   },
   {
    "fetch_from": "transport_sender_reference.to_site",
    "fieldname": "to_site",
    "fieldtype": "Link",
    "label": "To Site",
-   "options": "Site"
+   "options": "Site",
+   "read_only_depends_on": "eval:doc.gate_pass_no"
   },
   {
    "fieldname": "transportation_status_r",
@@ -108,7 +106,7 @@
    "fieldname": "gate_pass_bookno",
    "fieldtype": "Link",
    "label": "Gate Pass BookNo",
-   "options": "Gate Pass BookNo"
+   "options": "Gate Pass Book"
   },
   {
    "fieldname": "column_break_dnvb",
@@ -122,7 +120,8 @@
    "fetch_from": "gate_pass_bookno.gate_pass_bookno",
    "fieldname": "gate_pass_book_no",
    "fieldtype": "Data",
-   "label": "Gate Pass Book NO"
+   "label": "Gate Pass Book NO",
+   "read_only_depends_on": "eval:doc.gate_pass_no"
   },
   {
    "fieldname": "column_break_mwta",
@@ -132,7 +131,8 @@
    "fetch_from": "gate_pass_no.gate_pass_no",
    "fieldname": "gate_passno",
    "fieldtype": "Data",
-   "label": "Gate PassNo"
+   "label": "Gate PassNo",
+   "read_only_depends_on": "eval:doc.gate_pass_no"
   },
   {
    "fieldname": "section_break_tpft",
@@ -144,17 +144,17 @@
   },
   {
    "default": "0",
-   "fieldname": "additional_material_receiver",
+   "fieldname": "additional_material_received",
    "fieldtype": "Check",
-   "label": "Additional Material Receiver"
+   "label": "Additional Material Received"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-09 18:29:44.253861",
+ "modified": "2025-09-25 22:21:20.228048",
  "modified_by": "Administrator",
- "module": "BAPS",
+ "module": "Baps",
  "name": "Transportation Receiver",
  "naming_rule": "Expression (old style)",
  "owner": "Administrator",

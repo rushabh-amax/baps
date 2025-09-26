@@ -6,15 +6,15 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "prep_date",
+  "form_number",
   "baps_project",
   "project_name",
   "column_break_kini",
+  "prep_date",
   "material_type",
   "main_part",
-  "sub_part",
   "column_break_wehb",
-  "form_number",
+  "sub_part",
   "cutting_region",
   "section_break_mheq",
   "polishing_required",
@@ -135,10 +135,10 @@
    "fieldname": "checked_by",
    "fieldtype": "Link",
    "label": "Checked By",
-   "options": "Employee"
+   "options": "User"
   },
   {
-   "fetch_from": "checked_by.employee_name",
+   "fetch_from": "checked_by.username",
    "fieldname": "data_tilw",
    "fieldtype": "Data"
   },
@@ -156,7 +156,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-25 11:25:57.461383",
+ "modified": "2025-09-26 12:45:09.637536",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Size List Generation",

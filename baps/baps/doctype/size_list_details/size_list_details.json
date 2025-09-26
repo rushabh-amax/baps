@@ -17,8 +17,7 @@
   "h1",
   "h2",
   "volume",
-  "verification_status",
-  "needs_correction"
+  "verification_status"
  ],
  "fields": [
   {
@@ -26,7 +25,8 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Stone Name",
-   "options": "Stone Name"
+   "options": "Stone Name",
+   "read_only_depends_on": "eval:doc.verification_status==\"Verified\"\r\n"
   },
   {
    "fieldname": "volume",
@@ -39,7 +39,8 @@
    "fieldtype": "Int",
    "in_list_view": 1,
    "label": "L1",
-   "non_negative": 1
+   "non_negative": 1,
+   "read_only_depends_on": "eval:doc.verification_status==\"Verified\"\r\n"
   },
   {
    "fieldname": "l2",
@@ -47,14 +48,16 @@
    "in_list_view": 1,
    "label": "L2",
    "non_negative": 1,
-   "precision": "2"
+   "precision": "2",
+   "read_only_depends_on": "eval:doc.verification_status==\"Verified\"\r\n"
   },
   {
    "fieldname": "b1",
    "fieldtype": "Int",
    "in_list_view": 1,
    "label": "B1",
-   "non_negative": 1
+   "non_negative": 1,
+   "read_only_depends_on": "eval:doc.verification_status==\"Verified\"\r\n"
   },
   {
    "fieldname": "b2",
@@ -62,14 +65,16 @@
    "in_list_view": 1,
    "label": "B2",
    "non_negative": 1,
-   "precision": "2"
+   "precision": "2",
+   "read_only_depends_on": "eval:doc.verification_status==\"Verified\"\r\n"
   },
   {
    "fieldname": "h1",
    "fieldtype": "Int",
    "in_list_view": 1,
    "label": "H1",
-   "non_negative": 1
+   "non_negative": 1,
+   "read_only_depends_on": "eval:doc.verification_status==\"Verified\"\r\n\r\n"
   },
   {
    "fieldname": "h2",
@@ -77,20 +82,23 @@
    "in_list_view": 1,
    "label": "H2",
    "non_negative": 1,
-   "precision": "2"
+   "precision": "2",
+   "read_only_depends_on": "eval:doc.verification_status==\"Verified\"\r\n"
   },
   {
    "fetch_from": "stone_name.stone_code",
    "fieldname": "stone_code",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Stone Code "
+   "label": "Stone Code ",
+   "read_only_depends_on": "eval:doc.verification_status==\"Verified\"\r\n"
   },
   {
    "fieldname": "range",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Range"
+   "label": "Range",
+   "read_only_depends_on": "eval:doc.verification_status==\"Verified\"\r\n"
   },
   {
    "fieldname": "column_break_kdid",
@@ -107,20 +115,13 @@
    "label": "Verification Status",
    "options": "Pending\nVerified\nIncorrect",
    "read_only": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "needs_correction",
-   "fieldtype": "Check",
-   "label": "Needs Correction",
-   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-09-24 12:37:32.068634",
+ "modified": "2025-09-26 12:05:21.406038",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Size List Details",

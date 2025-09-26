@@ -102,13 +102,14 @@
    "default": "0",
    "fieldname": "polishing",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Polishing"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-19 14:35:15.480825",
+ "modified": "2025-09-26 14:00:41.662012",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Baps Project",

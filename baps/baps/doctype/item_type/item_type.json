@@ -1,40 +1,29 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "GPBNO-.####",
- "creation": "2025-09-17 12:10:17.685996",
+ "autoname": "field:item_type_name",
+ "creation": "2025-09-26 10:18:30.350801",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "gate_pass_bookno",
-  "page_limit",
-  "gate_pass_range"
+  "item_type_name"
  ],
  "fields": [
   {
-   "fieldname": "gate_pass_bookno",
+   "fieldname": "item_type_name",
    "fieldtype": "Data",
-   "label": "Gate pass BookNo"
-  },
-  {
-   "fieldname": "page_limit",
-   "fieldtype": "Data",
-   "label": "Page Limit"
-  },
-  {
-   "fieldname": "gate_pass_range",
-   "fieldtype": "Data",
-   "label": "Gate Pass Range"
+   "label": "Item Type Name",
+   "unique": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-17 12:12:20.539875",
+ "modified": "2025-09-26 10:22:22.507751",
  "modified_by": "Administrator",
  "module": "Baps",
- "name": "Gate Pass BookNo",
- "naming_rule": "Expression (old style)",
+ "name": "Item Type",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

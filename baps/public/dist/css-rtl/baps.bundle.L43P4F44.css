@@ -1,6 +1,6 @@
 @import "https://fonts.googleapis.com/css2?family=Didact+Gothic&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap";
 
-/* ../../../../../../tmp/tmp-304001-7ow4tj8YL0IZ/baps/baps/public/css/baps.bundle.css */
+/* ../../../../../../tmp/tmp-144077-4o75MZqY3CYB/baps/baps/public/css/baps.bundle.css */
 .centered.splash img {
   max-height: 400px !important;
   max-width: 400px !important;
@@ -231,7 +231,7 @@ kbd {
 }
 [data-theme=baps] .standard-sidebar-item.selected,
 [data-theme=baps] .standard-sidebar-item.active.selected {
-  background: #c78457right 1 top 50%f !important;
+  background: #c784571f !important;
   color: var(--active_txt_clr);
   overflow: unset;
 }
@@ -625,4 +625,4 @@ select,
 [data-theme=baps] .notification-null-state {
   padding-inline: .25em;
 }
-/*# sourceMappingURL=baps.bundle.MNHOEAXZ.css.map */
+/*# sourceMappingURL=baps.bundle.L43P4F44.css.map */

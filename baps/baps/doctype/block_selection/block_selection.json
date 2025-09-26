@@ -136,8 +136,9 @@
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2025-09-25 14:33:44.307940",
+ "modified": "2025-09-26 11:31:57.612656",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Block Selection",
@@ -160,5 +161,8 @@
  "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "track_changes": 1,
+ "track_seen": 1,
+ "track_views": 1
 }
