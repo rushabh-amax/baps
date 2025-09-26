@@ -7,15 +7,15 @@
  "engine": "InnoDB",
  "field_order": [
   "project_section",
-  "prep_date",
+  "form_number",
   "baps_project",
   "project_name",
   "column_break_slc",
+  "prep_date",
   "stone_type",
   "main_part",
-  "sub_part",
   "column_break_qxef",
-  "form_number",
+  "sub_part",
   "total_volume",
   "cutting_region",
   "section_break_process",
@@ -75,14 +75,14 @@
    "fieldname": "prepared_by",
    "fieldtype": "Link",
    "label": "Prepared By",
-   "options": "Employee"
+   "options": "User"
   },
   {
    "fieldname": "checked_by",
    "fieldtype": "Link",
    "hidden": 1,
    "label": "Checked By",
-   "options": "Employee"
+   "options": "User"
   },
   {
    "fieldname": "total_volume",
@@ -179,12 +179,12 @@
    "label": "Project Name"
   },
   {
-   "fetch_from": "prepared_by.employee_name",
+   "fetch_from": "prepared_by.username",
    "fieldname": "data_eipo",
    "fieldtype": "Data"
   },
   {
-   "fetch_from": "checked_by.employee_name",
+   "fetch_from": "checked_by.username",
    "fieldname": "data_yptw",
    "fieldtype": "Data",
    "hidden": 1
@@ -197,7 +197,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-25 11:01:33.179537",
+ "modified": "2025-09-26 12:44:32.318371",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Size List",

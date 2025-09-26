@@ -6,8 +6,8 @@
  "engine": "InnoDB",
  "field_order": [
   "baps_project",
-  "material_type",
-  "material_number",
+  "item_type",
+  "item_number",
   "status",
   "site"
  ],
@@ -20,24 +20,12 @@
    "options": "Baps Project"
   },
   {
-   "fieldname": "material_type",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Material Type",
-   "options": "\nBlock\nStone\nBox"
-  },
-  {
-   "fieldname": "material_number",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Material Number"
-  },
-  {
+   "default": "Received",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "\nReceived\nNot in this\nSend to site"
+   "options": "Received\nNot in this\nSend to site"
   },
   {
    "fieldname": "site",
@@ -47,13 +35,26 @@
    "mandatory_depends_on": "eval:doc.status == 'Send to site'",
    "options": "Site",
    "read_only_depends_on": "eval:doc.status == 'Received' || doc.status == 'Not in this'"
+  },
+  {
+   "fieldname": "item_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Number"
+  },
+  {
+   "fieldname": "item_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Type",
+   "options": "Item Type"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-09-10 15:34:33.930969",
+ "modified": "2025-09-25 22:19:32.340434",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Transportation Status R",

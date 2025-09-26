@@ -7,15 +7,15 @@
  "engine": "InnoDB",
  "field_order": [
   "section_break_wyiy",
-  "prep_date",
+  "form_number",
   "baps_project",
   "project_name",
   "column_break_dsal",
+  "prep_date",
   "stone_type",
   "main_part",
-  "sub_part",
   "column_break_uoie",
-  "form_number",
+  "sub_part",
   "total_volume",
   "cutting_region",
   "section_break_pnlg",
@@ -112,7 +112,7 @@
    "fieldname": "form_number",
    "fieldtype": "Link",
    "label": "Form Number",
-   "options": "SIze List Generation",
+   "options": "Size List Generation",
    "unique": 1
   },
   {
@@ -143,10 +143,11 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-24 23:50:00.000000",
+ "modified": "2025-09-26 12:45:39.542194",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Size List Creation",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {

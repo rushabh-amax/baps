@@ -254,14 +254,14 @@ def publish_stones_to_creation(generation_doc, selected_stones):
 			'prep_date': 'prep_date',
 			'baps_project': 'baps_project', 
 			'project_name': 'project_name',
-			'material_type': 'stone_type',
+			'stone_type': 'material_type',  # Creation field: Generation field
 			'main_part': 'main_part',
 			'sub_part': 'sub_part',
 			'cutting_region': 'cutting_region',
-			'polishing_required': 'polishing',
-			'dry_fitting_required': 'dry_fitting',
-			'carving_required': 'carving',
-			'chemical_required': 'chemicaling'
+			'polishing': 'polishing_required',  # Creation field: Generation field
+			'dry_fitting': 'dry_fitting_required',
+			'carving': 'carving_required',
+			'chemicaling': 'chemical_required'
 		}
 		
 		# Copy main document fields
@@ -462,3 +462,143 @@ def expand_range_string(range_str):
 	except Exception as e:
 		frappe.log_error(f"Error parsing range string '{range_str}': {str(e)}")
 		return []
+
+
+@frappe.whitelist()
+def publish_stones_to_creation(generation_doc, selected_stones):
+	"""
+	Create Size List Creation document from selected verified stones in Size List Generation
+	"""
+	try:
+		# Check if the document exists first
+		if not frappe.db.exists("Size List Generation", generation_doc):
+			return {
+				"success": False,
+				"message": f"Size List Generation document '{generation_doc}' not found. Please ensure the document exists and is saved."
+			}
+		
+		# Get the Size List Generation document
+		generation = frappe.get_doc("Size List Generation", generation_doc)
+		
+		# Validate selected stones
+		if not selected_stones or len(selected_stones) == 0:
+			return {
+				"success": False,
+				"message": "No stones selected for publication"
+			}
+		
+		# Handle selected_stones data - it might be a JSON string or list
+		if isinstance(selected_stones, str):
+			import json
+			selected_stones = json.loads(selected_stones)
+		
+		# Create new Size List Creation document
+		creation_doc = frappe.new_doc("Size List Creation")
+		
+		# Map main fields from generation to creation
+		field_mapping = {
+			'prep_date': 'prep_date',
+			'baps_project': 'baps_project', 
+			'project_name': 'project_name',
+			'stone_type': 'material_type',  # Creation field: Generation field
+			'main_part': 'main_part',
+			'sub_part': 'sub_part',
+			'cutting_region': 'cutting_region',
+			'polishing': 'polishing_required',  # Creation field: Generation field
+			'dry_fitting': 'dry_fitting_required',
+			'carving': 'carving_required',
+			'chemicaling': 'chemical_required'
+		}
+		
+		# Copy main document fields
+		for creation_field, generation_field in field_mapping.items():
+			if hasattr(generation, generation_field):
+				setattr(creation_doc, creation_field, getattr(generation, generation_field))
+		
+		# Set the form_number to point to the Size List Generation document
+		creation_doc.form_number = generation.name
+		
+		# Add selected stones to the creation document
+		total_volume = 0
+		published_stones = 0
+		
+		# Validate that we're only publishing stones that exist in the Generation document
+		generation_stones = {f"{stone.stone_name}_{stone.stone_code}": stone for stone in generation.stone_details}
+		
+		for stone in selected_stones:
+			# Handle both dict and object access patterns
+			if isinstance(stone, dict):
+				stone_name = stone.get("stone_name", "")
+				stone_code = stone.get("stone_code", "")
+			else:
+				stone_name = getattr(stone, "stone_name", "")
+				stone_code = getattr(stone, "stone_code", "")
+			
+			stone_key = f"{stone_name}_{stone_code}"
+			
+			# Only publish if this stone exists in the generation document
+			if stone_key in generation_stones:
+				generation_stone = generation_stones[stone_key]
+				
+				# Expand range and create multiple records
+				expanded_records = expand_stone_range(generation_stone)
+				
+				for expanded_stone in expanded_records:
+					creation_doc.append("stone_details", expanded_stone)
+					published_stones += 1
+					
+					# Calculate volume safely
+					try:
+						volume_val = float(expanded_stone.get("volume", 0))
+						total_volume += volume_val
+					except (ValueError, TypeError):
+						total_volume += 0
+		
+		# Validate that we actually published some stones
+		if published_stones == 0:
+			return {
+				"success": False,
+				"message": "No valid stones found to publish. Please ensure stones exist in the Generation document."
+			}
+		
+		# Set total volume
+		creation_doc.total_volume = total_volume
+		
+		# Insert the document
+		creation_doc.insert()
+		
+		# Mark the selected stones as published in the Generation document
+		for stone in selected_stones:
+			if isinstance(stone, dict):
+				stone_name = stone.get("stone_name", "")
+				stone_code = stone.get("stone_code", "")
+			else:
+				stone_name = getattr(stone, "stone_name", "")
+				stone_code = getattr(stone, "stone_code", "")
+			
+			stone_key = f"{stone_name}_{stone_code}"
+			if stone_key in generation_stones:
+				# Find the stone in the generation document and mark as published
+				for gen_stone in generation.stone_details:
+					if gen_stone.stone_name == stone_name and gen_stone.stone_code == stone_code:
+						gen_stone.published = 1
+						break
+		
+		# Save the generation document with updated published status
+		generation.save()
+		frappe.db.commit()
+		
+		return {
+			"success": True,
+			"creation_doc": creation_doc.name,
+			"stones_published": published_stones,
+			"total_volume": total_volume,
+			"message": f"Successfully created Size List Creation {creation_doc.name} with {published_stones} verified stones from Generation document"
+		}
+		
+	except Exception as e:
+		frappe.log_error(f"Error publishing stones to creation: {str(e)}")
+		return {
+			"success": False,
+			"message": f"Error publishing stones: {str(e)}"
+		}

@@ -1,36 +1,30 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "VEHICLE-P.####",
+ "autoname": "field:vehicle_service_provider",
  "creation": "2025-09-09 18:51:22.984814",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "vehicle_service_provider",
-  "vehicle_number"
+  "vehicle_service_provider"
  ],
  "fields": [
   {
    "fieldname": "vehicle_service_provider",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Vehicle Service Provider"
-  },
-  {
-   "fieldname": "vehicle_number",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Vehicle Number"
+   "label": "Vehicle Service Provider Name",
+   "unique": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-10 15:51:41.886158",
+ "modified": "2025-09-25 17:29:32.993747",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Vehicle Service Provider",
- "naming_rule": "Expression (old style)",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

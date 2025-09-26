@@ -5,7 +5,19 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("Size List Generation", {
+    onload: function(frm) {
+        // Auto-set checked_by to current user if not already set
+        if (!frm.doc.checked_by && frappe.session.user) {
+            frm.set_value('checked_by', frappe.session.user);
+        }
+    },
+    
     refresh: function(frm) {
+        // Auto-set checked_by to current user if not already set
+        if (!frm.doc.checked_by && frappe.session.user) {
+            frm.set_value('checked_by', frappe.session.user);
+        }
+        
         // Set query filter for form_number field to show only verification documents with verified stones
         frm.set_query("form_number", function() {
             return {
@@ -89,6 +101,13 @@ frappe.ui.form.on("Size List Generation", {
                 });
             }
         });
+    },
+    
+    before_save: function(frm) {
+        // Ensure checked_by is always set before saving
+        if (!frm.doc.checked_by && frappe.session.user) {
+            frm.set_value('checked_by', frappe.session.user);
+        }
     }
 });
 

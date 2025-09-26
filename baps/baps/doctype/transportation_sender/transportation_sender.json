@@ -16,24 +16,19 @@
   "sender_name",
   "vehicle_service_provider",
   "vehicle_number",
-  "own_vehicle",
   "block_selection",
   "cutting_execution",
   "section_break_bxox",
   "driver_name",
   "column_break_qxyt",
   "driver_number",
-  "column_break_xtgv",
-  "column_break_khpd",
-  "lot_no",
-  "section_break_kgxt",
+  "section_break_xthw",
   "baps_project",
-  "column_break_cexe",
-  "material_type",
-  "column_break_tvnu",
+  "column_break_dwza",
+  "item_type",
   "show_items",
   "section_break_spbc",
-  "transport_material_type",
+  "transport_items",
   "section_break_cieb",
   "is_received",
   "column_break_rjoi",
@@ -56,10 +51,6 @@
    "options": "Site"
   },
   {
-   "fieldname": "column_break_xtgv",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "to_site",
    "fieldtype": "Link",
    "label": "To Site",
@@ -71,9 +62,8 @@
   },
   {
    "fieldname": "vehicle_number",
-   "fieldtype": "Link",
-   "label": "Vehicle /Container Number",
-   "options": "Vehicle Service Provider"
+   "fieldtype": "Data",
+   "label": "Vehicle /Container Number"
   },
   {
    "fieldname": "driver_name",
@@ -93,7 +83,7 @@
    "fieldname": "gate_pass_no",
    "fieldtype": "Link",
    "label": "Gate Pass No",
-   "options": "Gate Pass No"
+   "options": "Gate Pass"
   },
   {
    "fieldname": "section_break_cieb",
@@ -128,7 +118,7 @@
    "fieldname": "gate_pass_bookno",
    "fieldtype": "Link",
    "label": "Gate Pass BookNo",
-   "options": "Gate Pass BookNo"
+   "options": "Gate Pass Book"
   },
   {
    "fieldname": "column_break_rjoi",
@@ -137,12 +127,6 @@
   {
    "fieldname": "section_break_spbc",
    "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "transport_material_type",
-   "fieldtype": "Table",
-   "label": "Transport Material Type",
-   "options": "Transport Material Table"
   },
   {
    "description": "fetch from the trasnporttaion sender via link from transporter  reciver",
@@ -157,17 +141,13 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "lot_no",
-   "fieldtype": "Data",
-   "label": "Lot No"
-  },
-  {
    "fieldname": "baps_project",
    "fieldtype": "Link",
    "label": "Baps Project",
    "options": "Baps Project"
   },
   {
+   "bold": 1,
    "fieldname": "show_items",
    "fieldtype": "Button",
    "label": "Show Items"
@@ -180,41 +160,32 @@
    "options": "Cutting Execution"
   },
   {
-   "fieldname": "material_type",
-   "fieldtype": "Select",
-   "label": "Material Type",
-   "options": "\nBlock\nStone\nBox"
-  },
-  {
-   "fieldname": "own_vehicle",
-   "fieldtype": "Link",
-   "hidden": 1,
-   "label": "Own Vehicle",
-   "options": "Own Vehicle"
-  },
-  {
-   "fieldname": "column_break_khpd",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "section_break_kgxt",
+   "fieldname": "section_break_xthw",
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "column_break_cexe",
+   "fieldname": "column_break_dwza",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "column_break_tvnu",
-   "fieldtype": "Column Break"
+   "fieldname": "item_type",
+   "fieldtype": "Link",
+   "label": "Item Type",
+   "options": "Item Type"
+  },
+  {
+   "fieldname": "transport_items",
+   "fieldtype": "Table",
+   "label": "Transport Items",
+   "options": "Transport Item Table"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-17 10:46:14.868089",
+ "modified": "2025-09-25 17:38:42.297791",
  "modified_by": "Administrator",
- "module": "BAPS",
+ "module": "Baps",
  "name": "Transportation Sender",
  "naming_rule": "Expression (old style)",
  "owner": "Administrator",
