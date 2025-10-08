@@ -8,13 +8,12 @@
  "field_order": [
   "trade_partner_name",
   "gstin",
-  "trade_partner_site",
   "column_break_pcju",
-  "phone",
-  "email_id",
+  "tp_phone_number",
+  "tp_email",
   "status",
   "section_break_vorm",
-  "connection"
+  "trade_partner_site"
  ],
  "fields": [
   {
@@ -27,16 +26,6 @@
   {
    "fieldname": "column_break_pcju",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "phone",
-   "fieldtype": "Data",
-   "label": "Phone"
-  },
-  {
-   "fieldname": "email_id",
-   "fieldtype": "Data",
-   "label": "Email"
   },
   {
    "fieldname": "gstin",
@@ -54,23 +43,26 @@
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "connection",
+   "fieldname": "trade_partner_site",
    "fieldtype": "Table",
-   "label": "Connection",
-   "options": "Connection"
+   "label": "Trade Partner Site",
+   "options": "Trade Partner Site"
   },
   {
-   "fieldname": "trade_partner_site",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Trade Partner Site",
-   "options": "Site"
+   "fieldname": "tp_phone_number",
+   "fieldtype": "Data",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "tp_email",
+   "fieldtype": "Data",
+   "label": "Email"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-09 14:47:06.066804",
+ "modified": "2025-10-04 16:58:03.560052",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Trade Partner",

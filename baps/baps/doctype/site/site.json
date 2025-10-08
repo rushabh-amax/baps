@@ -7,7 +7,10 @@
  "engine": "InnoDB",
  "field_order": [
   "site_name",
-  "region"
+  "site_type",
+  "column_break_gajj",
+  "region",
+  "trade_partner"
  ],
  "fields": [
   {
@@ -22,12 +25,29 @@
    "in_list_view": 1,
    "label": "Region",
    "options": "Region"
+  },
+  {
+   "fieldname": "site_type",
+   "fieldtype": "Select",
+   "label": "Site Type",
+   "options": "Project Site\nTrade Partner Site\nWorking Site"
+  },
+  {
+   "depends_on": "eval:doc.site_type==\"Trade Partner Site\"",
+   "fieldname": "trade_partner",
+   "fieldtype": "Link",
+   "label": "Trade Partner",
+   "options": "Trade Partner"
+  },
+  {
+   "fieldname": "column_break_gajj",
+   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-16 10:27:54.213341",
+ "modified": "2025-10-07 15:59:11.965220",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Site",
@@ -48,6 +68,7 @@
   }
  ],
  "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

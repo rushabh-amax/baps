@@ -24,6 +24,21 @@ web_include_js = [
 ]
 
 home_page = "/modules"
+
+
+
+# chnages in hooks.py via baps team
+permission_query_conditions = {
+	"Size List": "baps.baps.doctype.size_list.size_list.get_size_list_permission_query",
+}
+has_permission = {
+	"Size List": "baps.baps.doctype.size_list.size_list.has_size_list_permission",
+}
+
+
+
+
+
 # Apps
 # ------------------
 

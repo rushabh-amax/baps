@@ -6,22 +6,26 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "section_break_jvcy",
   "gate_pass_bookno",
+  "column_break_kpcl",
   "gate_pass_no",
+  "column_break_oxwu",
   "from_site",
+  "column_break_qayx",
   "to_site",
-  "column_break_cgtg",
+  "section_break_jvcy",
   "date",
+  "column_break_cgtg",
   "sender_name",
+  "own_vehicle",
+  "column_break_qldx",
   "vehicle_service_provider",
+  "column_break_dglm",
   "vehicle_number",
-  "block_selection",
-  "cutting_execution",
   "section_break_bxox",
   "driver_name",
   "column_break_qxyt",
-  "driver_number",
+  "driver_mobile_no",
   "section_break_xthw",
   "baps_project",
   "column_break_dwza",
@@ -29,6 +33,10 @@
   "show_items",
   "section_break_spbc",
   "transport_items",
+  "section_break_lpdq",
+  "block_selection",
+  "column_break_jpwn",
+  "cutting_execution",
   "section_break_cieb",
   "is_received",
   "column_break_rjoi",
@@ -77,7 +85,9 @@
   {
    "fieldname": "sender_name",
    "fieldtype": "Data",
-   "label": "Sender"
+   "in_list_view": 1,
+   "label": "Sender",
+   "read_only": 1
   },
   {
    "fieldname": "gate_pass_no",
@@ -108,11 +118,6 @@
    "fieldtype": "Link",
    "label": "Vehicle Service Provider",
    "options": "Vehicle Service Provider"
-  },
-  {
-   "fieldname": "driver_number",
-   "fieldtype": "Phone",
-   "label": "Driver Number"
   },
   {
    "fieldname": "gate_pass_bookno",
@@ -160,6 +165,13 @@
    "options": "Cutting Execution"
   },
   {
+   "fieldname": "own_vehicle",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Own Vehicle",
+   "options": "Own Vehicle"
+  },
+  {
    "fieldname": "section_break_xthw",
    "fieldtype": "Section Break"
   },
@@ -176,14 +188,48 @@
   {
    "fieldname": "transport_items",
    "fieldtype": "Table",
-   "label": "Transport Items",
-   "options": "Transport Item Table"
+   "label": "Transport items",
+   "options": "Transport Item Table",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_kpcl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_oxwu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_qayx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_qldx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_dglm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_lpdq",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_jpwn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "driver_mobile_no",
+   "fieldtype": "Data",
+   "label": "Driver Mobile No"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-25 17:38:42.297791",
+ "modified": "2025-10-07 15:08:44.296329",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Transportation Sender",

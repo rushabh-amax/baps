@@ -240,8 +240,19 @@ body[frappe-session-status="logged-out"][data-path="login"] .btn.btn-block.btn-d
   font-size: medium;
 }
 
-body[frappe-session-status="logged-out"][data-path="login"] .app-logo {
+
+/* logo or app */
+/* body[frappe-session-status="logged-out"][data-path="login"] .app-logo {
   content: url("/assets/baps/images/photo16.png");
+  display: block !important;
+  margin: 0 auto 1rem auto !important;
+  height: 70px !important;
+  width: auto !important;
+  object-fit: contain !important;
+}  */
+
+body[frappe-session-status="logged-out"][data-path="login"] .app-logo {
+  content: url("https://baps.techcloudamax.ai/files/images__1_-removebg-preview.png");
   display: block !important;
   margin: 0 auto 1rem auto !important;
   height: 70px !important;

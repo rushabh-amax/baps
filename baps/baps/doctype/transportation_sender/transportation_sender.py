@@ -1,4 +1,3 @@
-
 # import frappe
 # import json
 # from frappe import _
@@ -260,88 +259,194 @@ import frappe
 import json
 from frappe import _
 from frappe.model.document import Document
-
+##########################################################################
+##this code is for preventing duplicate the From site and To Site
+##########################################################################
 class TransportationSender(Document):
     def validate(self):
-        # ... your existing validation code ...
-        pass
-
-# @frappe.whitelist()
-# def get_items_for_selection(project, item_type):
-#     if not project or not item_type:
-#         return []
-
-#     items = []
-#     if item_type == 'Block':
-#         parent_doc_names = frappe.get_all(
-#             "Block Selection",
-#             filters={
-#                 "baps_project": project,
-#                 "docstatus": 1
-#             },
-#             pluck="name"
-#         )
-
-#         if not parent_doc_names:
-#             return []
-
-#         block_numbers = frappe.get_all(
-#             "Block Selection Detail",
-#             filters={
-#                 "parent": ["in", parent_doc_names]
-#             },
-#             fields=["block_number"],
-#             pluck="block_number"
-#         )
-#         items = [{"item_id": item} for item in set(block_numbers) if item]
-
-#     return items
-@frappe.whitelist()
-def get_items_for_selection(project, item_type, from_site): # Add from_site as an argument
-    if not project or not item_type or not from_site:
-        return []
-
-    items = []
-    if item_type == 'Block':
-        # Add the new 'trade_partner_site' filter to match the 'from_site'
-        parent_doc_names = frappe.get_all(
-            "Block Selection",
-            filters={
-                "baps_project": project,
-                "trade_partner_site": from_site, # <-- ADD THIS NEW FILTER
-                "docstatus": 0
-            },
-            pluck="name"
-        )
-
-        if not parent_doc_names:
-            return []
-
-        block_numbers = frappe.get_all(
-            "Block Selection Detail",
-            filters={
-                "parent": ["in", parent_doc_names]
-            },
-            fields=["block_number"],
-            pluck="block_number"
-        )
-        items = [{"item_id": item} for item in set(block_numbers) if item]
-
-    return items
-
-@frappe.whitelist()
-def add_blocks_to_table(sender_name, blocks):
-    # ... your existing function to add items ...
-    pass
-
-
-
-
-# this code is for preventing From Site and To Site being the same
-class TransportationSender(Document):
-    def validate(self):
-        # Prevent From Site and To Site being the same
+        self.validate_gate_pass_usage()
+        # this code is for preventing From Site and To Site being the same
+         # Prevent From Site and To Site being the same
         if self.from_site and self.to_site and self.from_site == self.to_site:
             frappe.throw("From Site and To Site cannot be the same.")
+            #end of the code for preventing From Site and To Site being the same
 
-#end of the code for preventing From Site and To Site being the same
+#############################################################################
+# this code is for preventing duplicate Gate Pass No and Gate Pass Book No combination
+#############################################################################
+    def validate_gate_pass_usage(self):
+        # Do nothing if either of the fields is empty
+        if not self.gate_pass_no or not self.gate_pass_bookno:
+            return
+
+        # Check if another document already exists with the same combination
+        existing_sender = frappe.db.exists("Transportation Sender", {
+            "gate_pass_bookno": self.gate_pass_bookno,
+            "gate_pass_no": self.gate_pass_no,
+            # This is important: exclude the current document from the check
+            "name": ["!=", self.name]
+        })
+
+        # If a document was found, stop the save and show an error
+        if existing_sender:
+            frappe.throw(
+                _("The combination of Gate Pass Book '{0}' and Gate Pass No '{1}' has already been used in Sender document {2}.")
+                .format(self.gate_pass_bookno, self.gate_pass_no, existing_sender),
+                title=_("Duplicate Combination")
+            )
+
+        # If a document was found, stop the save and show an error
+        # if existing_sender:
+        #     frappe.throw(
+        #         _("The combination of Gate Pass Book '{0}' and Gate Pass No '{1}' has already been used in Sender document {2}.")
+        #         .format(self.gate_pass_bookno, self.gate_pass_no, existing_sender),
+        #         title=_("Duplicate Combination")
+        #     )
+            
+###############################################################################
+# this code is for fetching items based on project, item type, and from_site
+###############################################################################
+    @frappe.whitelist()
+    def get_items_for_selection(project, item_type, from_site): # Add from_site as an argument
+        if not project or not item_type or not from_site:
+            return []
+
+        items = []
+        if item_type == 'Block':
+            # Add the new 'trade_partner_site' filter to match the 'from_site'
+            parent_doc_names = frappe.get_all(
+                "Block Selection",
+                filters={
+                    "baps_project": project,
+                    "trade_partner_site": from_site, # <-- ADD THIS NEW FILTER
+                    "docstatus": 0
+                },
+                pluck="name"
+            )
+
+            if not parent_doc_names:
+                return []
+
+            block_numbers = frappe.get_all(
+                "Block Selection Detail",
+                filters={
+                    "parent": ["in", parent_doc_names]
+                },
+                fields=["block_number"],
+                pluck="block_number"
+            )
+            items = [{"item_id": item} for item in set(block_numbers) if item]
+
+        return items
+
+    # @frappe.whitelist()
+    # def add_blocks_to_table(sender_name, blocks):
+    #     # ... your existing function to add items ...
+    #     pass
+    
+    # @frappe.whitelist()
+    # @frappe.validate_and_sanitize_search_inputs
+    # def get_available_gate_passes(doctype, txt, searchfield, start, page_len, filters):
+    #     # Step 1: Find all Gate Pass numbers that have ALREADY been used
+    #     used_gate_passes = frappe.get_all(
+    #         "Transportation Sender",
+    #         fields=["gate_pass_no"],
+    #         filters={"docstatus": ["!=", 2]}, # Exclude cancelled documents
+    #         pluck="gate_pass_no"
+    #     )
+
+    #     # Step 2: Define the conditions for the search
+    #     conditions = [
+    #         # Filter by the selected Gate Pass Book, which is passed from the client script
+    #         ["gate_pass_book_no", "=", filters.get("gate_pass_book_no")],
+    #         # Show only passes that are NOT in the 'used_gate_passes' list
+    #         ["name", "not in", used_gate_passes]
+    #     ]
+
+    #     # Step 3: Search the "Gate Pass" DocType with the above conditions
+    #     return frappe.db.get_list(
+    #         "Gate Pass",
+    #         fields=["name", "gate_pass_display_no"], # Show both the unique ID and the display number
+    #         filters=conditions,
+    #         or_filters=[["name", "like", f"%{txt}%"], ["gate_pass_display_no", "like", f"%{txt}%"]],
+    #         start=start,
+    #         page_length=page_len,
+    #         as_list=True,
+    #     )
+
+    # This new function must be OUTSIDE the class, with no indentation.
+# The @frappe.whitelist() allows it to be called from the client script.
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_available_gate_passes(doctype, txt, searchfield, start, page_len, filters):
+	# Step 1: Find all Gate Pass numbers that have ALREADY been used
+	used_gate_passes = frappe.get_all(
+		"Transportation Sender",
+		fields=["gate_pass_no"],
+		filters={"docstatus": ["!=", 2]}, # Exclude cancelled documents
+		pluck="gate_pass_no"
+	)
+
+	# Step 2: Define the conditions for the search
+	conditions = [
+		# Filter by the selected Gate Pass Book, which is passed from the client script
+		["gate_pass_book_no", "=", filters.get("gate_pass_book_no")],
+		# Show only passes that are NOT in the 'used_gate_passes' list
+		["name", "not in", used_gate_passes or ['']] # Use [''] to prevent error on empty list
+	]
+
+	# Step 3: Search the "Gate Pass" DocType with the above conditions
+	return frappe.db.get_list(
+		"Gate Pass",
+		fields=["name", "gate_pass_display_no"], # Show both the unique ID and the display number
+		filters=conditions,
+		or_filters=[["name", "like", f"%{txt}%"], ["gate_pass_display_no", "like", f"%{txt}%"]],
+		start=start,
+		page_length=page_len,
+		as_list=True,
+	)
+
+#################################################################
+#This one will find all the available books.
+#################################################################
+# === ADD THIS NEW FUNCTION AT THE END OF THE FILE ===
+# Make sure it is outside the TransportationSender class, with no indentation
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_available_gate_pass_books(doctype, txt, searchfield, start, page_len, filters):
+    # Step 1: Get a list of all Gate Pass numbers that are already used.
+    used_passes = frappe.get_all(
+        "Transportation Sender",
+        fields=["gate_pass_no"],
+        filters={"docstatus": ["!=", 2]}, # Exclude cancelled documents
+        pluck="gate_pass_no"
+    )
+
+    # Step 2: Find all Gate Pass Books that have at least one pass NOT in the used list.
+    # The distinct=True ensures we get each book name only once.
+    available_books = frappe.get_all(
+        "Gate Pass",
+        fields=["gate_pass_book_no"],
+        filters=[
+            ["name", "not in", used_passes or ['']]
+        ],
+        pluck="gate_pass_book_no",
+        distinct=True
+    )
+
+    # Step 3: Create the final filter for the Gate Pass Book dropdown.
+    # It will only show books that were found in the 'available_books' list.
+    book_filters = [
+        ["name", "in", available_books or ['']],
+        ["name", "like", f"%{txt}%"]
+    ]
+
+    return frappe.db.get_list(
+        "Gate Pass Book",
+        fields=["name"],
+        filters=book_filters,
+        start=start,
+        page_length=page_len,
+        as_list=True,
+    )

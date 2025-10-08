@@ -1,9 +1,9 @@
-# Copyright (c) 2025, Dharmesh Rathod and contributors
+# Copyright (c) 2025, rushabh@gmail.com and contributors
 # For license information, please see license.txt
 
 # import frappe
 from frappe.model.document import Document
 
 
-class TransportMaterialTable(Document):
+class Block(Document):
 	pass

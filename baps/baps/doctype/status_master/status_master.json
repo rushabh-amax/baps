@@ -1,35 +1,28 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "VEHICLE-P.####",
- "creation": "2025-09-09 18:51:22.984814",
+ "autoname": "STATUS-ID-.##",
+ "creation": "2025-10-04 17:19:48.733257",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "vehicle_service_provider",
-  "vehicle_number"
+  "status_name"
  ],
  "fields": [
   {
-   "fieldname": "vehicle_service_provider",
+   "fieldname": "status_name",
    "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Vehicle Service Provider"
-  },
-  {
-   "fieldname": "vehicle_number",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Vehicle Number"
+   "label": "Status name",
+   "unique": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-10 15:51:41.886158",
+ "modified": "2025-10-04 17:27:32.743891",
  "modified_by": "Administrator",
  "module": "Baps",
- "name": "Vehicle Service Provider",
+ "name": "Status Master",
  "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
