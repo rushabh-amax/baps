@@ -28,122 +28,124 @@
  ],
  "fields": [
   {
-    "fieldname": "date",
-    "fieldtype": "Date",
-    "in_list_view": 1,
-    "label": "Date"
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date",
+   "reqd": 1
   },
   {
-    "fieldname": "column_break_praf",
-    "fieldtype": "Column Break"
+   "fieldname": "party",
+   "fieldtype": "Link",
+   "in_filter": 1,
+   "label": "Party",
+   "options": "Party",
+   "reqd": 1
   },
   {
-    "fieldname": "trade_partner",
-    "fieldtype": "Link",
-    "in_filter": 1,
-    "in_list_view": 1,
-    "in_standard_filter": 1,
-    "label": "Trade Partner",
-    "options": "Trade Partner",
-    "reqd": 1
+   "fieldname": "baps_project",
+   "fieldtype": "Link",
+   "in_filter": 1,
+   "in_standard_filter": 1,
+   "label": "Baps Project",
+   "options": "Baps Project",
+   "reqd": 1
   },
   {
-    "fieldname": "column_break_bozc",
-    "fieldtype": "Column Break"
+   "default": "0",
+   "fieldname": "invoice_after_receipt",
+   "fieldtype": "Check",
+   "label": "Invoice to be paid after block receipt"
   },
   {
-    "fieldname": "site",
-    "fieldtype": "Link",
-    "in_filter": 1,
-    "in_standard_filter": 1,
-    "label": "Site",
-    "options": "Site"
+   "fieldname": "selected_by",
+   "fieldtype": "Data",
+   "label": "Selected By",
+   "options": "Employee",
+   "read_only": 1
   },
   {
-    "fieldname": "column_break_mgzk",
-    "fieldtype": "Column Break"
+   "fetch_from": "baps_project.project_name",
+   "fieldname": "project_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Project Name",
+   "read_only": 1
   },
   {
-    "fieldname": "party",
-    "fieldtype": "Link",
-    "in_filter": 1,
-    "label": "Party",
-    "options": "Party",
-    "reqd": 1
+   "fieldname": "material_type",
+   "fieldtype": "Link",
+   "label": "Material Type",
+   "options": "Material Type",
+   "reqd": 1
   },
   {
-    "fieldname": "section_break_pitu",
-    "fieldtype": "Section Break"
+   "fieldname": "last_block_number",
+   "fieldtype": "Button",
+   "label": "Last Block Number"
   },
   {
-    "fieldname": "baps_project",
-    "fieldtype": "Link",
-    "in_filter": 1,
-    "in_standard_filter": 1,
-    "label": "Baps Project",
-    "options": "Baps Project",
-    "reqd": 1
+   "fieldname": "section_break_wdni",
+   "fieldtype": "Section Break"
   },
   {
-    "fetch_from": "baps_project.project_name",
-    "fieldname": "project_name",
-    "fieldtype": "Data",
-    "in_list_view": 1,
-    "label": "Project Name",
-    "read_only": 1
+   "fieldname": "block_selection_details",
+   "fieldtype": "Table",
+   "label": "Block Selection Details",
+   "options": "Block Selection Detail",
+   "reqd": 1
   },
   {
-    "fieldname": "column_break_qkjn",
-    "fieldtype": "Column Break"
+   "fieldname": "column_break_praf",
+   "fieldtype": "Column Break"
   },
   {
-    "fieldname": "material_type",
-    "fieldtype": "Link",
-    "label": "Material Type",
-    "options": "Material Type",
-    "reqd": 1
+   "fieldname": "column_break_bozc",
+   "fieldtype": "Column Break"
   },
   {
-    "fieldname": "selected_by",
-    "fieldtype": "Data",
-    "label": "Selected By",
-    "options": "Employee",
-    "read_only": 1
+   "fieldname": "section_break_rcqf",
+   "fieldtype": "Section Break"
   },
   {
-    "fieldname": "section_break_rcqf",
-    "fieldtype": "Section Break"
+   "fieldname": "section_break_pitu",
+   "fieldtype": "Section Break"
   },
   {
-    "fieldname": "column_break_lhea",
-    "fieldtype": "Column Break"
+   "fieldname": "column_break_qkjn",
+   "fieldtype": "Column Break"
   },
   {
-    "fieldname": "invoice_after_receipt",
-    "fieldtype": "Check",
-    "label": "Invoice to be paid after block receipt"
+   "fieldname": "column_break_lhea",
+   "fieldtype": "Column Break"
   },
   {
-    "fieldname": "last_block_number",
-    "fieldtype": "Button",
-    "label": "Last Block Number"
+   "fieldname": "site",
+   "fieldtype": "Link",
+   "in_filter": 1,
+   "in_standard_filter": 1,
+   "label": "Site",
+   "options": "Site"
   },
   {
-    "fieldname": "section_break_wdni",
-    "fieldtype": "Section Break"
+   "fieldname": "column_break_mgzk",
+   "fieldtype": "Column Break"
   },
   {
-    "fieldname": "block_selection_details",
-    "fieldtype": "Table",
-    "label": "Block Selection Details",
-    "options": "Block Selection Detail",
-    "reqd": 1
+   "fieldname": "trade_partner",
+   "fieldtype": "Link",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Trade Partner",
+   "options": "Trade Partner",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-07 21:21:46.762419",
+ "modified": "2025-10-07 16:35:49.116794",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Block Selection",
@@ -164,7 +166,6 @@
   }
  ],
  "row_format": "Dynamic",
- "rows_threshold_for_grid_search": 20,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

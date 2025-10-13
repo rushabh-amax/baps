@@ -7,6 +7,9 @@ app_description = "baps theme"
 app_email = "rushabh.amax@gmail.com"
 app_license = "mit"
 
+# ================================================
+# css & js
+# ================================================
 
 app_include_css = ["theme.bundle.css" , "assets/baps/css/css-rtl/translatons.ar_eg.css"]
 app_include_js = ["theme.bundle.js"]
@@ -26,13 +29,15 @@ web_include_js = [
 home_page = "/modules"
 
 
-
+# ================================================
 # chnages in hooks.py via baps team
+# ================================================
 permission_query_conditions = {
-	"Size List": "baps.baps.doctype.size_list.size_list.get_size_list_permission_query",
+    "Size List": "baps.baps.doctype.size_list.size_list.get_permission_query_conditions"
 }
+
 has_permission = {
-	"Size List": "baps.baps.doctype.size_list.size_list.has_size_list_permission",
+    "Size List": "baps.baps.doctype.size_list.size_list.has_permission"
 }
 
 
@@ -275,6 +280,13 @@ has_permission = {
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
+
+
+
+
+# ================================================
+# setter and frappe file override
+# ================================================
 
 override_whitelisted_methods = {
     "frappe.core.doctype.user.user.switch_theme": "baps.override.switch_theme"

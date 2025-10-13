@@ -8,7 +8,7 @@
  "field_order": [
   "site_name",
   "site_type",
-  "column_break_gajj",
+  "column_break_qvjy",
   "region",
   "trade_partner"
  ],
@@ -16,6 +16,7 @@
   {
    "fieldname": "site_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Site Name",
    "unique": 1
   },
@@ -29,25 +30,27 @@
   {
    "fieldname": "site_type",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Site Type",
    "options": "Project Site\nTrade Partner Site\nWorking Site"
   },
   {
-   "depends_on": "eval:doc.site_type==\"Trade Partner Site\"",
+   "depends_on": "eval: doc.site_type ==\"Trade Partner Site\"",
    "fieldname": "trade_partner",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Trade Partner",
    "options": "Trade Partner"
   },
   {
-   "fieldname": "column_break_gajj",
+   "fieldname": "column_break_qvjy",
    "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-07 15:59:11.965220",
+ "modified": "2025-10-08 11:52:24.959185",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Site",
@@ -68,7 +71,6 @@
   }
  ],
  "row_format": "Dynamic",
- "rows_threshold_for_grid_search": 20,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

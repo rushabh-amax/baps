@@ -232,7 +232,7 @@
 #         })
 #         block_doc.insert(ignore_permissions=True)
 
-# Copyright (c) 2025, Ayush and contributors
+# Copyright (c) 2025, Shruti and contributors
 # For license information, please see license.txt
 
 import frappe
@@ -333,19 +333,17 @@ class BlockSelection(Document):
 @frappe.whitelist()
 def get_last_block_number(trade_partner, project_name, current_docname=None):
     """
-    Get the last generated block number for given Trade Partner and Project Name
+    Get the last generated block number for a Trade Partner + Project
     """
     filters = {
         "trade_partner": trade_partner,
         "project_name": project_name,
-        "docstatus": ["!=", 2]  # Exclude cancelled documents
+        "docstatus": ["!=", 2]  # exclude cancelled
     }
-    
-    # Exclude current document if it exists
+
     if current_docname:
         filters["name"] = ["!=", current_docname]
-    
-    # Get last block number ordered by creation date
+
     last_block = frappe.get_all(
         "Block",
         filters=filters,
@@ -353,7 +351,7 @@ def get_last_block_number(trade_partner, project_name, current_docname=None):
         order_by="creation desc",
         limit_page_length=1
     )
-    
+
     if last_block:
         return last_block[0].block_number
     return None

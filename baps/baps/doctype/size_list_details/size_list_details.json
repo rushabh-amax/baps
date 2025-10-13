@@ -10,6 +10,7 @@
   "stone_code",
   "stone_code_verified",
   "range",
+  "range_verified",
   "column_break_kdid",
   "l1",
   "l1_verified",
@@ -25,7 +26,8 @@
   "h2",
   "h2_verified",
   "volume",
-  "verification_status"
+  "duplicate_flag",
+  "show_duplicates"
  ],
  "fields": [
   {
@@ -157,6 +159,13 @@
    "read_only_depends_on": "eval:doc.verification_status==\"Verified\"\r\n"
   },
   {
+   "default": "0",
+   "fieldname": "range_verified",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Range "
+  },
+  {
    "fieldname": "column_break_kdid",
    "fieldtype": "Column Break"
   },
@@ -165,20 +174,25 @@
    "fieldtype": "Column Break"
   },
   {
-   "default": "Pending",
-   "fieldname": "verification_status",
-   "fieldtype": "Select",
-   "hidden": 1,
-   "label": "Verification Status",
-   "options": "Pending\nVerified\nIncorrect",
+   "default": "0",
+   "depends_on": "eval:(doc.duplicate_flag == 1) && (['Under Rechange'].includes(parent.workflow_state)) && (frappe.user_roles.includes('Size List Data Entry Operator') || frappe.user_roles.includes('Size List Data Checker') || frappe.user_roles.includes('Administrator'))",
+   "fieldname": "duplicate_flag",
+   "fieldtype": "Check",
+   "label": "Duplicate Flag",
    "read_only": 1
+  },
+  {
+   "depends_on": "eval:(frappe.user_roles.includes('Size List Data Entry Operator') && parent.workflow_state === 'Under Rechange') || frappe.user_roles.includes('Administrator')",
+   "fieldname": "show_duplicates",
+   "fieldtype": "Button",
+   "label": "Show Duplicates"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-10-04 16:48:52.441184",
+ "modified": "2025-10-13 10:59:12.976229",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Size List Details",

@@ -77,7 +77,7 @@ def get_available_size_lists_for_creation(doctype, txt, searchfield, start, page
         
         # Build filters for available Size Lists
         size_list_filters = {
-            "workflow_state": "verified"  # Only include verified/published Size Lists
+            "workflow_state": ["in", ["Verified", "Published"]]  # Only include verified/published Size Lists
         }
         
         # Exclude already used Size Lists
@@ -91,7 +91,7 @@ def get_available_size_lists_for_creation(doctype, txt, searchfield, start, page
         # Get available Size Lists
         available_size_lists = frappe.get_all(
             "Size List",
-            # fields=["name", "baps_project", "main_part", "sub_part"],
+            fields=["name", "baps_project", "main_part", "sub_part"],
             filters=size_list_filters,
             order_by="creation desc",
             limit_start=start,
@@ -224,71 +224,6 @@ def expand_range(rng):
     return result
 
 
-@frappe.whitelist()
-# def get_published_stones_from_generation(generation_name):
-#     """
-#     Get published stones from Size List Generation document.
-#     Only returns stones that have been published and are available for Size List Creation.
-#     """
-#     try:
-#         # Check if the Size List Generation document exists
-#         if not frappe.db.exists("Size List Generation", generation_name):
-#             return {
-#                 "success": False,
-#                 "message": f"Size List Generation document '{generation_name}' not found"
-#             }
-        
-#         # Get the Size List Generation document
-#         generation_doc = frappe.get_doc("Size List Generation", generation_name)
-        
-#         # Check if document has any stone details
-#         if not generation_doc.stone_details:
-#             return {
-#                 "success": False,
-#                 "message": "No stone details found in the Generation document"
-#             }
-        
-#         # Filter published stones
-#         published_stones = []
-#         total_stones = len(generation_doc.stone_details)
-        
-#         for stone in generation_doc.stone_details:
-#             # Check if stone is published - only published stones should be available for Size List Creation
-#             published_value = getattr(stone, 'published', 0) if hasattr(stone, 'published') else 0
-            
-#             if published_value == 1:  # Only include published stones
-#                 # Expand range for individual stone records if needed
-#                 expanded_records = expand_stone_for_creation(stone)
-#                 published_stones.extend(expanded_records)
-        
-#         # Prepare response with generation data and published stones
-#         generation_dict = generation_doc.as_dict()
-#         generation_dict["stone_details"] = published_stones
-        
-#         return {
-#             "success": True,
-#             "message": f"Found {len(published_stones)} published stones from {total_stones} total stones in Generation",
-#             "data": generation_dict,
-#             "generation_stats": {
-#                 "total_stones": total_stones,
-#                 "published_stones": len(published_stones),
-#                 "unpublished_stones": total_stones - len(published_stones)
-#             }
-#         }
-        
-#     except frappe.DoesNotExistError:
-#         return {
-#             "success": False,
-#             "message": f"Size List Generation {generation_name} not found"
-#         }
-#     except Exception as e:
-#         frappe.log_error(f"Error getting published stones from {generation_name}: {str(e)}")
-#         return {
-#             "success": False,
-#             "message": f"Error getting published stones: {str(e)}"
-#         }
-
-
 def expand_stone_for_creation(generation_stone):
     """
     Expand a stone from Size List Generation for Size List Creation.
@@ -391,8 +326,6 @@ def get_project_statistics(project):
 @frappe.whitelist()
 def get_all_verified_sources():
     """
-    Get all Size List Creation records that have a form_number (source Size List).
-    Returns list with project and part information.
     """
     try:
         records = frappe.get_all(
@@ -419,16 +352,6 @@ def get_all_verified_sources():
 
 @frappe.whitelist()
 def get_records_by_filter(filter_type, filter_value):
-    """
-    Get all Size List Creation records filtered by project, main part, sub part, or material type.
-    
-    Args:
-        filter_type: 'project', 'main_part', 'sub_part', or 'material_type'
-        filter_value: The value to filter by
-    
-    Returns:
-        List of matching records with statistics
-    """
     try:
         filter_map = {
             'project': 'baps_project',
@@ -600,85 +523,6 @@ def get_size_list_usage_report():
             "summary": {"total_published": 0, "available_count": 0, "used_count": 0}
         }
 
-# @frappe.whitelist()
-# def get_unique_size_lists(baps_project=None, main_part=None, sub_part=None, stone_name=None):
-#     conditions = []
-#     values = {}
-
-#     if baps_project:
-#         conditions.append("parent_table.baps_project = %(baps_project)s")
-#         values["baps_project"] = baps_project
-#     if main_part:
-#         conditions.append("parent_table.main_part = %(main_part)s")
-#         values["main_part"] = main_part
-#     if sub_part:
-#         conditions.append("parent_table.sub_part = %(sub_part)s")
-#         values["sub_part"] = sub_part
-#     if stone_name:
-#         conditions.append("child_table.stone_name = %(stone_name)s")
-#         values["stone_name"] = stone_name
-
-#     where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
-
-#     query = f"""
-#         SELECT DISTINCT
-#             child_table.stone_code,
-#             child_table.stone_name,
-#             child_table.l1,
-#             child_table.l2,
-#             child_table.b1,
-#             child_table.b2,
-#             child_table.h1,
-#             child_table.h2,
-#             child_table.volume
-#         FROM `tabSize List Creation Item` AS child_table
-#         JOIN `tabSize List Creation` AS parent_table
-#             ON child_table.parent = parent_table.name
-#         {where_clause}
-#         ORDER BY child_table.stone_code
-#     """
-
-#     return frappe.db.sql(query, values, as_dict=True)
-
-
-# @frappe.whitelist()
-# def get_records_by_stone_name(stone_name):
-#     """Get Size List Creation records that contain a specific stone name in their child table"""
-#     if not stone_name:
-#         return []
-    
-#     query = """
-#         SELECT DISTINCT parent.name
-#         FROM `tabSize List Creation` parent
-#         INNER JOIN `tabSize List Creation Item` child 
-#         ON child.parent = parent.name
-#         WHERE child.stone_name = %s
-#         AND parent.docstatus != 2
-#         ORDER BY parent.name
-#     """
-    
-#     results = frappe.db.sql(query, (stone_name,), as_dict=True)
-#     return results
-
-
-# @frappe.whitelist()
-# def get_filter_options():
-#     def get_unique(table, fieldname):
-#         return [r[0] for r in frappe.db.sql(f"""
-#             SELECT DISTINCT `{fieldname}`
-#             FROM `{table}`
-#             WHERE `{fieldname}` IS NOT NULL AND `{fieldname}` != ''
-#             ORDER BY `{fieldname}`
-#         """)]
-
-#     return {
-#         "baps_projects": get_unique("tabSize List Creation", "baps_project"),
-#         "main_parts": get_unique("tabSize List Creation", "main_part"),
-#         "sub_parts": get_unique("tabSize List Creation", "sub_part"),
-#         "stone_names": get_unique("tabSize List Creation Item", "stone_name")
-#     }
-
-
 @frappe.whitelist()
 def get_unique_size_lists(baps_project=None, main_part=None, sub_part=None, stone_name=None):
     filters = []
@@ -734,3 +578,63 @@ def get_filter_options():
         "sub_parts": [sub_part['name'] for sub_part in sub_parts],
         "stone_names": [stone_name['stone_name'] for stone_name in stone_names]
     }
+
+
+
+@frappe.whitelist()
+def auto_create_from_verified_size_list(size_list_name):
+    """
+    Automatically create a Size List Creation record from a verified Size List.
+    """
+    size_list = frappe.get_doc("Size List", size_list_name)
+    
+    # Safety check
+    if size_list.workflow_state != "Verified":
+        return {"success": False, "message": "Only verified Size Lists can be converted."}
+
+    # Avoid duplicates
+    existing = frappe.db.exists("Size List Creation", {"form_number": size_list_name})
+    if existing:
+        return {"success": False, "message": f"Size List Creation already exists: {existing}"}
+
+    # Create the new Size List Creation document
+    creation = frappe.new_doc("Size List Creation")
+    creation.form_number = size_list.name
+    creation.baps_project = getattr(size_list, "baps_project", "")
+    creation.main_part = getattr(size_list, "main_part", "")
+    creation.sub_part = getattr(size_list, "sub_part", "")
+    creation.stone_type = getattr(size_list, "stone_type", "")
+    creation.prep_date = frappe.utils.nowdate()
+
+    # Expand stone ranges
+    from baps.baps.doctype.size_list_creation.size_list_creation import expand_range
+    seen = set()
+
+    for d in size_list.stone_details:
+        if not d.range or not d.stone_code:
+            continue
+
+        expanded = expand_range(d.range)
+        prefix = ''.join([c for c in d.stone_code if not c.isdigit()])
+        for num in expanded:
+            code = f"{prefix}{str(num).zfill(3)}"
+            is_duplicate = code in seen
+            seen.add(code)
+
+            creation.append("stone_details", {
+                "stone_code": code,
+                "stone_name": d.stone_name,
+                "l1": d.l1,
+                "l2": d.l2,
+                "b1": d.b1,
+                "b2": d.b2,
+                "h1": d.h1,
+                "h2": d.h2,
+                "volume": d.volume,
+                "duplicate_flag": 1 if is_duplicate else 0
+            })
+
+    creation.insert(ignore_permissions=True)
+    frappe.db.commit()
+
+    return {"success": True, "message": f"Created Size List Creation {creation.name} from {size_list_name}"}

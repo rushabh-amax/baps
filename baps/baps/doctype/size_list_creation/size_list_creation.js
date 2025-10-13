@@ -13,6 +13,9 @@ frappe.ui.form.on('Size List Creation', {
     
 
     refresh: function(frm) {
+        // Setup role-based permissions
+        setup_role_based_permissions(frm);
+        
         // Hide the document status indicator that shows "Draft"
         setTimeout(() => {
             // Hide the status indicator in the form header
@@ -92,11 +95,11 @@ function auto_fill_fields_from_size_list(frm, size_list_name) {
                 frm.set_value('cutting_region', size_list_doc.cutting_region);
                 frm.set_value('total_volume', size_list_doc.total_volume);
                 
-                // Auto-fill footer fields (Process Required checkboxes)
+                // Auto-fill Process Required fields (checkboxes)
                 frm.set_value('polishing', size_list_doc.polishing || 0);
                 frm.set_value('dry_fitting', size_list_doc.dry_fitting || 0);
                 frm.set_value('carving', size_list_doc.carving || 0);
-                frm.set_value('chemicaling', size_list_doc.chemical || 0); // Note: field name might be different
+                frm.set_value('chemicaling', size_list_doc.chemical || 0);
                 
                 // Auto-fill stone details from Size List
                 if (size_list_doc.stone_details && size_list_doc.stone_details.length > 0) {
@@ -138,17 +141,66 @@ function auto_fill_fields_from_size_list(frm, size_list_name) {
         }
     });
 }
+// Setup role-based permissions
+function setup_role_based_permissions(frm) {
+    const is_project_manager = frappe.user_roles.includes('Project Manager');
+    
+    if (is_project_manager) {
+        // Project Manager: Make ALL fields read-only (view-only access)
+        make_all_fields_read_only_for_project_manager(frm);
+    }
+}
+
+// Make all fields read-only for Project Manager
+function make_all_fields_read_only_for_project_manager(frm) {
+    // List of all fields to make read-only for Project Manager
+    const all_fields = [
+        'form_number', 'baps_project', 'project_name', 'prep_date',
+        'stone_type', 'main_part', 'sub_part', 'cutting_region',
+        'total_volume', 'polishing', 'dry_fitting', 
+        'carving', 'chemicaling', 'status'
+    ];
+    
+    all_fields.forEach(field => {
+        if (frm.fields_dict[field]) {
+            frm.set_df_property(field, 'read_only', 1);
+        }
+    });
+    
+    // Make child table completely read-only
+    if (frm.fields_dict.stone_details && frm.fields_dict.stone_details.grid) {
+        frm.fields_dict.stone_details.grid.cannot_add_rows = true;
+        frm.fields_dict.stone_details.grid.only_sortable();
+        
+        // Disable all editing in the grid
+        setTimeout(() => {
+            frm.fields_dict.stone_details.grid.wrapper.find('input, select, textarea, button').prop('disabled', true);
+            frm.fields_dict.stone_details.grid.wrapper.find('.grid-row').addClass('read-only-grid');
+        }, 200);
+        
+        frm.refresh_field('stone_details');
+    }
+    
+    frappe.show_alert({
+        message: "View-only mode: Document is read-only for Project Manager",
+        indicator: 'blue'
+    });
+}
+
 // Helper function to make all fields read-only (except status)
 function make_fields_read_only(frm) {
     // List of fields to make read-only
     const fields_to_lock = [
         'form_number', 'baps_project', 'project_name', 'prep_date',
         'stone_type', 'main_part', 'sub_part', 'cutting_region',
-        'total_volume', 'polishing', 'dry_fitting', 'carving', 'chemicaling'
+        'total_volume', 'polishing', 'dry_fitting', 
+        'carving', 'chemicaling'
     ];
     
     fields_to_lock.forEach(field => {
-        frm.set_df_property(field, 'read_only', 1);
+        if (frm.fields_dict[field]) {
+            frm.set_df_property(field, 'read_only', 1);
+        }
     });
     
     // Make child table read-only
@@ -157,21 +209,33 @@ function make_fields_read_only(frm) {
         frm.fields_dict.stone_details.grid.only_sortable();
         frm.refresh_field('stone_details');
     }
-    
-    // Removed duplicate alert message - auto_fill_fields_from_size_list already shows success
 }
 
 // Helper function to make fields editable again
 function make_fields_editable(frm) {
+    const is_project_manager = frappe.user_roles.includes('Project Manager');
+    
+    // Project Managers should never have edit access
+    if (is_project_manager) {
+        frappe.show_alert({
+            message: "Project Managers have view-only access to Size List Creation",
+            indicator: 'red'
+        });
+        return;
+    }
+    
     // List of fields to make editable (same as the read-only list)
     const fields_to_unlock = [
         'form_number', 'baps_project', 'project_name', 'prep_date',
         'stone_type', 'main_part', 'sub_part', 'cutting_region',
-        'total_volume', 'polishing', 'dry_fitting', 'carving', 'chemicaling'
+        'total_volume', 'polishing', 'dry_fitting', 
+        'carving', 'chemicaling'
     ];
     
     fields_to_unlock.forEach(field => {
-        frm.set_df_property(field, 'read_only', 0);
+        if (frm.fields_dict[field]) {
+            frm.set_df_property(field, 'read_only', 0);
+        }
     });
     
     // Make child table editable again
@@ -184,4 +248,3 @@ function make_fields_editable(frm) {
     frm.clear_table("stone_details");
     frm.refresh_field("stone_details");
 }
-

@@ -1,4 +1,18 @@
 //==================================================
+// 0. Prevent auto-add row on load
+//==================================================
+frappe.ui.form.on('Block Selection', {
+    onload: function(frm) {
+        if (frm.doc.block_selection_details && frm.doc.block_selection_details.length === 1) {
+            if (!frm.doc.block_selection_details[0].block_number) {
+                frm.clear_table("block_selection_details");
+                // Frappe auto-refreshes; no refresh_field needed
+            }
+        }
+    }
+});
+
+//==================================================
 // 1. Auto-fill fields from Baps Project
 //==================================================
 frappe.ui.form.on("Block Selection", {
@@ -12,10 +26,7 @@ frappe.ui.form.on("Block Selection", {
                 },
                 callback: function(r) {
                     if (r.message) {
-                        // frm.set_value('region', r.message.region);
-                        // frm.set_value('site', r.message.site);
-                        // frm.set_value('main_part', r.message.main_part);
-                        // frm.set_value('sub_part', r.message.sub_part);
+                        // Example: frm.set_value('region', r.message.region);
                     }
                 }
             });
@@ -24,30 +35,46 @@ frappe.ui.form.on("Block Selection", {
 });
 
 //==================================================
-// 2. Auto-calculate Volume (Feet + Inches → Cubic Feet)
+// 2. Volume calculation (DEBOUNCED)
 //==================================================
+const volumeDebounceTimers = {};
+
 frappe.ui.form.on('Block Selection Detail', {
-    l1: calculate_volume,
-    l2: calculate_volume,
-    b1: calculate_volume,
-    b2: calculate_volume,
-    h1: calculate_volume,
-    h2: calculate_volume,
-    block_selection_details_remove: function(frm) {
-        // Optional: trigger recalc of parent total if you add one later
-    }
+    l1: function(frm, cdt, cdn) { debounceVolumeCalc(frm, cdt, cdn); },
+    l2: function(frm, cdt, cdn) { debounceVolumeCalc(frm, cdt, cdn); },
+    b1: function(frm, cdt, cdn) { debounceVolumeCalc(frm, cdt, cdn); },
+    b2: function(frm, cdt, cdn) { debounceVolumeCalc(frm, cdt, cdn); },
+    h1: function(frm, cdt, cdn) { debounceVolumeCalc(frm, cdt, cdn); },
+    h2: function(frm, cdt, cdn) { debounceVolumeCalc(frm, cdt, cdn); },
 });
+
+function debounceVolumeCalc(frm, cdt, cdn) {
+    const key = cdt + '_' + cdn;
+    if (volumeDebounceTimers[key]) {
+        clearTimeout(volumeDebounceTimers[key]);
+    }
+    volumeDebounceTimers[key] = setTimeout(() => {
+        calculate_volume(frm, cdt, cdn);
+        delete volumeDebounceTimers[key];
+    }, 150);
+}
 
 function calculate_volume(frm, cdt, cdn) {
     let row = locals[cdt][cdn];
 
-    // Validate inches
-    if ((row.l2 || 0) > 12 || (row.b2 || 0) > 12 || (row.h2 || 0) > 12) {
-        frappe.msgprint(__("Inches (l2, b2, h2) must be less than 12"));
-        return;
+    let inch_fields = ['l2', 'b2', 'h2'];
+    for (let f of inch_fields) {
+        if ((row[f] || 0) > 12) {
+            frappe.msgprint({
+                title: __('Invalid Entry'),
+                message: __(f.toUpperCase() + ' must be less than or equal to 12'),
+                indicator: 'red'
+            });
+            frappe.model.set_value(cdt, cdn, f, 0);
+            return;
+        }
     }
 
-    // Convert feet + inches → total feet
     let L = (flt(row.l1) || 0) + ((flt(row.l2) || 0) / 12.0);
     let B = (flt(row.b1) || 0) + ((flt(row.b2) || 0) / 12.0);
     let H = (flt(row.h1) || 0) + ((flt(row.h2) || 0) / 12.0);
@@ -58,32 +85,17 @@ function calculate_volume(frm, cdt, cdn) {
     }
 
     frappe.model.set_value(cdt, cdn, 'volume', vol);
-    frm.refresh_field('block_selection_details');
 }
 
 //==================================================
-// 3. Auto-set Selected By (User)
+// 3. Block Number Logic
 //==================================================
-frappe.ui.form.on("Block Selection", {
-    onload: function(frm) {
-        if (!frm.doc.selected_by) {
-            frm.set_value("selected_by", frappe.session.user);
-        }
-    }
-});
-
-//==================================================
-// 4. BLOCK NUMBER AUTO GENERATION — YOUR LOGIC
-//==================================================
-
-// ► Generate Project Code: First 2 initials (first letter of each word, or from first word)
 function get_project_code(project_name) {
     if (!project_name) return "XX";
     let text = project_name.trim();
     let initials = "";
     let words = text.split(/\s+/);
 
-    // Take first letter of each word until we have 2 letters
     for (let word of words) {
         if (initials.length >= 2) break;
         if (word.length > 0) {
@@ -91,14 +103,12 @@ function get_project_code(project_name) {
         }
     }
 
-    // If still less than 2, take from first word’s letters
     if (initials.length < 2 && words[0]) {
         for (let i = 0; i < words[0].length && initials.length < 2; i++) {
             initials += words[0][i].toUpperCase();
         }
     }
 
-    // Pad with 'X' if still not 2
     while (initials.length < 2) {
         initials += "X";
     }
@@ -106,14 +116,12 @@ function get_project_code(project_name) {
     return initials.substring(0, 2);
 }
 
-// ► Generate Trade Partner Code: First 3 initials (first letter of each word)
 function get_partner_code(trade_partner) {
     if (!trade_partner) return "XXX";
     let text = trade_partner.trim();
     let initials = "";
     let words = text.split(/\s+/);
 
-    // Take first letter of each word until we have 3 letters
     for (let word of words) {
         if (initials.length >= 3) break;
         if (word.length > 0) {
@@ -121,14 +129,12 @@ function get_partner_code(trade_partner) {
         }
     }
 
-    // If still less than 3, take from first word’s letters
     if (initials.length < 3 && words[0]) {
         for (let i = 0; i < words[0].length && initials.length < 3; i++) {
             initials += words[0][i].toUpperCase();
         }
     }
 
-    // Pad with 'X' if still not 3
     while (initials.length < 3) {
         initials += "X";
     }
@@ -136,7 +142,6 @@ function get_partner_code(trade_partner) {
     return initials.substring(0, 3);
 }
 
-// ► Generate block numbers for all child rows based on current project + trade partner
 frappe.ui.form.on("Block Selection", {
     project_name: function(frm) {
         frm.trigger("update_block_numbers");
@@ -147,333 +152,172 @@ frappe.ui.form.on("Block Selection", {
     update_block_numbers: function(frm) {
         if (!frm.doc.project_name || !frm.doc.trade_partner) return;
 
-        let project = get_project_code(frm.doc.project_name);
-        let partner = get_partner_code(frm.doc.trade_partner);
-        let prefix = project + partner;
+        let prefix = get_project_code(frm.doc.project_name) + get_partner_code(frm.doc.trade_partner);
+        let max_num = 0;
 
-        let max_seq = 0;
-
-        // Find highest existing sequence number for this prefix
         (frm.doc.block_selection_details || []).forEach(row => {
             if (row.block_number && row.block_number.startsWith(prefix)) {
-                let numPart = row.block_number.slice(-4);
-                let num = parseInt(numPart);
-                if (!isNaN(num) && num > max_seq) {
-                    max_seq = num;
-                }
+                let numPart = row.block_number.replace(prefix, "");
+                let n = parseInt(numPart);
+                if (!isNaN(n) && n > max_num) max_num = n;
             }
         });
 
-        // Assign new block numbers only to rows that don’t match current prefix
-        (frm.doc.block_selection_details || []).forEach(row => {
-            let local_row = locals[row.doctype][row.name];
-
-            // Skip if already has correct prefix
-            if (local_row.block_number && local_row.block_number.startsWith(prefix)) {
-                return;
-            }
-
-            max_seq += 1;
-            let new_num = String(max_seq).padStart(4, "0");
-            frappe.model.set_value(row.doctype, row.name, "block_number", prefix + new_num);
-        });
-
-        frm.refresh_field('block_selection_details');
+        frm.last_block_no = max_num;
     }
 });
 
-// ► Trigger on row add (if project & partner already set)
-frappe.ui.form.on("Block Selection Detail", {
+//==================================================
+// 4. Auto-number new child rows manually
+//==================================================
+frappe.ui.form.on('Block Selection Detail', {
     block_selection_details_add: function(frm, cdt, cdn) {
-        setTimeout(() => {
-            if (frm.doc.project_name && frm.doc.trade_partner) {
-                frm.trigger("update_block_numbers");
-            }
-        }, 500);
+        if (!frm.doc.project_name || !frm.doc.trade_partner) return;
+
+        let prefix = get_project_code(frm.doc.project_name) + get_partner_code(frm.doc.trade_partner);
+        let next_num = (frm.last_block_no || 0) + 1;
+
+        frappe.model.set_value(cdt, cdn, 'block_number', prefix + String(next_num).padStart(4, "0"));
+        frm.last_block_no = next_num;
+        // NO refresh_field — Frappe updates UI automatically
     }
 });
 
 //==================================================
-// 5. Track Last Block Number in Parent Field
-//==================================================
-// frappe.ui.form.on("Block Selection Detail", {
-//     block_selection_details_add: function(frm) {
-//         setTimeout(() => frm.trigger("update_last_block_number"), 500);
-//     },
-//     block_selection_details_remove: function(frm) {
-//         frm.trigger("update_last_block_number");
-//     }
-// });
-
-// frappe.ui.form.on("Block Selection", {
-//     update_last_block_number: function(frm) {
-//         let last_block = '';
-//         let rows = [];
-
-//         $.each(frm.doc.block_selection_details || [], function(i, row) {
-//             let local_row = locals[row.doctype][row.name];
-//             if (local_row && local_row.block_number) {
-//                 rows.push(local_row);
-//             }
-//         });
-
-//         if (rows.length > 0) {
-//             last_block = rows[rows.length - 1].block_number;
-//         }
-
-//         frm.set_value('last_block_number', last_block);
-//         frm.refresh_field('last_block_number');
-//     }
-// });
-
-//==================================================
-// 6. Initial Trigger on Form Load/Refresh
-//==================================================
-frappe.ui.form.on("Block Selection", {
-    refresh: function(frm) {
-        frm.trigger("update_block_numbers");
-        frm.trigger("update_last_block_number");
-    }
-});
-
-// frappe.ui.form.on("Block Selection", {
-//     last_block_number: function (frm) {
-//         if (frm.doc.block_selection_details && frm.doc.block_selection_details.length > 0) {
-//             // get last row from child table
-//             let last_row = frm.doc.block_selection_details[frm.doc.block_selection_details.length - 1];
-            
-//             // frappe.msgprint({
-//             //     title: __("Last Block Number"),
-//             //     indicator: "blue",
-//             //     message: __("The last Block Number is: <b>{0}</b>", [last_row.block_number || "Not Set"])
-//             // });
-
-//             // if you also want to update the hidden field
-//             frm.set_value("last_blocknumber", last_row.block_number);
-//         } else {
-//             frappe.msgprint({
-//                 title: __("No Blocks Found"),
-//                 indicator: "red",
-//                 message: __("No Block Selection Detail has been added yet.")
-//             });
-//         }
-//     }
-// });
-
-
-//==================================================
-// 7. Field Permissions - TEMPORARILY COMMENTED OUT FOR DEBUGGING
-//==================================================
-/*
-frappe.ui.form.on("Block Selection", {
-    refresh(frm) {
-        // run on load/refresh
-        frm.trigger("set_field_permissions");
-    },
-
-    after_save(frm) {
-        // after saving, lock fields
-        frm.trigger("set_field_permissions");
-    },
-
-    set_field_permissions(frm) {
-        // check if there is at least 1 child row
-        if (frm.doc.block_selection_details && frm.doc.block_selection_details.length > 0) {
-            // Fields that remain editable
-            let allowed_fields = ["trade_partner_site", "party", "date"];
-
-            // Loop through all fields
-            frm.fields_dict && Object.keys(frm.fields_dict).forEach(fieldname => {
-                if (!allowed_fields.includes(fieldname)) {
-                    frm.set_df_property(fieldname, "read_only", 1);
-                }
-            });
-
-            // Special case for "party"
-            if (frm.doc.status === "Paid") {
-                frm.set_df_property("party", "read_only", 1);
-            } else {
-                frm.set_df_property("party", "read_only", 0);
-            }
-        }
-    }
-});
-*/
-
-
-//==================================================
-// 8. Invoice After Receipt
-//==================================================
-frappe.ui.form.on("Block Selection", {
-    invoice_after_receipt: function(frm) {
-        if (frm.doc.invoice_after_receipt) {
-            frappe.msgprint({
-                title: __("Notice"),
-                message: __("This would be handled after payment method."),
-                indicator: "orange"
-            });
-        }
-    }
-});
-
-
-
-//==================================================
-// 9. Header fields will lock after saving the form
-//==================================================
-// TEMPORARILY COMMENTED OUT TO DEBUG FIELD VISIBILITY ISSUES
-/*
-frappe.ui.form.on('Block Selection', {
-    refresh: function(frm) {
-        toggle_header_fields(frm);
-    },
-    'block_selection_details_add': function(frm) {
-        toggle_header_fields(frm);
-    },
-    'block_selection_details_remove': function(frm) {
-        toggle_header_fields(frm);
-    }
-});
-
-function toggle_header_fields(frm) {
-    const has_rows = frm.doc.block_selection_details && frm.doc.block_selection_details.length > 0;
-
-    const header_fields = [
-        'date',
-        'baps_project',
-        'trade_partner',
-        'material_type',
-        // 'trade_partner_site',
-        'party',
-        'invoice_to_be_paid_after_block_receipt',
-        'selected_by'
-    ];
-
-    header_fields.forEach(fieldname => {
-        if (frm.fields_dict[fieldname]) {
-            frm.set_df_property(fieldname, 'read_only', has_rows);
-        }
-    });
-
-    // Optional: Show message
-    // if (has_rows) {
-    //     frappe.msgprint({
-    //         message: __('Header fields locked — data exists in Block Selection Details.'),
-    //         indicator: 'orange'
-    //     });
-    // }
-}
-*/
-
-
-//==================================================
-// 10. Sites filters code
+// 5. Site Filter
 //==================================================
 frappe.ui.form.on("Block Selection", {
     trade_partner: function(frm) {
-        // Clear the site field whenever trade_partner changes
         frm.set_value("site", "");
-
-        // Also clear the query cache for site field
         frm.fields_dict.site.get_query = null;
-
-        // Set the new filter for site field
         if (frm.doc.trade_partner) {
             frm.set_query("site", function() {
-                return {
-                    filters: {
-                        trade_partner: frm.doc.trade_partner
-                    }
-                };
+                return { filters: { trade_partner: frm.doc.trade_partner } };
             });
         }
     }
 });
 
-
-
 //==================================================
-// 11.Last block number popup validation
+// 6. Last block number popup
 //==================================================
 frappe.ui.form.on('Block Selection', {
     last_block_number: function(frm) {
-        const trade_partner = frm.doc.trade_partner;
-        const project_name = frm.doc.project_name;
-
-        if (!trade_partner || !project_name) {
-            frappe.msgprint({
-                title: __('Missing Information'),
-                message: __('Please fill both Trade Partner and Project Name before proceeding.'),
-                indicator: 'orange'
-            });
+        if (!frm.doc.project_name || !frm.doc.trade_partner) {
+            frappe.msgprint({ title: __('Missing Info'), message: __('Fill Trade Partner & Project first'), indicator: 'orange' });
             return;
         }
 
         frappe.call({
             method: 'baps.baps.doctype.block_selection.block_selection.get_last_block_number',
             args: {
-                trade_partner: trade_partner,
-                project_name: project_name,
+                trade_partner: frm.doc.trade_partner,
+                project_name: frm.doc.project_name,
                 current_docname: frm.doc.name
             },
             callback: function(r) {
                 if (r.message) {
                     frappe.msgprint({
                         title: __('Last Block Number'),
-                        message: __('The last generated block number for this Trade Partner and Project is: <b>{0}</b>', [r.message]),
+                        message: __('Last block number: <b>{0}</b>', [r.message]),
                         indicator: 'green'
                     });
+                    frm.last_block_no = parseInt(r.message.replace(/[^\d]/g, "")) || 0;
                 } else {
                     frappe.msgprint({
                         title: __('No Previous Blocks'),
-                        message: __('No previous blocks found for this Trade Partner and Project combination.'),
+                        message: __('No previous blocks found'),
                         indicator: 'blue'
                     });
+                    frm.last_block_no = 0;
                 }
-
-                // Store the last alphanumeric code
-                frm.last_block_no = r.message || null;
             }
         });
     }
 });
 
+//==================================================
+// 9. Header fields lock after saving or when child rows exist
+//==================================================
+let headerLockState = { has_rows: false, is_saved: false };
 
+frappe.ui.form.on('Block Selection', {
+    refresh: function(frm) { toggle_header_fields(frm); },
+    after_save: function(frm) {
+        toggle_header_fields(frm);
+        frappe.msgprint({ message: __('Header fields are now locked.'), indicator: 'blue' });
+    },
+    block_selection_details_add: function(frm) { toggle_header_fields(frm); },
+    block_selection_details_remove: function(frm) { toggle_header_fields(frm); }
+});
+
+function toggle_header_fields(frm) {
+    const has_rows = (frm.doc.block_selection_details || []).length > 0;
+    const is_saved = !frm.is_new();
+
+    if (headerLockState.has_rows === has_rows && headerLockState.is_saved === is_saved) {
+        return; // Skip redundant updates
+    }
+    headerLockState.has_rows = has_rows;
+    headerLockState.is_saved = is_saved;
+
+    const permanently_locked = ['trade_partner', 'site', 'baps_project', 'material_type'];
+    const conditional_locked = ['date', 'party', 'invoice_to_be_paid_after_block_receipt', 'selected_by'];
+
+    permanently_locked.forEach(fieldname => {
+        if (frm.fields_dict[fieldname]) {
+            frm.set_df_property(fieldname, 'read_only', is_saved);
+        }
+    });
+
+    const lock_fields = has_rows || is_saved;
+    conditional_locked.forEach(fieldname => {
+        if (frm.fields_dict[fieldname]) {
+            frm.set_df_property(fieldname, 'read_only', lock_fields);
+        }
+    });
+
+    if (frm.fields_dict['party']) {
+        frm.set_df_property('party', 'read_only', 0);
+    }
+}
 
 //==================================================
-// 12. New adding row and it will continue the sequential block number...
+// Auto-set Selected By (User)
 //==================================================
-frappe.ui.form.on('Block Selection Detail', {
-    block_selection_details_add: function(frm, cdt, cdn) {
-        let row = locals[cdt][cdn];
-        let last_code = frm.last_block_no;
+frappe.ui.form.on("Block Selection", {
+    onload: function(frm) {
+        if (!frm.doc.selected_by) {
+            frm.set_value("selected_by", frappe.session.user);
+        }
+    }
+});
 
-        // Find the highest code in current table if exists
-        frm.doc.block_selection_details.forEach(r => {
-            if (r.block_number && r.block_number.length > 0) {
-                last_code = r.block_number;
-            }
-        });
+//==================================================
+// Invoice after receipt
+//==================================================
+frappe.ui.form.on('Block Selection', {
+    invoice_after_receipt: function(frm) {
+        if (frm.doc.invoice_after_receipt) {
+            frappe.msgprint({
+                title: __("Notice"),
+                message: __("This will be handled after payment method."),
+                indicator: "orange"
+            });
+        }
+    }
+});
 
-        if (last_code) {
-            // Extract prefix (letters) and number part (digits)
-            const prefix = last_code.match(/^\D+/)?.[0] || '';
-            const number = last_code.match(/\d+$/)?.[0] || '0';
-
-            // Increment numeric part
-            let next_number = String(parseInt(number) + 1).padStart(number.length, '0');
-
-            // Combine prefix + next number
-            let next_code = prefix + next_number;
-
-            frappe.model.set_value(cdt, cdn, 'block_number', next_code);
-
-            // Save for next row
-            frm.last_block_no = next_code;
-        } else {
-            // Fallback: if no last code found, start from 0001
-            frappe.model.set_value(cdt, cdn, 'block_number', '0001');
-            frm.last_block_no = '0001';
+//==================================================
+// Party filter
+//==================================================
+frappe.ui.form.on('Block Selection', {
+    trade_partner: function(frm) {
+        frm.set_value('party', '');
+        if (frm.doc.trade_partner) {
+            frm.set_query('party', function() {
+                return { filters: { trade_partner: frm.doc.trade_partner } };
+            });
         }
     }
 });

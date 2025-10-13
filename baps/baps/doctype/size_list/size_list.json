@@ -92,6 +92,7 @@
    "fieldname": "form_number",
    "fieldtype": "Data",
    "label": "Form Number",
+   "read_only_depends_on": "eval:(parent.workflow_state != 'Draft' && doc.form_number)",
    "unique": 1
   },
   {
@@ -191,7 +192,8 @@
    "fieldname": "prep_date",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Preparation Date"
+   "label": "Preparation Date",
+   "read_only_depends_on": "eval:(parent.workflow_state != 'Draft' && doc.prep_date)"
   },
   {
    "fieldname": "stone_type",
@@ -297,7 +299,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-04 16:18:24.418739",
+ "modified": "2025-10-13 15:03:31.757442",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Size List",
