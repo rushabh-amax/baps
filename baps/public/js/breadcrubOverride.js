@@ -67,31 +67,31 @@ document.addEventListener("DOMContentLoaded", () => {
         const isModulesPage = Array.isArray(route) && route[0] === 'modules';
         const bc = document.getElementById('navbar-breadcrumbs');
 
-        console.log("we are in hide navbreadcrub");
+        // console.log("we are in hide navbreadcrub");
 
         if (!bc) {
-            console.log("⏳ #navbar-breadcrumbs not found");
+            // console.log("⏳ #navbar-breadcrumbs not found");
             return;
         }
 
         if (isModulesPage) {
             bc.classList.add('hide-breadcrumb-force');
-            console.log("✅ HIDING breadcrumbs on /modules");
+            // console.log("✅ HIDING breadcrumbs on /modules");
         } else {
             bc.classList.remove('hide-breadcrumb-force');
-            console.log("✅ SHOWING breadcrumbs on other routes");
+            // console.log("✅ SHOWING breadcrumbs on other routes");
         }
     }
 
     // Wait until frappe is defined
     function initWhenReady() {
         if (typeof frappe !== "undefined" && frappe.get_route && frappe.router) {
-            console.log("🚀 frappe is ready, initializing applyHide...");
+            // console.log("🚀 frappe is ready, initializing applyHide...");
             applyHide();
 
             // React to route changes
             frappe.router.on('change', () => {
-                console.log("🔄 Route changed, re-applying hide/show...");
+                // console.log("🔄 Route changed, re-applying hide/show...");
                 setTimeout(applyHide, 100);
             });
         } else {
@@ -104,28 +104,23 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("DOMContentLoaded", initWhenReady);
 })();
 
-
-
-
-
-
 // ============================
 // back button
 // ==============================
  (function() {
-  console.log("[Back Button] Script loaded. Waiting for navbar...");
+  // console.log("[Back Button] Script loaded. Waiting for navbar...");
 
   let backButtonInjected = false;
 
   function injectBackButton() {
     if (document.getElementById('frappe-back-btn')) {
-      console.log("[Back Button] Already exists. Skipping.");
+      // console.log("[Back Button] Already exists. Skipping.");
       return true;
     }
 
     const navbarNav = document.querySelector('header.navbar ul.navbar-nav');
     if (!navbarNav) {
-      console.warn("[Back Button] ❌ ul.navbar-nav not found in header. Retrying...");
+      // console.warn("[Back Button] ❌ ul.navbar-nav not found in header. Retrying...");
       return false;
     }
 
@@ -154,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
       navbarNav.appendChild(backItem);
     }
 
-    console.log("[Back Button] ✅ Successfully injected into navbar-nav.");
+    // console.log("[Back Button] ✅ Successfully injected into navbar-nav.");
     backButtonInjected = true;
     return true;
   }
@@ -184,10 +179,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isHomePage) {
       listItem.style.display = 'none';
-      console.log("[Back Button] ✅ Hidden on /app/home");
+      // console.log("[Back Button] ✅ Hidden on /app/home");
     } else {
       listItem.style.display = '';
-      console.log("[Back Button] ✅ Shown on non-home page");
+      // console.log("[Back Button] ✅ Shown on non-home page");
     }
   }
 
@@ -197,19 +192,19 @@ document.addEventListener("DOMContentLoaded", () => {
       attempts++;
       const success = injectBackButton();
       if (success) {
-        console.log("[Back Button] 🎉 Injection complete.");
+        // console.log("[Back Button] 🎉 Injection complete.");
         if (typeof frappe !== "undefined" && frappe.router) {
           frappe.router.on('change', () => {
-            console.log("[Back Button] 🔄 Route changed, updating visibility...");
+            // console.log("[Back Button] 🔄 Route changed, updating visibility...");
             setTimeout(updateVisibility, 100);
           });
         }
         updateVisibility();
       } else if (attempts < maxAttempts) {
-        console.log(`[Back Button] ⏳ Retry ${attempts}/${maxAttempts}...`);
+        // console.log(`[Back Button] ⏳ Retry ${attempts}/${maxAttempts}...`);
         setTimeout(attempt, interval);
       } else {
-        console.error("[Back Button] ❌ Failed to inject after", maxAttempts, "attempts.");
+        // console.error("[Back Button] ❌ Failed to inject after", maxAttempts, "attempts.");
       }
     };
     attempt();
@@ -228,19 +223,19 @@ document.addEventListener("DOMContentLoaded", () => {
 // module button
 // ==============================
 (function() {
-  console.log("[Modules Button] Script loaded. Waiting for navbar...");
+  // console.log("[Modules Button] Script loaded. Waiting for navbar...");
 
   let modulesButtonInjected = false;
 
   function injectModulesButton() {
     if (document.getElementById('frappe-modules-btn')) {
-      console.log("[Modules Button] Already exists. Skipping.");
+      // console.log("[Modules Button] Already exists. Skipping.");
       return true;
     }
 
     const navbarNav = document.querySelector('header.navbar ul.navbar-nav');
     if (!navbarNav) {
-      console.warn("[Modules Button] ❌ ul.navbar-nav not found in header. Retrying...");
+      // console.warn("[Modules Button] ❌ ul.navbar-nav not found in header. Retrying...");
       return false;
     }
 
@@ -265,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
       navbarNav.appendChild(modulesItem);
     }
 
-    console.log("[Modules Button] ✅ Successfully injected into navbar-nav.");
+    // console.log("[Modules Button] ✅ Successfully injected into navbar-nav.");
     modulesButtonInjected = true;
     return true;
   }
@@ -276,12 +271,12 @@ document.addEventListener("DOMContentLoaded", () => {
       attempts++;
       const success = injectModulesButton();
       if (success) {
-        console.log("[Modules Button] 🎉 Injection complete.");
+        // console.log("[Modules Button] 🎉 Injection complete.");
       } else if (attempts < maxAttempts) {
-        console.log(`[Modules Button] ⏳ Retry ${attempts}/${maxAttempts}...`);
+        // console.log(`[Modules Button] ⏳ Retry ${attempts}/${maxAttempts}...`);
         setTimeout(attempt, interval);
       } else {
-        console.error("[Modules Button] ❌ Failed to inject after", maxAttempts, "attempts.");
+        // console.error("[Modules Button] ❌ Failed to inject after", maxAttempts, "attempts.");
       }
     };
     attempt();

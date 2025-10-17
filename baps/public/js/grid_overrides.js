@@ -1,9 +1,9 @@
 (function() {
-    console.log("🔄 Waiting for GridRow...");
+    // console.log("🔄 Waiting for GridRow...");
 
     function override_gridrow() {
         if (frappe.ui && frappe.ui.form && frappe.ui.form.GridRow) {
-            console.log("✅ Overriding GridRow.get_menu_items");
+            // console.log("✅ Overriding GridRow.get_menu_items");
 
             frappe.ui.form.GridRow.prototype.get_menu_items = function () {
                 return [

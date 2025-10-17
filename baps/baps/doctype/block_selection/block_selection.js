@@ -65,16 +65,27 @@ function calculate_volume(frm, cdt, cdn) {
     let inch_fields = ['l2', 'b2', 'h2'];
     for (let f of inch_fields) {
         if ((row[f] || 0) > 12) {
-            frappe.msgprint({
-                title: __('Invalid Entry'),
-                message: __(f.toUpperCase() + ' must be less than or equal to 12'),
+            // ✅ Use show_alert — does NOT close popup
+            frappe.show_alert({
+                message: __(f.toUpperCase() + ' must be ≤ 12 inches'),
                 indicator: 'red'
-            });
+            }, 5); // auto-dismiss after 5 seconds
+
+            // ✅ Reset field to 0
             frappe.model.set_value(cdt, cdn, f, 0);
-            return;
+
+            // ✅ Optional: Focus back to field
+            setTimeout(() => {
+                if (frm.fields_dict[f]) {
+                    frm.fields_dict[f].set_focus();
+                }
+            }, 300);
+
+            return; // Skip volume calc
         }
     }
 
+    // Proceed with volume calculation
     let L = (flt(row.l1) || 0) + ((flt(row.l2) || 0) / 12.0);
     let B = (flt(row.b1) || 0) + ((flt(row.b2) || 0) / 12.0);
     let H = (flt(row.h1) || 0) + ((flt(row.h2) || 0) / 12.0);
@@ -204,7 +215,7 @@ frappe.ui.form.on("Block Selection", {
 frappe.ui.form.on('Block Selection', {
     last_block_number: function(frm) {
         if (!frm.doc.project_name || !frm.doc.trade_partner) {
-            frappe.msgprint({ title: __('Missing Info'), message: __('Fill Trade Partner & Project first'), indicator: 'orange' });
+            frappe.msgprint({ title: _('Missing Info'), message: _('Fill Trade Partner & Project first'), indicator: 'orange' });
             return;
         }
 

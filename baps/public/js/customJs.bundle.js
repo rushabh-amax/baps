@@ -1,6 +1,7 @@
+// -------------------------------- custom file js ------------------------------------
 function toggleSearchBar() {
     const path = window.location.pathname;
-    console.log("toggleSearchBar called, path:", path); // check if called
+    // console.log("toggleSearchBar called, path:", path); // check if called
 
     const searchBar = document.querySelector('.input-group.search-bar');
     if (searchBar) {
@@ -64,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
       pointerEvents: 'none'
     });
     ul.appendChild(bar);
-    console.log("tab active slideer insterd")
+    // console.log("tab active slideer insterd")
 
     const update = () => {
       const active =
@@ -468,6 +469,12 @@ document.addEventListener('DOMContentLoaded', function () {
 //     $(document).on('workspace:updated', renderMiniSidebar);
 //   });
 //   })();
+
+
+
+// ============================================
+// mini sidebar code
+// ============================================
 
 
 //   if (!window.frappe || !frappe.boot) {
