@@ -510,17 +510,6 @@ height: var(--classic_height);
 
 
 /* inputs */
-/* .field-actions{
-  display: flex;
-  gap: .25em !important;
-}
-.field-actions button{
-  background: transparent !important;
-} */
-/* .field-actions button:hover svg{
-  --icon-stroke:black  !important;
-  --icon-fill:black !important;
-} */
 
 [data-fieldname="new_password"] .control-input-wrapper .control-input{
   height: 40px;
@@ -552,7 +541,9 @@ height: var(--classic_height);
     margin-top: 17px !important;
     margin-bottom: unset !important;
 }
-
+[data-page-route=Workspaces] .layout-main-section {
+    padding: unset;
+}
 /* .input-with-feedback .form-control{
   height: 40px !important;
   border-radius: .5em;
