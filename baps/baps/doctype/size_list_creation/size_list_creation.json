@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "SZCRN-.####",
+ "autoname": "SizeList-.####",
  "creation": "2025-09-19 14:29:05.223297",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -18,20 +18,20 @@
   "sub_part",
   "total_volume",
   "cutting_region",
-  "section_break_pnlg",
-  "stone_details",
   "section_break_vvov",
   "polishing",
   "dry_fitting",
   "column_break_ddgf",
   "carving",
-  "chemicaling"
+  "chemicaling",
+  "section_break_pnlg",
+  "stone_details"
  ],
  "fields": [
   {
    "fieldname": "stone_details",
    "fieldtype": "Table",
-   "label": "Stone Details",
+   "label": "Size LIst ",
    "options": "Size List Creation Item",
    "read_only": 1
   },
@@ -43,24 +43,29 @@
    "default": "0",
    "fieldname": "polishing",
    "fieldtype": "Check",
-   "label": "Polishing Required"
+   "hidden": 1,
+   "label": "Polishing Required",
+   "read_only_depends_on": "eval:frappe.user_roles.includes(\"Project Manager\")\n"
   },
   {
    "default": "0",
    "fieldname": "dry_fitting",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Dry Fitting Required"
   },
   {
    "default": "0",
    "fieldname": "carving",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Carving Required"
   },
   {
    "default": "0",
    "fieldname": "chemicaling",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Chemical Required"
   },
   {
@@ -74,14 +79,14 @@
   {
    "fieldname": "prep_date",
    "fieldtype": "Date",
+   "hidden": 1,
    "in_list_view": 1,
    "label": "Prep Date"
   },
   {
    "fieldname": "baps_project",
    "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
+   "hidden": 1,
    "label": "Baps Project",
    "options": "Baps Project"
   },
@@ -89,35 +94,36 @@
    "fetch_from": "baps_project.project_name",
    "fieldname": "project_name",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Project Name"
   },
   {
    "fieldname": "stone_type",
    "fieldtype": "Link",
-   "in_list_view": 1,
+   "hidden": 1,
    "label": "Material Type",
    "options": "Material Type"
   },
   {
    "fieldname": "main_part",
    "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
+   "hidden": 1,
    "label": "Main Part",
    "options": "Main Part"
   },
   {
    "fieldname": "sub_part",
    "fieldtype": "Link",
-   "in_standard_filter": 1,
+   "hidden": 1,
    "label": "Sub Part",
    "options": "Sub Part"
   },
   {
    "fieldname": "form_number",
    "fieldtype": "Link",
-   "label": "Form Number",
-   "options": "Size List",
+   "in_list_view": 1,
+   "label": "Size lisr Form No.",
+   "options": "Size List Form",
    "unique": 1
   },
   {
@@ -129,6 +135,7 @@
   {
    "fieldname": "cutting_region",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Cutting Region",
    "options": "Region"
   },
@@ -148,7 +155,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-03 16:23:16.086536",
+ "modified": "2025-10-17 11:12:14.364486",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Size List Creation",

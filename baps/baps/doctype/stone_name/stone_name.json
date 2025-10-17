@@ -15,31 +15,36 @@
   {
    "fieldname": "stone_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Stone Name",
    "unique": 1
   },
   {
    "fieldname": "main_part",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Main Part",
    "options": "Main Part"
   },
   {
    "fieldname": "sub_part",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Sub Part",
    "options": "Sub Part"
   },
   {
    "fieldname": "stone_code",
    "fieldtype": "Data",
-   "label": "Stone Code"
+   "in_list_view": 1,
+   "label": "Stone Code",
+   "unique": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-26 14:15:38.558496",
+ "modified": "2025-10-17 11:14:16.194288",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Stone Name",

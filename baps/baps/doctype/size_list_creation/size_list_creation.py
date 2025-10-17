@@ -17,7 +17,7 @@ class SizeListCreation(Document):
             self.status = "Verified"
     
     def validate_form_number(self):
-        """Validate that the form_number refers to an existing Size List"""
+        """Validate that the form_number refers to an existing Size List Form"""
         try:
             # Skip validation if form_number is empty
             if not self.form_number:
@@ -26,31 +26,31 @@ class SizeListCreation(Document):
             # Clean the form_number in case there are any whitespace issues
             self.form_number = self.form_number.strip()
             
-            # Check if Size List exists
-            if not frappe.db.exists("Size List", self.form_number):
-                # Get all available Size Lists for debugging
-                available_lists = frappe.get_all("Size List", fields=["name"], limit=5)
+            # Check if Size List Form exists
+            if not frappe.db.exists("Size List Form", self.form_number):
+                # Get all available Size List Forms for debugging
+                available_lists = frappe.get_all("Size List Form", fields=["name"], limit=5)
                 available_names = [sl.name for sl in available_lists]
                 
-                frappe.throw(f"Size List '{self.form_number}' not found. Available options: {', '.join(available_names)}")
+                frappe.throw(f"Size List Form '{self.form_number}' not found. Available options: {', '.join(available_names)}")
             
-            # Check for duplicate - prevent using the same Size List twice
+            # Check for duplicate - prevent using the same Size List Form twice
             existing_creation = frappe.db.exists("Size List Creation", {
                 "form_number": self.form_number,
                 "name": ("!=", self.name)  # Exclude current document if updatin
             })
             
             if existing_creation:
-                frappe.throw(f"Size List '{self.form_number}' has already been used in Size List Creation '{existing_creation}'. Each Size List can only be used once.")
+                frappe.throw(f"Size List Form '{self.form_number}' has already been used in Size List Creation '{existing_creation}'. Each Size List Form can only be used once.")
             
-            # Get the Size List document to check its state
-            size_list_doc = frappe.get_doc("Size List", self.form_number)
+            # Get the Size List Form document to check its state
+            size_list_doc = frappe.get_doc("Size List Form", self.form_number)
             
             # Check if it's in a valid state for creation
             if hasattr(size_list_doc, 'workflow_state'):
                 if size_list_doc.workflow_state not in ['Verified', 'Published']:
-                    frappe.msgprint(f"Note: Size List '{self.form_number}' is in '{size_list_doc.workflow_state}' state. You can still proceed but it's recommended to use verified Size Lists.", 
-                                   title="Size List Status", indicator="orange")
+                    frappe.msgprint(f"Note: Size List Form '{self.form_number}' is in '{size_list_doc.workflow_state}' state. You can still proceed but it's recommended to use verified Size List Forms.", 
+                                   title="Size List Form Status", indicator="orange")
             
         except Exception as e:
             frappe.log_error(f"Error validating form_number '{self.form_number}': {str(e)}")
@@ -61,11 +61,11 @@ class SizeListCreation(Document):
 @frappe.whitelist()
 def get_available_size_lists_for_creation(doctype, txt, searchfield, start, page_len, filters):
     """
-    Get Size Lists that are Published and not already used in Size List Creation.
+    Get Size List Forms that are Published and not already used in Size List Creation.
     This prevents duplicate Size List Creation records.
     """
     try:
-        # Get all Size Lists that are already used in Size List Creation
+        # Get all Size List Forms that are already used in Size List Creation
         used_size_lists = frappe.get_all(
             "Size List Creation",
             fields=["form_number"],
@@ -75,12 +75,12 @@ def get_available_size_lists_for_creation(doctype, txt, searchfield, start, page
         # Extract the form numbers that are already used
         used_form_numbers = [item.form_number for item in used_size_lists if item.form_number]
         
-        # Build filters for available Size Lists
+        # Build filters for available Size List Forms
         size_list_filters = {
-            "workflow_state": ["in", ["Verified", "Published"]]  # Only include verified/published Size Lists
+            "workflow_state": ["in", ["Verified", "Published"]]  # Only include verified/published Size List Forms
         }
         
-        # Exclude already used Size Lists
+        # Exclude already used Size List Forms
         if used_form_numbers:
             size_list_filters["name"] = ["not in", used_form_numbers]
         
@@ -88,9 +88,9 @@ def get_available_size_lists_for_creation(doctype, txt, searchfield, start, page
         if txt:
             size_list_filters["name"] = ["like", f"%{txt}%"]
         
-        # Get available Size Lists
+        # Get available Size List Forms
         available_size_lists = frappe.get_all(
-            "Size List",
+            "Size List Form",
             fields=["name", "baps_project", "main_part", "sub_part"],
             filters=size_list_filters,
             order_by="creation desc",
@@ -100,10 +100,10 @@ def get_available_size_lists_for_creation(doctype, txt, searchfield, start, page
         
         # Format for Link field dropdown
         result = []
-        for size_list in available_size_lists:
+        for size_list_form in available_size_lists:
             result.append([
-                size_list.name,
-                f"{size_list.name} - {size_list.baps_project or ''} - {size_list.main_part or ''}"
+                size_list_form.name,
+                f"{size_list_form.name} - {size_list_form.baps_project or ''} - {size_list_form.main_part or ''}"
             ])
         
         return result
@@ -116,19 +116,19 @@ def get_available_size_lists_for_creation(doctype, txt, searchfield, start, page
 @frappe.whitelist()
 def get_published_size_lists_for_creation():
     """
-    Get all verified/published Size Lists that are available for Size List Creation.
+    Get all verified/published Size List Forms that are available for Size List Creation.
     Project Manager can select from these to create items.
     """
     try:
-        # Call the method from Size List doctype to get verified lists
-        from baps.baps.doctype.size_list.size_list import get_verified_size_lists
+        # Call the method from Size List Form doctype to get verified lists
+        from baps.baps.doctype.size_list_form.size_list_form import get_verified_size_lists
         
         result = get_verified_size_lists()
         
         if result.get("success"):
             return {
                 "success": True,
-                "message": f"Found {result.get('count', 0)} verified Size Lists",
+                "message": f"Found {result.get('count', 0)} verified Size List Forms",
                 "data": result.get("data", [])
             }
         else:
@@ -145,12 +145,12 @@ def get_published_size_lists_for_creation():
 @frappe.whitelist()
 def load_stones_from_verified_size_list(size_list_name):
     """
-    Load stones from a verified Size List into Size List Creation.
+    Load stones from a verified Size List Form into Size List Creation.
     Expands ranges and prepares data for creation.
     """
     try:
-        # Call the method from Size List doctype
-        from baps.baps.doctype.size_list.size_list import get_verified_size_list_details
+        # Call the method from Size List Form doctype
+        from baps.baps.doctype.size_list_form.size_list_form import get_verified_size_list_details
         
         result = get_verified_size_list_details(size_list_name)
         
@@ -174,12 +174,12 @@ def load_stones_from_verified_size_list(size_list_name):
 @frappe.whitelist()
 def create_size_list_items_from_range(form_number):
     """Fetch Size List rows, expand ranges, and create item rows."""
-    size_list = frappe.get_doc("Size List", form_number)
+    size_list_form = frappe.get_doc("Size List Form", form_number)
 
     seen_codes = set()   # to track duplicates across all rows
     items = []
 
-    for d in size_list.stone_details:
+    for d in size_list_form.stone_details:
         if not d.range or not d.stone_code:
             continue
 
@@ -350,62 +350,62 @@ def get_all_verified_sources():
         return []
 
 
-@frappe.whitelist()
-def get_records_by_filter(filter_type, filter_value):
-    try:
-        filter_map = {
-            'project': 'baps_project',
-            'main_part': 'main_part',
-            'sub_part': 'sub_part',
-            'material_type': 'stone_type'
-        }
+# @frappe.whitelist()
+# def get_records_by_filter(filter_type, filter_value):
+#     try:
+#         filter_map = {
+#             'project': 'baps_project',
+#             'main_part': 'main_part',
+#             'sub_part': 'sub_part',
+#             'material_type': 'stone_type'
+#         }
         
-        field_name = filter_map.get(filter_type)
-        if not field_name:
-            return {
-                "success": False,
-                "message": "Invalid filter type"
-            }
+#         field_name = filter_map.get(filter_type)
+#         if not field_name:
+#             return {
+#                 "success": False,
+#                 "message": "Invalid filter type"
+#             }
         
-        records = frappe.get_all(
-            "Size List Creation",
-            filters={field_name: filter_value},
-            fields=[
-                "name",
-                "form_number",
-                "baps_project",
-                "project_name",
-                "main_part",
-                "sub_part",
-                "stone_type",
-                "status",
-                "prep_date",
-                "total_volume"
-            ],
-            order_by="prep_date desc"
-        )
+#         records = frappe.get_all(
+#             "Size List Creation",
+#             filters={field_name: filter_value},
+#             fields=[
+#                 "name",
+#                 "form_number",
+#                 "baps_project",
+#                 "baps_project",
+#                 "main_part",
+#                 "sub_part",
+#                 "stone_type",
+#                 "status",
+#                 "prep_date",
+#                 "total_volume"
+#             ],
+#             order_by="prep_date desc"
+#         )
         
-        # Calculate statistics
-        stats = {
-            "total_records": len(records),
-            "published": sum(1 for r in records if r.status == "Published"),
-            "in_progress": sum(1 for r in records if r.status == "In Progress"),
-            #"draft": sum(1 for r in records if r.status == "Draft"),
-            "total_volume": sum(float(r.total_volume or 0) for r in records)
-        }
+#         # Calculate statistics
+#         stats = {
+#             "total_records": len(records),
+#             "published": sum(1 for r in records if r.status == "Published"),
+#             "in_progress": sum(1 for r in records if r.status == "In Progress"),
+#             #"draft": sum(1 for r in records if r.status == "Draft"),
+#             "total_volume": sum(float(r.total_volume or 0) for r in records)
+#         }
         
-        return {
-            "success": True,
-            "records": records,
-            "statistics": stats
-        }
+#         return {
+#             "success": True,
+#             "records": records,
+#             "statistics": stats
+#         }
         
-    except Exception as e:
-        frappe.log_error(f"Error getting filtered records: {str(e)}")
-        return {
-            "success": False,
-            "message": str(e)
-        }
+#     except Exception as e:
+#         frappe.log_error(f"Error getting filtered records: {str(e)}")
+#         return {
+#             "success": False,
+#             "message": str(e)
+#         }
 
 
 @frappe.whitelist()
@@ -461,135 +461,16 @@ def get_available_size_lists(doctype, txt, searchfield, start, page_len, filters
         return []
 
 
-@frappe.whitelist()
-def get_size_list_usage_report():
-    """
-    Get a report showing which Size Lists are available and which have been used.
-    This helps users understand what's available for new Size List Creation.
-    """
-    try:
-        # Get all Published Size Lists
-        all_published_size_lists = frappe.get_all(
-            "Size List",
-            fields=["name", "baps_project", "main_part", "sub_part"],
-            filters={"workflow_state": "Published"},
-            order_by="creation desc"
-        )
-        
-        # Get all used Size Lists
-        used_size_lists = frappe.get_all(
-            "Size List Creation",
-            fields=["form_number", "name as creation_name"],
-            filters={"form_number": ("is", "set")},
-            order_by="creation desc"
-        )
-        
-        # Create sets for easy lookup
-        used_form_numbers = {item.form_number for item in used_size_lists if item.form_number}
-        
-        # Separate available and used
-        available_size_lists = []
-        used_details = []
-        
-        for size_list in all_published_size_lists:
-            if size_list.name in used_form_numbers:
-                # Find which creation record uses this
-                creation_record = next((item for item in used_size_lists if item.form_number == size_list.name), None)
-                if creation_record:
-                    used_details.append({
-                        "form_number": size_list.name,
-                        "creation_name": creation_record.creation_name,
-                        "baps_project": size_list.baps_project,
-                        "main_part": size_list.main_part
-                    })
-            else:
-                available_size_lists.append(size_list)
-        
-        return {
-            "available": available_size_lists,
-            "used": used_details,
-            "summary": {
-                "total_published": len(all_published_size_lists),
-                "available_count": len(available_size_lists),
-                "used_count": len(used_details)
-            }
-        }
-        
-    except Exception as e:
-        frappe.log_error(f"Error getting size list usage report: {str(e)}")
-        return {
-            "available": [],
-            "used": [],
-            "summary": {"total_published": 0, "available_count": 0, "used_count": 0}
-        }
-
-@frappe.whitelist()
-def get_unique_size_lists(baps_project=None, main_part=None, sub_part=None, stone_name=None):
-    filters = []
-
-    # Apply filters based on the passed values
-    if baps_project:
-        filters.append(f"parent_table.baps_project = {frappe.db.escape(baps_project)}")
-    if main_part:
-        filters.append(f"parent_table.main_part = {frappe.db.escape(main_part)}")
-    if sub_part:
-        filters.append(f"parent_table.sub_part = {frappe.db.escape(sub_part)}")
-    if stone_name:
-        filters.append(f"child_table.stone_name LIKE {frappe.db.escape('%' + stone_name + '%')}")  # Allow partial match for stone name
-
-    # Build the WHERE clause with the filters
-    where_clause = " AND ".join(filters)
-    if where_clause:
-        where_clause = "WHERE " + where_clause
-
-    # Query to fetch unique size list items with filters applied
-    query = f"""
-        SELECT DISTINCT
-            child_table.stone_code,
-            child_table.stone_name,
-            child_table.l1,
-            child_table.l2,
-            child_table.b1,
-            child_table.b2,
-            child_table.h1,
-            child_table.h2,
-            child_table.volume
-        FROM `tabSize List Creation Item` AS child_table
-        JOIN `tabSize List Creation` AS parent_table
-            ON child_table.parent = parent_table.name
-        {where_clause}
-        ORDER BY child_table.stone_code
-    """
-
-    return frappe.db.sql(query, as_dict=True)
-
-
-@frappe.whitelist()
-def get_filter_options():
-    # Fetch available filter options for each field
-    baps_projects = frappe.get_all('Baps Project', fields=['name'])
-    main_parts = frappe.get_all('Main Part', fields=['name'])
-    sub_parts = frappe.get_all('Sub Part', fields=['name'])
-    stone_names = frappe.get_all('Size List Creation Item', fields=['stone_name'], distinct=True)
-    
-    return {
-        "baps_projects": [baps_project['name'] for baps_project in baps_projects],
-        "main_parts": [main_part['name'] for main_part in main_parts],
-        "sub_parts": [sub_part['name'] for sub_part in sub_parts],
-        "stone_names": [stone_name['stone_name'] for stone_name in stone_names]
-    }
-
-
 
 @frappe.whitelist()
 def auto_create_from_verified_size_list(size_list_name):
     """
     Automatically create a Size List Creation record from a verified Size List.
     """
-    size_list = frappe.get_doc("Size List", size_list_name)
+    size_list_form = frappe.get_doc("Size List Form", size_list_name)
     
     # Safety check
-    if size_list.workflow_state != "Verified":
+    if size_list_form.workflow_state != "Verified":
         return {"success": False, "message": "Only verified Size Lists can be converted."}
 
     # Avoid duplicates
@@ -599,18 +480,18 @@ def auto_create_from_verified_size_list(size_list_name):
 
     # Create the new Size List Creation document
     creation = frappe.new_doc("Size List Creation")
-    creation.form_number = size_list.name
-    creation.baps_project = getattr(size_list, "baps_project", "")
-    creation.main_part = getattr(size_list, "main_part", "")
-    creation.sub_part = getattr(size_list, "sub_part", "")
-    creation.stone_type = getattr(size_list, "stone_type", "")
+    creation.form_number = size_list_form.name
+    creation.baps_project = getattr(size_list_form, "baps_project", "")
+    creation.main_part = getattr(size_list_form, "main_part", "")
+    creation.sub_part = getattr(size_list_form, "sub_part", "")
+    creation.stone_type = getattr(size_list_form, "stone_type", "")
     creation.prep_date = frappe.utils.nowdate()
 
     # Expand stone ranges
     from baps.baps.doctype.size_list_creation.size_list_creation import expand_range
     seen = set()
 
-    for d in size_list.stone_details:
+    for d in size_list_form.stone_details:
         if not d.range or not d.stone_code:
             continue
 

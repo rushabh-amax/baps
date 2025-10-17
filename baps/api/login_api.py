@@ -68,7 +68,7 @@
 # role shows
 
 
-# shows our modules.page
+# # shows our modules.page
 import frappe
 
 
@@ -153,3 +153,19 @@ def login_with_permissions():
         "modules": active_modules,
     }
 # ======================== 
+
+
+
+@frappe.whitelist()
+def duplicate_workspace(workspace_name):
+    frappe.has_permission("Workspace", "write", throw=True)
+    doc = frappe.get_doc("Workspace", workspace_name)
+    new_doc = frappe.copy_doc(doc)
+    new_doc.name = f"{workspace_name} Copy"
+    new_doc.insert()
+    return new_doc.name
+
+@frappe.whitelist()
+def delete_workspace(workspace_name):
+    frappe.has_permission("Workspace", "write", throw=True)
+    frappe.delete_doc("Workspace", workspace_name)

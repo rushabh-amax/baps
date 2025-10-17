@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "SZLST-.####",
+ "autoname": "SizelstForm-.####",
  "creation": "2025-08-29 12:12:37.228042",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -10,9 +10,9 @@
   "column_break_ygma",
   "prep_date",
   "column_break_mkhk",
-  "baps_project",
+  "project",
   "section_break_pslu",
-  "project_name",
+  "baps_project",
   "baps_project_verified",
   "column_break_felc",
   "main_part",
@@ -37,10 +37,6 @@
   "carving",
   "section_break_txix",
   "stone_details",
-  "verification_section",
-  "workflow_status",
-  "overall_form_verified",
-  "verification_progress",
   "section_break_qxve",
   "prepared_by",
   "data_eipo",
@@ -55,7 +51,7 @@
    "fieldname": "baps_project",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Baps Project",
+   "label": "Project Name",
    "options": "Baps Project"
   },
   {
@@ -67,6 +63,7 @@
   {
    "fieldname": "main_part",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Main Part",
    "options": "Main Part"
   },
@@ -79,6 +76,7 @@
   {
    "fieldname": "sub_part",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Sub Part",
    "options": "Sub Part"
   },
@@ -158,37 +156,6 @@
    "options": "Size List Details"
   },
   {
-   "depends_on": "eval:frappe.user_roles.includes('Size List Data Checker') || frappe.user_roles.includes('Size List Data Entry Operator') || frappe.user_roles.includes('Size List Project Manager')",
-   "fieldname": "verification_section",
-   "fieldtype": "Section Break",
-   "hidden": 1,
-   "label": "Verification Status"
-  },
-  {
-   "default": "Draft",
-   "fieldname": "workflow_status",
-   "fieldtype": "Select",
-   "hidden": 1,
-   "in_list_view": 1,
-   "label": "Status",
-   "options": "Draft\nUnder Verification\nUnder Recheck\nVerified\nPublished"
-  },
-  {
-   "default": "0",
-   "fieldname": "overall_form_verified",
-   "fieldtype": "Check",
-   "hidden": 1,
-   "label": "Overall Form Verified"
-  },
-  {
-   "depends_on": "eval:frappe.user_roles.includes('Size List Data Checker')",
-   "fieldname": "verification_progress",
-   "fieldtype": "Percent",
-   "hidden": 1,
-   "label": "Verification Progress",
-   "read_only": 1
-  },
-  {
    "fieldname": "prep_date",
    "fieldtype": "Date",
    "in_list_view": 1,
@@ -211,6 +178,7 @@
   {
    "fieldname": "cutting_region",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Cutting Region",
    "options": "Region"
   },
@@ -238,12 +206,6 @@
   {
    "fieldname": "column_break_uklj",
    "fieldtype": "Column Break"
-  },
-  {
-   "fetch_from": "baps_project.project_name",
-   "fieldname": "project_name",
-   "fieldtype": "Data",
-   "label": "Project Name"
   },
   {
    "fetch_from": "prepared_by.username",
@@ -294,15 +256,22 @@
   {
    "fieldname": "column_break_uevp",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Baps Project",
+   "options": "Baps Project"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-13 15:03:31.757442",
+ "modified": "2025-10-17 12:12:00.188526",
  "modified_by": "Administrator",
  "module": "Baps",
- "name": "Size List",
+ "name": "Size List Form",
  "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [

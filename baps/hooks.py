@@ -11,7 +11,7 @@ app_license = "mit"
 # css & js
 # ================================================
 
-app_include_css = ["theme.bundle.css" , "assets/baps/css/css-rtl/translatons.ar_eg.css"]
+app_include_css = ["theme.bundle.css" , "assets/baps/css/css-rtl/translatons.ar_eg.css" , "/assets/baps/js/common.js"]
 app_include_js = ["theme.bundle.js"]
 
 # hooks.py
@@ -23,7 +23,7 @@ after_login = ["baps.utils.set_default_redirect"]
 # ]
 web_include_js = [
     "theme.bundle.js",
-    "assets/hims/js/login.bundle.js"
+    "assets/baps/js/login.bundle.js"
 ]
 
 home_page = "/modules"
@@ -33,11 +33,11 @@ home_page = "/modules"
 # chnages in hooks.py via baps team
 # ================================================
 permission_query_conditions = {
-    "Size List": "baps.baps.doctype.size_list.size_list.get_permission_query_conditions"
+    "Size List Form": "baps.baps.doctype.size_list_form.size_list_form.get_permission_query_conditions"
 }
 
 has_permission = {
-    "Size List": "baps.baps.doctype.size_list.size_list.has_permission"
+    "Size List Form": "baps.baps.doctype.size_list_form.size_list_form.has_permission"
 }
 
 

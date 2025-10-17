@@ -153,6 +153,8 @@ body[frappe-session-status="logged-out"][data-path="login"] .page-card-head{
     place-items: center;
     gap: 0em;
     height: fit-content;
+    width: fit-content;
+margin-inline: auto;
 }
 
 

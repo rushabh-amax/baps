@@ -28,14 +28,14 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Size List",
-   "options": "Size List"
+   "options": "Size List Form"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-09-16 13:46:39.581097",
+ "modified": "2025-10-16 15:01:43.861410",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Transport Block List",

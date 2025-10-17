@@ -7,7 +7,289 @@ function get_workflow_state(frm) {
     return frm.doc.workflow_state || get_workflow_state(frm) || frm.doc.__wf || '';
 }
 
-frappe.ui.form.on('Size List', {
+// size_list.js — Robust row-checkbox ↔ verify-fields sync
+frappe.ui.form.on("Size List Form", {
+    refresh(frm) {
+        setup_row_checkbox_sync(frm);
+        hide_delete_duplicate_buttons(frm);
+    },
+    onload_post_render(frm) {
+        // ensure binding after UI render
+        setup_row_checkbox_sync(frm);
+        setTimeout(() => hide_delete_duplicate_buttons(frm), 500);
+    },
+    stone_details_add(frm) {
+        // rebind after a new row is added
+        setTimeout(() => setup_row_checkbox_sync(frm), 200);
+        setTimeout(() => hide_delete_duplicate_buttons(frm), 300);
+    },
+    stone_details_remove(frm) {
+        setTimeout(() => setup_row_checkbox_sync(frm), 200);
+        setTimeout(() => hide_delete_duplicate_buttons(frm), 300);
+    }
+});
+
+// Function to hide Delete and Duplicate buttons for restricted roles
+function hide_delete_duplicate_buttons(frm) {
+    console.log('=== Hide Delete/Duplicate Buttons ===');
+    console.log('User roles:', frappe.user_roles);
+    
+    const is_checker = frappe.user_roles.includes("Size List Data Checker") ||
+                      frappe.user_roles.includes("Data Entry Checker") ||
+                      frappe.user_roles.includes("Size List Data Entry Checker");
+    const is_project_manager = frappe.user_roles.includes("Size List Project Manager") ||
+                              frappe.user_roles.includes("Project Manager");
+    const is_admin = frappe.user_roles.includes("Administrator");
+    
+    console.log('Is checker:', is_checker);
+    console.log('Is project manager:', is_project_manager);
+    console.log('Is admin:', is_admin);
+    
+    if ((is_checker || is_project_manager) && !is_admin) {
+        console.log('Hiding buttons for restricted role');
+        
+        // Remove buttons immediately
+        const removeButtons = () => {
+            console.log('Executing button removal...');
+            
+            // Method 1: Remove by exact text match
+            $('button').each(function() {
+                const text = $(this).text().trim();
+                if (text === 'Delete' || text === 'Duplicate Row') {
+                    console.log('Removing button by text:', text);
+                    $(this).remove();
+                }
+            });
+            
+            // Method 2: Remove by class and text
+            $('.btn-danger, .btn-warning').each(function() {
+                const text = $(this).text().trim();
+                if (text === 'Delete' || text === 'Duplicate Row') {
+                    console.log('Removing button by class+text:', text);
+                    $(this).remove();
+                }
+            });
+            
+            // Method 3: Force CSS hiding
+            if (!$('#size-list-hide-buttons').length) {
+                $('head').append(`
+                    <style id="size-list-hide-buttons">
+                        button:contains("Delete"),
+                        button:contains("Duplicate Row"),
+                        .btn:contains("Delete"),
+                        .btn:contains("Duplicate Row") {
+                            display: none !important;
+                            visibility: hidden !important;
+                            opacity: 0 !important;
+                        }
+                    </style>
+                `);
+            }
+        };
+        
+        // Execute multiple times to catch all instances
+        removeButtons();
+        setTimeout(removeButtons, 100);
+        setTimeout(removeButtons, 300);
+        setTimeout(removeButtons, 500);
+        setTimeout(removeButtons, 1000);
+        
+        // Set up continuous monitoring
+        const intervalId = setInterval(() => {
+            removeButtons();
+        }, 1000);
+        
+        // Store interval ID to clear later if needed
+        frm._button_hide_interval = intervalId;
+        
+    } else {
+        console.log('User has permission to see buttons');
+        // Clear any existing intervals
+        if (frm._button_hide_interval) {
+            clearInterval(frm._button_hide_interval);
+            frm._button_hide_interval = null;
+        }
+        // Remove CSS hiding
+        $('#size-list-hide-buttons').remove();
+    }
+}
+
+function setup_row_checkbox_sync(frm) {
+    const grid = frm.fields_dict?.stone_details?.grid;
+    if (!grid) {
+        console.warn("setup_row_checkbox_sync: stone_details grid not available");
+        return;
+    }
+
+    // who should be able to use it? (optional) - you can remove this guard if not needed
+    const allowed_role = "Size List Data Checker";
+    const is_checker = frappe.user_roles && frappe.user_roles.includes(allowed_role);
+    // If you want this for everyone, comment out the next two lines:
+    // if (!is_checker) { console.log("Row checkbox sync disabled for current role"); return; }
+
+    // verification fieldnames inside child table that should be toggled
+    const verify_fields = [
+        "stone_name_verified",
+        "range_verified",
+        "stone_code_verified",
+        "l1_verified",
+        "l2_verified",
+        "b1_verified",
+        "b2_verified",
+        "h1_verified",
+        "h2_verified"
+    ];
+
+    // attach a grid render watcher so we rebind when grid is refreshed
+    // Using grid.wrapper (delegated) and also call the binder immediately
+    bind_all_grid_rows(frm, grid, verify_fields);
+
+    // Hook into Frappe grid's after render if present (works on many versions)
+    try {
+        if (typeof grid.on_grid_after_render === "function") {
+            const original = grid.on_grid_after_render.bind(grid);
+            grid.on_grid_after_render = function () {
+                original();
+                // small delay so DOM is stable
+                setTimeout(() => bind_all_grid_rows(frm, grid, verify_fields), 50);
+            };
+        }
+    } catch (e) {
+        // ignore
+    }
+
+    // fallback: periodically ensure binding for dynamic UI (safe, cheap)
+    if (!grid._dup_sync_interval) {
+        grid._dup_sync_interval = setInterval(() => {
+            if (!frm.fields_dict || !frm.fields_dict.stone_details) {
+                clearInterval(grid._dup_sync_interval);
+                grid._dup_sync_interval = null;
+                return;
+            }
+            bind_all_grid_rows(frm, grid, verify_fields);
+        }, 2000);
+    }
+}
+
+function bind_all_grid_rows(frm, grid, verify_fields) {
+    // iterate DOM grid rows
+    grid.wrapper.find(".grid-row").each(function () {
+        const $domRow = $(this);
+        // prefer data-name (docname). fallback to data-idx.
+        const docname = $domRow.attr("data-name") || $domRow.attr("data-idx");
+        if (!docname) {
+            // nothing to bind
+            return;
+        }
+
+        // find child doc using name (preferred) or idx
+        let child = null;
+        if (frm.doc.stone_details && frm.doc.stone_details.length) {
+            child = frm.doc.stone_details.find(r => r.name === docname || String(r.idx) === String(docname));
+        }
+        if (!child) {
+            // debug: show what we couldn't find
+            // console.debug("bind_all_grid_rows: child row not found for", docname);
+            return;
+        }
+
+        // find the checkbox element robustly using multiple selectors
+        let $checkbox = null;
+        const selectors = [
+            ".grid-row-check input[type='checkbox']",   // common in many Frappe versions
+            ".grid-check input[type='checkbox']",       // alternate
+            ".grid-checkbox input[type='checkbox']",
+            "input[type='checkbox'].grid-row-checkbox",
+            $domRow.find("input[type='checkbox']").filter(function() { return $(this).closest('.grid-row').length > 0; })
+        ];
+
+        for (let s of selectors) {
+            if (typeof s === "string") {
+                const found = $domRow.find(s);
+                if (found && found.length) { $checkbox = found.first(); break; }
+            } else if (s && s.length) { // jQuery collection
+                $checkbox = s.first();
+                break;
+            }
+        }
+
+        if (!$checkbox || !$checkbox.length) {
+            // If still not found, log a single debug line (throttled)
+            if (!grid._row_checkbox_missing_logged) {
+                console.warn("bind_all_grid_rows: could not find row checkbox element using known selectors. DOM snapshot:", $domRow);
+                grid._row_checkbox_missing_logged = true;
+            }
+            return;
+        }
+
+        // avoid binding multiple times to same DOM checkbox
+        if ($checkbox.data("_sync_bound")) return;
+        $checkbox.data("_sync_bound", true);
+
+        // When built-in row checkbox toggled → set all verify fields
+        $checkbox.on("change", function () {
+            const checked = $(this).is(":checked") ? 1 : 0;
+            // Update all verify fields on the child doc
+            verify_fields.forEach(fn => {
+                // Only set value if the field actually exists on the child doctype
+                if (child.hasOwnProperty(fn) || child[fn] !== undefined) {
+                    frappe.model.set_value(child.doctype, child.name, fn, checked);
+                } else {
+                    // silent skip if field doesn't exist
+                }
+            });
+
+            // optionally show an alert (comment out if noisy)
+            frappe.show_alert({
+                message: checked ? `✅ Row verified (all checks)` : `❌ Row unverified (all checks cleared)`,
+                indicator: checked ? "green" : "orange"
+            });
+        });
+
+        // Also watch field-level verify checkboxes and update the built-in one
+        verify_fields.forEach(fn => {
+            // add a local listener for value changes (listens to model changes)
+            // We attach a single handler using frappe.realtime or DOM polling is messy;
+            // so use a short interval poll per row (lightweight) to sync model -> DOM.
+            // Avoid making many intervals: attach one per grid instead (if not already)
+            if (!grid._sync_model_poll) {
+                grid._sync_model_poll = setInterval(() => {
+                    try {
+                        // sync each grid row checkbox with child doc verify fields
+                        grid.wrapper.find(".grid-row").each(function () {
+                            const $r = $(this);
+                            const rn = $r.attr("data-name") || $r.attr("data-idx");
+                            if (!rn) return;
+                            const ch = frm.doc.stone_details && frm.doc.stone_details.find(x => x.name === rn || String(x.idx) === String(rn));
+                            if (!ch) return;
+                            const $cb = $r.find(".grid-row-check input[type='checkbox']").first();
+                            if (!$cb || !$cb.length) return;
+                            // compute all checked
+                            const all_checked_now = verify_fields.every(f => !!ch[f]);
+                            if (all_checked_now && !$cb.prop("checked")) $cb.prop("checked", true);
+                            else if (!all_checked_now && $cb.prop("checked")) $cb.prop("checked", false);
+                        });
+                    } catch (e) {
+                        // silent
+                    }
+                }, 600);
+            }
+        });
+    });
+
+    // refresh visuals
+    // (optional) highlight rows where all verified — you can add class toggles here
+}
+
+//remove delete button from child table for checker role
+frappe.ui.form.on("Size List Form", {
+    refresh(frm) {
+        hide_child_table_buttons_for_role(frm, "stone_details");
+        disable_popup_delete_button_for_checkers();
+    }
+});
+
+frappe.ui.form.on('Size List Form', {
     setup: function(frm) {
         // Ensure prepared_by is set as early as possible for new documents
         setTimeout(() => {
@@ -139,8 +421,7 @@ frappe.ui.form.on('Size List', {
         if (current_state === 'Under Verification' && is_data_checker) {
             // We need to determine if this is a "Verify" or "Reject" action
             // Since we can't easily detect the action here, we'll rely on server-side validation
-            // But let's add a basic check for verification status
-            console.log("Workflow action triggered from Under Verification");
+           
         }
         
         return true;  // Allow the action and rely on server-side validation
@@ -427,26 +708,17 @@ frappe.ui.form.on('Size List Details', {
     stone_name: function(frm, cdt, cdn) {
         calculate_volume(frm, cdt, cdn);
         
-        // Check for duplicates after stone name changes
-        setTimeout(() => {
-            check_and_highlight_all_duplicate_rows(frm);
-        }, 500);
+        // No duplicate checking during data entry - only during verification action
     },
     
     stone_code: function(frm, cdt, cdn) {
         calculate_volume(frm, cdt, cdn);
         
-        // Check for duplicates after stone code changes
-        setTimeout(() => {
-            check_and_highlight_all_duplicate_rows(frm);
-        }, 500);
+        // No duplicate checking during data entry - only during verification action
     },
     
     range: function(frm, cdt, cdn) {
-        // Check for duplicates after range changes
-        setTimeout(() => {
-            check_and_highlight_all_duplicate_rows(frm);
-        }, 500);
+        // No duplicate checking during data entry - only during verification action
     },
     
     l1: function(frm, cdt, cdn) {
@@ -491,76 +763,45 @@ frappe.ui.form.on('Size List Details', {
         calculate_total_volume(frm);
     },
 
-    // Range expansion functionality
-    // range: function(frm, cdt, cdn) {
-    //     let row = locals[cdt][cdn];
-    //     if (!row || !row.range) return;
+   });
 
-    //     let input = row.range.toString().trim();
-    //     if (!input) return;
 
-    //     // Parse input into list of numbers
-    //     let numbers = [];
-    //     let parts = input.split(',').map(s => s.trim()).filter(s => s);
-
-    //     parts.forEach(part => {
-    //         if (part.includes('-')) {
-    //             let rangeParts = part.split('-').map(s => s.trim());
-    //             if (rangeParts.length === 2) {
-    //                 let start = parseInt(rangeParts[0], 10);
-    //                 let end = parseInt(rangeParts[1], 10);
-    //                 if (isNaN(start) || isNaN(end) || start > end) {
-    //                     frappe.show_alert({ message: "Invalid range → " + part, indicator: "red" });
-    //                     return;
-    //                 }
-    //                 for (let i = start; i <= end; i++) numbers.push(i);
-    //             }
-    //         } else {
-    //             let n = parseInt(part, 10);
-    //             if (!isNaN(n)) numbers.push(n);
-    //         }
-    //     });
-
-    //     numbers = [...new Set(numbers)].sort((a, b) => a - b);
-
-    //     if (numbers.length === 0) {
-    //         frappe.show_alert({ message: "⚠️ No valid numbers found in range", indicator: "orange" });
-    //         return;
-    //     }
-
-    //     // First number stays in current row, rest create new rows
-    //     frappe.model.set_value(cdt, cdn, "stone_name", row.stone_name || numbers[0].toString());
-
-    //     for (let i = 1; i < numbers.length; i++) {
-    //         let new_row = frappe.model.add_child(frm.doc, "Size List Details", "stone_details");
-    //         frappe.model.set_value(new_row.doctype, new_row.name, "stone_name", numbers[i].toString());
-    //     }
-
-    //     frm.refresh_field("stone_details");
-        
-    // }
-});
-
-// Essential business logic functions
 
 function calculate_volume(frm, cdt, cdn) {
     let row = locals[cdt][cdn];
-     // Validate inches
-    if ((row.l2 || 0) > 12 || (row.b2 || 0) > 12 || (row.h2 || 0) > 12) {
-        frappe.msgprint(__("Inches (l2, b2, h2) must be less than 12"));
-        return;
-    }
-    
+
     if (row) {
-        let l = (row.l1 || 0) + (row.l2 || 0) / 12;
-        let b = (row.b1 || 0) + (row.b2 || 0) / 12;
-        let h = (row.h1 || 0) + (row.h2 || 0) / 12;
-        
-        row.volume = Math.round(l * b * h * 1000) / 1000;
-        calculate_total_volume(frm);
+        // Validate inches
+        if ((row.l2 || 0) > 12) {
+            frappe.msgprint(__("L2 (inches) cannot be greater than 12"));
+            frappe.model.set_value(cdt, cdn, "l2", 0);
+            frappe.validated = false;
+        }
+        if ((row.b2 || 0) > 12) {
+            frappe.msgprint(__("B2 (inches) cannot be greater than 12"));
+            frappe.model.set_value(cdt, cdn, "b2", 0);
+            frappe.validated = false;
+        }
+        if ((row.h2 || 0) > 12) {
+            frappe.msgprint(__("H2 (inches) cannot be greater than 12"));
+            frappe.model.set_value(cdt, cdn, "h2", 0);
+            frappe.validated = false;
+        }
+
+        // Calculate only if all are valid
+        if ((row.l2 || 0) <= 12 && (row.b2 || 0) <= 12 && (row.h2 || 0) <= 12) {
+            let l = (row.l1 || 0) + (row.l2 || 0) / 12;
+            let b = (row.b1 || 0) + (row.b2 || 0) / 12;
+            let h = (row.h1 || 0) + (row.h2 || 0) / 12;
+
+            row.volume = Math.round(l * b * h * 1000) / 1000;
+            calculate_total_volume(frm);
+        }
+
         frm.refresh_field('stone_details');
     }
 }
+
 
 function calculate_total_volume(frm) {
     let total = 0;
@@ -712,6 +953,7 @@ function setup_child_row_permissions(frm, cdt, cdn) {
     const child_field_verification_map = {
         'stone_name': 'stone_name_verified',
         'stone_code': 'stone_code_verified',
+        'range': 'range_verified',
         'l1': 'l1_verified',
         'l2': 'l2_verified',
         'b1': 'b1_verified',
@@ -797,6 +1039,7 @@ function control_range_verification_access(frm, cdt, cdn) {
     const required_verifications = [
         'stone_name_verified',
         'stone_code_verified',
+        'range_verified',
         'l1_verified',
         'l2_verified', 
         'b1_verified',
@@ -808,24 +1051,24 @@ function control_range_verification_access(frm, cdt, cdn) {
     const all_verified = required_verifications.every(field => row[field] == 1);
     const range_wrapper = row_wrapper.get_field('range_verified');
     
-    if (range_wrapper && range_wrapper.$input) {
-        if (all_verified) {
-            // Enable range verification
-            range_wrapper.$input.prop('disabled', false);
-            range_wrapper.$input.css('opacity', '1');
-            range_wrapper.$input.attr('title', 'All other fields verified. Range verification now available.');
-        } else {
-            // Disable range verification and uncheck if checked
-            range_wrapper.$input.prop('disabled', true);
-            range_wrapper.$input.css('opacity', '0.5');
-            range_wrapper.$input.attr('title', 'Please verify all other fields first before verifying Range.');
+    // if (range_wrapper && range_wrapper.$input) {
+    //     if (all_verified) {
+    //         // Enable range verification
+    //         range_wrapper.$input.prop('disabled', false);
+    //         range_wrapper.$input.css('opacity', '1');
+    //         range_wrapper.$input.attr('title', 'All other fields verified. Range verification now available.');
+    //     } else {
+    //         // Disable range verification and uncheck if checked
+    //         range_wrapper.$input.prop('disabled', true);
+    //         range_wrapper.$input.css('opacity', '0.5');
+    //         range_wrapper.$input.attr('title', 'Please verify all other fields first before verifying Range.');
             
-            // If range is currently checked, uncheck it
-            if (row.range_verified == 1) {
-                frappe.model.set_value(cdt, cdn, 'range_verified', 0);
-            }
-        }
-    }
+    //         // If range is currently checked, uncheck it
+    //         if (row.range_verified == 1) {
+    //             frappe.model.set_value(cdt, cdn, 'range_verified', 0);
+    //         }
+    //     }
+    // }
 }
 
 // Control Show Duplicates button visibility based on user roles and workflow state
@@ -1563,7 +1806,7 @@ function check_stone_duplicates(frm, cdt, cdn) {
     
     // Check for duplicates in other Size Lists within the same project
     frappe.call({
-        method: 'baps.baps.doctype.size_list.size_list.check_stone_name_duplicates',
+        method: 'baps.baps.doctype.size_list_form.size_list_form.check_stone_name_duplicates',
         args: {
             baps_project: frm.doc.baps_project,
             stone_name: row.stone_name,
@@ -1576,46 +1819,6 @@ function check_stone_duplicates(frm, cdt, cdn) {
         }
     });
 }
-
-
-
-
-
-
-
-
-
-// frappe.listview_settings['Size List'] = {    
-//     onload: function(listview) {
-//         // Get current user's roles
-//         const roles = frappe.user_roles;
-
-//         // If user is a Data Entry Checker
-//         if (roles.includes("Size List Data Checker")) {
-//             // Apply a filter so only non-draft records are visible
-//             listview.filter_area.add([
-//                 ["Size List", "workflow_state", "!=", "Draft"]
-//             ]);
-//         }
-//     }
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1915,7 +2118,7 @@ function show_duplicate_records(frm, cdt, cdn) {
     
     // Call server method to get duplicate records
     frappe.call({
-        method: 'baps.baps.doctype.size_list.size_list.get_duplicate_records_for_row',
+        method: 'baps.baps.doctype.size_list_form.size_list_form.get_duplicate_records_for_row',
         args: {
             row_data: current_data,
             current_size_list: frm.doc.name
@@ -2180,7 +2383,7 @@ function check_single_row_for_duplicates(frm, row, index) {
         
         // Call server to check for duplicates
         frappe.call({
-            method: 'baps.baps.doctype.size_list.size_list.get_duplicate_records_for_row',
+            method: 'baps.baps.doctype.size_list_form.size_list_form.get_duplicate_records_for_row',
             args: {
                 row_data: row_data,
                 current_size_list: frm.doc.name || 'new'

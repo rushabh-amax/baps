@@ -9,7 +9,9 @@
 
 
 /* loader */
-
+.hide-breadcrumb {
+  display: none !important;
+}
 .centered.splash img{
   max-height: 400px !important;
   max-width: 400px !important;
@@ -114,9 +116,7 @@ body{
 
 
  @media (max-width:990px) {
-  .custom-sidebar-toggle{
-    display: none !important;
-  }
+
   [data-original-title="Toggle Sidebar"]{
     display: block !important;
   }
@@ -173,6 +173,38 @@ height: var(--classic_height);
   
   
 }
+/* ===== */
+/* Hide workspace sidebar when no filters */
+.col-lg-2.layout-side-section:not(:has(.filter-section)) {
+    display: none !important;
+}
+
+
+/* custom nav */
+
+.custom-workspace-menu a {
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.custom-workspace-menu a:hover {
+    background: #e9ecef;
+    color: #007bff !important;
+}
+
+@media (max-width: 768px) {
+    .custom-workspace-menu {
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    .custom-workspace-menu a {
+        margin-right: 10px;
+        font-size: 12px;
+    }
+}
+/* ==== */
+
 
 [data-theme="baps"] .search-bar .awesomplete input  {
   border-radius: inherit !important;
@@ -187,6 +219,17 @@ height: var(--classic_height);
 
 [data-theme="baps"] .navbar ul.navbar-nav li.dropdown-navbar-user{
   height: calc(var(--classic_height) - 30px ) !important;
+  aspect-ratio: 1;
+}
+.navbar ul.navbar-nav li.dropdown-help{
+  display: none !important;
+}
+[data-theme="baps"] .navbar ul.navbar-nav li#frappe-back-btn{
+    height: calc(var(--classic_height) - 30px ) !important;
+  aspect-ratio: 1;
+}
+[data-theme="baps"] .navbar ul.navbar-nav li#frappe-module-btn{
+    height: calc(var(--classic_height) - 30px ) !important;
   aspect-ratio: 1;
 }
 [data-theme="baps"] .navbar ul.navbar-nav li.nav-item:has(button[aria-label="Help Dropdown"]){
@@ -219,13 +262,16 @@ height: var(--classic_height);
  #navbar-breadcrumbs {
   background: var(--control-bg);
   padding-block: .5em;
-  display: flex;
+  display: none !important;
   flex-direction: row;
-  gap: 0.5rem; /* space between items and > */
+  gap: 0.5rem; 
   padding: 1.5em 6em;
   margin: 0;
   list-style: none;
 }
+/* #navbar-breadcrumbs li:nth-child(2){
+  background-color: red !important;
+} */
 
  #navbar-breadcrumbs li:first-child{
   padding-left: 1em !important;
@@ -315,7 +361,7 @@ height: var(--classic_height);
 /* baps theme heading rows */
 [data-theme="baps"] .grid-heading-row {
   background-color: #ffe9e3;
-  color: #EE5225; /* white text for contrast */
+  color: #2a0900; /* white text for contrast */
 }
 
 /* baps theme list head rows */
@@ -337,9 +383,8 @@ height: var(--classic_height);
     text-align: center !important;
       background-color: var(--fg-color) !important;
 }
-.nowrap-data-row div:not(.grid-body div){
-  background: #ffe9e3 !important;
-}
+
+
 /* .nowrap-data-row div:not(.grid-body div){
   background: var(--muted) !important;
 } */
@@ -348,7 +393,8 @@ height: var(--classic_height);
 .grid-row-open .row-actions .grid-insert-row,
 .grid-row-open .row-actions .grid-insert-row-below,
 .grid-row-open .row-actions .grid-duplicate-row,
-.grid-row-open .row-actions .grid-move-row {
+.grid-row-open .row-actions .grid-move-row,
+.grid-row-open .row-actions .grid-delete-row {
     display: none !important;
 }
 .grid-row-open .row-actions .grid-delete-row,
@@ -366,9 +412,9 @@ height: var(--classic_height);
 .grid-body .row-check {
     margin-left: 0 !important;
 }
-.grid-static-col div:not(.select-icon ){
+/* .grid-static-col div:not(.select-icon ){
   width: 100%;
-}
+} */
 /* .grid-static-col .field-area .form-group:not(.grid-static-col .field-area .form-group:has(select) ){
   margin-top:10px !important;
 } */
@@ -399,36 +445,36 @@ height: var(--classic_height);
 } */
 
 
-.scrollable-from-grid{
+/* .scrollable-from-grid{
   width: calc(100% - 10px) !important;
   margin-inline:auto !important;
   overflow-x: scroll !important;
   overflow-y:hidden !important;
-}
-
+} */
+/* 
 .nowrap-data-row{
   flex-wrap: nowrap !important;
-}
+} */
 
 
-
+/* 
 .child-abs-main-container{
   position: relative !important;
 }
 .custom-width{
   width: 100px !important;
-}
+} */
 .grid-body.col.row-index,
 .grid-body.col.row-check {
   line-height: 2.9 !important;
 } 
 .grid-static-col .static-area{
-  width: 100% !important;
+  /* width: 100% !important; */
   text-align: center !important;
 }
-.grid-row > .row .col:last-child{
+/* .grid-row > .row .col:last-child{
  padding-inline: 2em ;  
-}
+} */
 
 /* order chnage */
 .list-row-head .list-row-col:nth-child(1),
@@ -479,6 +525,14 @@ height: var(--classic_height);
 [data-fieldname="new_password"] .control-input-wrapper .control-input{
   height: 40px;
   position: relative;
+}
+[data-theme="baps"]  .form-control.column-width{
+  height: 24px !important;
+      background: #f1f1f1 !important;
+}
+[data-theme="baps"]  .form-control.fields_order.sortable-handle.sortable{
+  --control-bg:transparent;
+       background-color: var(--control-bg);
 }
 [data-fieldname="new_password"] .control-input-wrapper .control-input input{
   height: 100%;
@@ -679,7 +733,8 @@ modules override classes
 
 
 .layout-side-section{
-  display: none;   /* or width: 0; transition can be added */
+  /* display: none;   */
+   /* or width: 0; transition can be added */
 }
 
 

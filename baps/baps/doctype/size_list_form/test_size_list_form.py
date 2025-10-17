@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestSizeList(FrappeTestCase):
+class TestSizeListForm(FrappeTestCase):
 	pass

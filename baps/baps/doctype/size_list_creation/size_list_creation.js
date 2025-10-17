@@ -16,6 +16,8 @@ frappe.ui.form.on('Size List Creation', {
         // Setup role-based permissions
         setup_role_based_permissions(frm);
         
+        // No duplicate checking needed here - duplicates are handled in Size List Form
+        
         // Hide the document status indicator that shows "Draft"
         setTimeout(() => {
             // Hide the status indicator in the form header
@@ -66,9 +68,25 @@ frappe.ui.form.on('Size List Creation', {
         // Make all fields read-only except status
         make_fields_read_only(frm);
     }
+});
 
-
-    
+// Child table events for stone_details
+frappe.ui.form.on('Size List Creation Item', {
+    refresh: function(frm, cdt, cdn) {
+        // Show duplicate styling for rows that already have duplicate_flag set
+        let row = locals[cdt][cdn];
+        if (row.duplicate_flag) {
+            const $row = $(frm.fields_dict.stone_details.grid.grid_rows_by_docname[row.name].wrapper);
+            $row.css({
+                'background-color': '#ffe6e6',
+                'border-left': '4px solid #ff4444'
+            });
+            $row.find('.grid-row-index').css({
+                'background-color': '#ff4444',
+                'color': 'white'
+            });
+        }
+    }
 });
 
 // Helper function to auto-fill all fields from selected Size List
@@ -78,28 +96,28 @@ function auto_fill_fields_from_size_list(frm, size_list_name) {
     frappe.call({
         method: 'frappe.client.get',
         args: {
-            doctype: 'Size List',
+            doctype: 'Size List Form',
             name: size_list_name
         },
         callback: function(r) {
             if (r.message) {
                 const size_list_doc = r.message;
                 
-                // Auto-fill header fields
-                frm.set_value('baps_project', size_list_doc.baps_project);
-                frm.set_value('project_name', size_list_doc.project_name);
-                frm.set_value('prep_date', size_list_doc.prep_date);
-                frm.set_value('stone_type', size_list_doc.stone_type);
-                frm.set_value('main_part', size_list_doc.main_part);
-                frm.set_value('sub_part', size_list_doc.sub_part);
-                frm.set_value('cutting_region', size_list_doc.cutting_region);
-                frm.set_value('total_volume', size_list_doc.total_volume);
+                // // Auto-fill header fields
+                // frm.set_value('baps_project', size_list_doc.baps_project);
+                // frm.set_value('project_name', size_list_doc.project_name);
+                // frm.set_value('prep_date', size_list_doc.prep_date);
+                // frm.set_value('stone_type', size_list_doc.stone_type);
+                // frm.set_value('main_part', size_list_doc.main_part);
+                // frm.set_value('sub_part', size_list_doc.sub_part);
+                // frm.set_value('cutting_region', size_list_doc.cutting_region);
+                // frm.set_value('total_volume', size_list_doc.total_volume);
                 
-                // Auto-fill Process Required fields (checkboxes)
-                frm.set_value('polishing', size_list_doc.polishing || 0);
-                frm.set_value('dry_fitting', size_list_doc.dry_fitting || 0);
-                frm.set_value('carving', size_list_doc.carving || 0);
-                frm.set_value('chemicaling', size_list_doc.chemical || 0);
+                // // Auto-fill Process Required fields (checkboxes)
+                // frm.set_value('polishing', size_list_doc.polishing || 0);
+                // frm.set_value('dry_fitting', size_list_doc.dry_fitting || 0);
+                // frm.set_value('carving', size_list_doc.carving || 0);
+                // frm.set_value('chemical', size_list_doc.chemical || 0);
                 
                 // Auto-fill stone details from Size List
                 if (size_list_doc.stone_details && size_list_doc.stone_details.length > 0) {
@@ -158,7 +176,7 @@ function make_all_fields_read_only_for_project_manager(frm) {
         'form_number', 'baps_project', 'project_name', 'prep_date',
         'stone_type', 'main_part', 'sub_part', 'cutting_region',
         'total_volume', 'polishing', 'dry_fitting', 
-        'carving', 'chemicaling', 'status'
+        'carving', 'chemical', 'status'
     ];
     
     all_fields.forEach(field => {
@@ -194,7 +212,7 @@ function make_fields_read_only(frm) {
         'form_number', 'baps_project', 'project_name', 'prep_date',
         'stone_type', 'main_part', 'sub_part', 'cutting_region',
         'total_volume', 'polishing', 'dry_fitting', 
-        'carving', 'chemicaling'
+        'carving', 'chemical'
     ];
     
     fields_to_lock.forEach(field => {
@@ -229,7 +247,7 @@ function make_fields_editable(frm) {
         'form_number', 'baps_project', 'project_name', 'prep_date',
         'stone_type', 'main_part', 'sub_part', 'cutting_region',
         'total_volume', 'polishing', 'dry_fitting', 
-        'carving', 'chemicaling'
+        'carving', 'chemical'
     ];
     
     fields_to_unlock.forEach(field => {
@@ -248,3 +266,6 @@ function make_fields_editable(frm) {
     frm.clear_table("stone_details");
     frm.refresh_field("stone_details");
 }
+
+// Size List Creation just displays pre-processed data from Size List Form
+// All duplicate checking and validation happens in Size List Form
