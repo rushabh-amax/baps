@@ -3,7 +3,7 @@
 # from frappe import _
 # from frappe.model.document import Document
 
-# class TransportationSender(Document):
+# class Transportation(Document):
 #     def validate(self):
 #         self.validate_gate_pass_no_usage()
 
@@ -96,14 +96,14 @@
 #     frappe.msgprint(_(f"{added_count} block(s) added to material table."))
 
 
-# transportation_sender.py
+# transportation.py
 
 # import frappe
 # import json
 # from frappe import _
 # from frappe.model.document import Document
 
-# class TransportationSender(Document):
+# class Transportation(Document):
 #     def validate(self):
 #         self.validate_gate_pass_no_usage()
 
@@ -262,7 +262,7 @@ from frappe.model.document import Document
 ##########################################################################
 ##this code is for preventing duplicate the From site and To Site
 ##########################################################################
-class TransportationSender(Document):
+class Transportation(Document):
     def validate(self):
         self.validate_gate_pass_usage()
         # this code is for preventing From Site and To Site being the same
@@ -280,7 +280,7 @@ class TransportationSender(Document):
             return
 
         # Check if another document already exists with the same combination
-        existing_sender = frappe.db.exists("Transportation Sender", {
+        existing_sender = frappe.db.exists("Transportation", {
             "gate_pass_bookno": self.gate_pass_bookno,
             "gate_pass_no": self.gate_pass_no,
             # This is important: exclude the current document from the check
@@ -381,7 +381,7 @@ class TransportationSender(Document):
 def get_available_gate_passes(doctype, txt, searchfield, start, page_len, filters):
 	# Step 1: Find all Gate Pass numbers that have ALREADY been used
 	used_gate_passes = frappe.get_all(
-		"Transportation Sender",
+		"Transportation",
 		fields=["gate_pass_no"],
 		filters={"docstatus": ["!=", 2]}, # Exclude cancelled documents
 		pluck="gate_pass_no"
@@ -410,14 +410,14 @@ def get_available_gate_passes(doctype, txt, searchfield, start, page_len, filter
 #This one will find all the available books.
 #################################################################
 # === ADD THIS NEW FUNCTION AT THE END OF THE FILE ===
-# Make sure it is outside the TransportationSender class, with no indentation
+# Make sure it is outside the Transportation class, with no indentation
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def get_available_gate_pass_books(doctype, txt, searchfield, start, page_len, filters):
     # Step 1: Get a list of all Gate Pass numbers that are already used.
     used_passes = frappe.get_all(
-        "Transportation Sender",
+        "Transportation",
         fields=["gate_pass_no"],
         filters={"docstatus": ["!=", 2]}, # Exclude cancelled documents
         pluck="gate_pass_no"
@@ -450,3 +450,12 @@ def get_available_gate_pass_books(doctype, txt, searchfield, start, page_len, fi
         page_length=page_len,
         as_list=True,
     )
+
+# This function fetches the full name of a user based on their email (user_id).
+# frappe.whitelist()
+# def get_user_full_name(user_id):
+#     """
+#     Returns the full_name of a User given their email (user_id).
+#     """
+#     # frappe.db.get_value is a highly efficient way to fetch a single field value.
+#     return frappe.db.get_value("User", user_id, "full_name")

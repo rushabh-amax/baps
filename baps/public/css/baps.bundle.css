@@ -7,7 +7,9 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Didact+Gothic&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');    
 
-
+/* [aria-label="Toggle Sidebar"]{
+  display: none !important;
+} */
 /* loader */
 .hide-breadcrumb {
   display: none !important;
@@ -156,16 +158,12 @@ navbar's style's
 {
 height: var(--classic_height);
 }
-[data-theme="baps"] .navbar-home img {
+ .navbar-home img {
         max-height: 65px !important;
     width: 47px !important;
 }
-.navbar-home img {
-    max-height: 70px !important;
-    width: 120px !important;
-    object-fit: cover;
-}
-[data-theme="baps"] .search-bar .awesomplete {
+
+ .search-bar .awesomplete {
   height: calc(var(--classic_height) - 25px);
   padding: .15em !important;
   border-radius: .5em !important;
@@ -209,55 +207,55 @@ height: var(--classic_height);
 /* ==== */
 
 
-[data-theme="baps"] .search-bar .awesomplete input  {
+ .search-bar .awesomplete input  {
   border-radius: inherit !important;
   height: 100% !important;
   background: white !important;
 }
-[data-theme="baps"] .navbar ul.navbar-nav li.nav-item,
-[data-theme="baps"].btn-theme{
+ .navbar ul.navbar-nav li.nav-item,
+.btn-theme{
   height: 40px;
   aspect-ratio: 1;
 }
 
-[data-theme="baps"] .navbar ul.navbar-nav li.dropdown-navbar-user{
+ .navbar ul.navbar-nav li.dropdown-navbar-user{
   height: calc(var(--classic_height) - 30px ) !important;
   aspect-ratio: 1;
 }
 .navbar ul.navbar-nav li.dropdown-help{
   display: none !important;
 }
-[data-theme="baps"] .navbar ul.navbar-nav li#frappe-back-btn{
+ .navbar ul.navbar-nav li#frappe-back-btn{
     height: calc(var(--classic_height) - 30px ) !important;
   aspect-ratio: 1;
 }
-[data-theme="baps"] .navbar ul.navbar-nav li#frappe-module-btn{
+ .navbar ul.navbar-nav li#frappe-module-btn{
     height: calc(var(--classic_height) - 30px ) !important;
   aspect-ratio: 1;
 }
-[data-theme="baps"] .navbar ul.navbar-nav li.nav-item:has(button[aria-label="Help Dropdown"]){
+ .navbar ul.navbar-nav li.nav-item:has(button[aria-label="Help Dropdown"]){
  width:45px !important;
 }
 
-[data-theme="baps"] .navbar ul.navbar-nav li.nav-item:has(button[aria-label="User Menu"] )span{
+ .navbar ul.navbar-nav li.nav-item:has(button[aria-label="User Menu"] )span{
   height: 100%;
   width: 100%;
 }
-[data-theme="baps"] .navbar ul.navbar-nav > li.nav-item  > button
+ .navbar ul.navbar-nav > li.nav-item  > button
 {
       height: 100%;
     width: 100%;
     text-align: center;
 }
 
-[data-theme="baps"] .navbar ul.navbar-nav > li.nav-item.show{
+ .navbar ul.navbar-nav > li.nav-item.show{
   transition: 250ms ease all;
 }
-[data-theme="baps"] .navbar .nav-item:first-child{
+ .navbar .nav-item:first-child{
   margin-left: unset !important;
 }
 
-[data-theme="baps"] .avatar .standard-image{
+ .avatar .standard-image{
   border-radius: .5em;
 }
 
@@ -280,7 +278,7 @@ height: var(--classic_height);
   padding-left: 1em !important;
 }
 
-[data-theme="baps"] #navbar-breadcrumbs a:before {
+ #navbar-breadcrumbs a:before {
     content: "/";
     display: inline-block;
     margin-right: 3px !important;
@@ -304,45 +302,45 @@ height: var(--classic_height);
 }
 
 /* 
-[data-theme="baps"] .sidebar.expanded {
+ .sidebar.expanded {
   width: 200px;
   transition: width 0.3s ease;
 }
-[data-theme="baps"] [data-title="Public"]{
+ [data-title="Public"]{
   padding-inline: .25em;
 }
 
-[data-theme="baps"] [data-page-route=Workspaces] .layout-main .layout-side-section {
+ [data-page-route=Workspaces] .layout-main .layout-side-section {
         padding-right: 15px;
         width: 200px;
         overflow-x: hidden;
 }
 
-[data-theme="baps"] .layout-main-section.frappe-card {
+ .layout-main-section.frappe-card {
   --card-bg:transparent;
     background-color: var(--card-bg);
  }
-[data-theme="baps"] .sidebar-item-container{
+ .sidebar-item-container{
   margin-block: .25em;
   margin-left: 0px; 
 }
 
-[data-theme="baps"] .sidebar-item-container .desk-sidebar-item{
+ .sidebar-item-container .desk-sidebar-item{
       padding: 1em 0em;
 
   border-radius: 1em !important;
   transition: 250ms cubic-bezier(0.075, 0.82, 0.165, 1) scale;
   position: relative;
 }
-[data-theme="baps"] .desk-sidebar-item:has(+ .sidebar-child-item) .drop-icon {
+ .desk-sidebar-item:has(+ .sidebar-child-item) .drop-icon {
   position: absolute;
   right: 0;
   top: 50%;
   transform: translateY(-50%);
 }
 
-[data-theme="baps"] .standard-sidebar-item.selected,
-[data-theme="baps"] .standard-sidebar-item.active.selected
+ .standard-sidebar-item.selected,
+ .standard-sidebar-item.active.selected
 {
 
   background:#c784571f !important;
@@ -356,13 +354,13 @@ height: var(--classic_height);
 /* ====================================================== */
 /* table */
 /* baps theme heading rows */
-[data-theme="baps"] .grid-heading-row {
+ .grid-heading-row {
   background-color: #ffe9e3;
   color: #2a0900; /* white text for contrast */
 }
 
 /* baps theme list head rows */
-[data-theme="baps"] .list-row-head {
+ .list-row-head {
   background-color: #ffe9e3;
   color: #EE5225; /* white text for contrast */
   padding-block: 1.5em !important;
@@ -382,6 +380,12 @@ height: var(--classic_height);
 }
 
 /* Hide unwanted buttons in child row actions */
+.row-actions{
+  display:  none !important;
+}
+[data-action="duplicate_rows"]{
+  display: none !important;
+}
 .grid-row-open .row-actions .grid-insert-row,
 .grid-row-open .row-actions .grid-insert-row-below,
 .grid-row-open .row-actions .grid-duplicate-row,
@@ -451,7 +455,7 @@ height: var(--classic_height);
 
 /* ==================================================================== */
 /* frappe tab's active style */
-[data-theme="baps"] .form-tabs-list .form-tabs .nav-item .nav-link.active {
+ .form-tabs-list .form-tabs .nav-item .nav-link.active {
   --_primary-bg-color:#ea582d !important;
   --text-color:var(--_primary-bg-color);
   font-weight: 500;
@@ -473,11 +477,11 @@ height: var(--classic_height);
   height: 40px;
   position: relative;
 }
-[data-theme="baps"]  .form-control.column-width{
+  .form-control.column-width{
   height: 24px !important;
       background: #f1f1f1 !important;
 }
-[data-theme="baps"]  .form-control.fields_order.sortable-handle.sortable{
+  .form-control.fields_order.sortable-handle.sortable{
   --control-bg:transparent;
        background-color: var(--control-bg);
 }
@@ -609,31 +613,31 @@ select,
 
 /* ==========================================================================*/
  /* onboarding styl's  */
-[data-theme="baps"] .onboarding-step svg.es-icon{
+ .onboarding-step svg.es-icon{
   --icon-stroke: var(--success);
    color: var(--icon-stroke) !important;
 }
 
-[data-theme="baps"] .widget.onboarding-widget-box .widget-body .onboarding-step.skipped {
+ .widget.onboarding-widget-box .widget-body .onboarding-step.skipped {
     color: #ff6565;
     background-color: #ffd2d2;
 }
-[data-theme="baps"] .widget.onboarding-widget-box .widget-body .onboarding-step.complete{
+ .widget.onboarding-widget-box .widget-body .onboarding-step.complete{
    color: #036100;
     background-color: #c9e0c8;
 }
-[data-theme="baps"] .onboarding-step.skipped svg.es-icon {
+ .onboarding-step.skipped svg.es-icon {
     --icon-stroke: #e03636 !important;
     color: var(--icon-stroke) !important; 
 }
-[data-theme="baps"] .widget-control.indicator-pill.no-indicator-dot{
+ .widget-control.indicator-pill.no-indicator-dot{
   position: absolute;
   bottom: 0;
   right: .25em;
   scale: .85;
   z-index: 1;
 }
-[data-theme="baps"] #nav-modules-link {
+ #nav-modules-link {
   font-weight: 500;
   color: var(--primary_clr) !important;
 }
@@ -763,7 +767,7 @@ global button
 /* -------------------
 color: color-mix(in srgb, black 70%, white);  
 ------------------- */
-[data-theme="baps"] .btn-primary {
+ .btn-primary {
     background: linear-gradient(to bottom right, rgba(var(--clr3)), rgba(var(--clr1)));
     color: #fff !important;
     background-size: 200% 200%; /* make the background bigger to animate */
@@ -771,14 +775,14 @@ color: color-mix(in srgb, black 70%, white);
     transition: background-position 0.5s ease, color 0.2s ease;
 }
 
-[data-theme="baps"] .btn-primary:hover {
+ .btn-primary:hover {
     background-position: 100% 100%; /* move gradient on hover */
     color: #fff !important;
 }
 
 
-[data-theme="baps"] .btn-primary:active,
-[data-theme="baps"] .btn-primary:focus {
+ .btn-primary:active,
+ .btn-primary:focus {
   background-position: 100% 100%; /* move gradient on hover */
   color: #fff !important;
 }
@@ -786,26 +790,26 @@ color: color-mix(in srgb, black 70%, white);
 /* ----------------------------
 Default Button: Neutral Gray → Warm Glow on Interaction
 ----------------------------- */
-[data-theme="baps"] .btn.btn-secondary.btn-default:hover {
+ .btn.btn-secondary.btn-default:hover {
   background: linear-gradient(135deg, #eb963c, #e67d3c) !important;
 }
 
-[data-theme="baps"] .btn-default {
+ .btn-default {
   background: #F5F5F5; /* soft neutral between #FFFFFF and #DADADA */
   color: #000 !important; /* solid text for readability */
   border: 1px solid #DADADA;
   transition: all 0.3s ease;
 }
 
-[data-theme="baps"] .btn-default:hover {
+ .btn-default:hover {
   background: #ffdbd2; /* slightly deeper hover state */
 
   border-color: unset;
   color: #222 !important;
 }
 
-[data-theme="baps"] .btn-default:active,
-[data-theme="baps"] .btn-default:focus {
+ .btn-default:active,
+ .btn-default:focus {
   background: linear-gradient(135deg, #F5E1D6, #EECFC0); 
       /* background: linear-gradient(135deg, #eb963c, #e67d3c); */
   border-color: #C8AA96; /* warm border tone */
@@ -816,7 +820,7 @@ Default Button: Neutral Gray → Warm Glow on Interaction
 /* ---------------------------
 Adjusted secondary button to match primary palette 
 ----------------------------*/
-[data-theme="baps"] .btn-secondary {
+ .btn-secondary {
     --sec1: 240, 180, 60;   /* softer gold/orange */
     --sec2: 250, 220, 140;  /* light creamy shade */
     --sec3: 220, 70, 60;    /* muted red */
@@ -828,18 +832,18 @@ Adjusted secondary button to match primary palette
     transition: all 0.4s ease;
 }
 
-[data-theme="baps"] .btn-secondary:hover {
+ .btn-secondary:hover {
     background-position: 100% 100%; /* animate gradient */
     color: #fff !important;
 }
 
-[data-theme="baps"] .btn-secondary:active,
-[data-theme="baps"] .btn-secondary:focus {
+ .btn-secondary:active,
+ .btn-secondary:focus {
     background: linear-gradient(to bottom right, rgba(var(--sec3)), rgba(var(--sec1)), rgba(var(--sec2)));
     box-shadow: 0 0 0 0.2rem rgba(var(--sec3), 0.25);
 }
 
-[data-theme="baps"] .notification-null-state{
+ .notification-null-state{
   padding-inline: .25em;
  }
 

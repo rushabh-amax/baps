@@ -1,0 +1,47 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-10-13 16:55:29.200249",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "site",
+  "sender",
+  "receiver"
+ ],
+ "fields": [
+  {
+   "fieldname": "site",
+   "fieldtype": "Link",
+   "label": "Site",
+   "options": "Site"
+  },
+  {
+   "default": "0",
+   "fieldname": "sender",
+   "fieldtype": "Check",
+   "label": "Sender"
+  },
+  {
+   "default": "0",
+   "fieldname": "receiver",
+   "fieldtype": "Check",
+   "label": "Receiver"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-10-16 16:43:29.537345",
+ "modified_by": "Administrator",
+ "module": "Baps",
+ "name": "Site Allocation Child",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -7,9 +7,10 @@
  "engine": "InnoDB",
  "field_order": [
   "trade_partner_name",
+  "trade_partner_code",
   "gstin",
-  "phone",
   "column_break_pcju",
+  "phone",
   "email_id",
   "site"
  ],
@@ -45,12 +46,18 @@
    "fieldtype": "Link",
    "label": "Site",
    "options": "Site"
+  },
+  {
+   "fieldname": "trade_partner_code",
+   "fieldtype": "Data",
+   "label": "Trade Partner Code",
+   "unique": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-13 11:16:12.773488",
+ "modified": "2025-10-28 16:59:08.018286",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Trade Partner",

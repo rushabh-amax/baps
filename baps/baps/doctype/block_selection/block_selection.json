@@ -9,12 +9,14 @@
   "date",
   "column_break_praf",
   "trade_partner",
+  "trade_partner_code",
   "column_break_bozc",
   "site",
   "column_break_mgzk",
   "party",
   "section_break_pitu",
   "baps_project",
+  "project_code",
   "project_name",
   "column_break_qkjn",
   "material_type",
@@ -140,12 +142,22 @@
    "label": "Trade Partner",
    "options": "Trade Partner",
    "reqd": 1
+  },
+  {
+   "fetch_from": "trade_partner.trade_partner_code",
+   "fieldname": "trade_partner_code",
+   "fieldtype": "Data"
+  },
+  {
+   "fetch_from": "baps_project.project_code",
+   "fieldname": "project_code",
+   "fieldtype": "Data"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-07 16:35:49.116794",
+ "modified": "2025-10-28 17:00:45.922721",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Block Selection",

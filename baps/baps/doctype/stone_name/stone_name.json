@@ -44,7 +44,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-17 11:14:16.194288",
+ "modified": "2025-10-29 15:56:37.201749",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Stone Name",
@@ -65,9 +65,7 @@
   }
  ],
  "row_format": "Dynamic",
- "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
- "title_field": "stone_name"
+ "states": []
 }

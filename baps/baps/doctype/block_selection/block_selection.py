@@ -2,64 +2,146 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 
-def generate_block_prefix(project_name, trade_partner):
-    """Generate a prefix code from Project Name + Trade Partner"""
-    # Project code: first letters of each word
-    project_code = "".join([w[0].upper() for w in (project_name or "").split() if w])
-    # Trade Partner code: first letters of each word
-    partner_code = "".join([w[0].upper() for w in (trade_partner or "").split() if w])
-    # Combine
-    return project_code + partner_code
 
 class BlockSelection(Document):
     
     def validate(self):
-        """Ensure numbering, volume calculation, and validation before saving"""
-        seq = 1
+        """Ensure parent fields, block numbering, volume calculation, and validation before saving."""
+        # Validate parent fields
+        if not self.baps_project or not self.trade_partner:
+            frappe.throw("Please select both Project and Trade Partner before saving.")
+
+        project_code = frappe.db.get_value("Baps Project", self.baps_project, "project_code")
+        trade_code = frappe.db.get_value("Trade Partner", self.trade_partner, "trade_partner_code")
+
+        if not project_code or not trade_code:
+            frappe.throw("Project or Trade Partner code missing — please save them first.")
+
+        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        # NEW: Validate block number format (9 chars: 5-letter prefix + 4 digits)
+        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        self.validate_block_number_format()
+        # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        # Validate block number uniqueness
+        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        self.validate_block_number_uniqueness()
+        # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+        # Process child table rows (NO auto-generation of block_number)
         total = 0.0
+        for idx, row in enumerate(self.block_selection_details or [], 1):
+            # ⚠️ REMOVED: Do NOT auto-generate block_number
+            # User must enter full 9-digit code manually
 
-        for row in (self.block_selection_details or []):
-            # Auto-generate block number if missing
-            if not row.block_number:
-                row.block_number = str(seq).zfill(3)
-            seq += 1
-
-            # Calculate volume (ft/inch conversion)
+            # Calculate volume (ft + inch conversion)
             l = (row.l1 or 0) + (row.l2 or 0) / 12.0
             b = (row.b1 or 0) + (row.b2 or 0) / 12.0
             h = (row.h1 or 0) + (row.h2 or 0) / 12.0
             row.volume = round(l * b * h, 3)
 
-            # ✅ Check for 0 or invalid volume
+            # Validate volume is positive
             if not row.volume or row.volume <= 0:
                 frappe.throw(
-                    f'Block "{row.block_number or seq}" has 0 or invalid volume. '
+                    f'Block "{row.block_number or idx}" has 0 or invalid volume. '
                     'Please enter valid L, B, and H values before saving.'
                 )
 
             total += row.volume
 
-        # Save total volume to parent if field exists
+        # Set total volume on parent if field exists
         if hasattr(self, 'total_volume'):
             self.total_volume = round(total, 3)
 
+    def validate_block_number_format(self):
+        """Validate block_number is exactly 9 chars: [5-letter prefix][4 digits]"""
+        # Get expected prefix from linked documents
+        project_code = frappe.db.get_value("Baps Project", self.baps_project, "project_code") or ""
+        trade_code = frappe.db.get_value("Trade Partner", self.trade_partner, "trade_partner_code") or ""
+        expected_prefix = (project_code + trade_code).upper()
+
+        for row in (self.block_selection_details or []):
+            bn = (row.block_number or "").strip()
+            
+            # 1. Mandatory
+            if not bn:
+                frappe.throw(_("Row #{0}: Block Number is mandatory.").format(row.idx))
+            
+            # 2. Must be 9 characters
+            if len(bn) != 9:
+                frappe.throw(_("Row #{0}: Block Number must be exactly 9 characters long.").format(row.idx))
+            
+            # 3. Must start with correct prefix
+            if not bn.upper().startswith(expected_prefix):
+                frappe.throw(
+                    _("Row #{0}: Block Number must start with '{1}'.").format(row.idx, expected_prefix)
+                )
+            
+            # 4. Last 4 must be digits
+            if not bn[-4:].isdigit():
+                frappe.throw(_("Row #{0}: Last 4 characters must be digits (e.g., 0001).").format(row.idx))
+
+    def validate_block_number_uniqueness(self):
+        """Prevent duplicate block numbers within form and against existing Block records."""
+        block_numbers = set()
+        duplicates_in_form = []
+
+        # 1. Check duplicates within the current form
+        for row in (self.block_selection_details or []):
+            if row.block_number:
+                bn = row.block_number.strip().upper()
+                if bn:
+                    if bn in block_numbers:
+                        duplicates_in_form.append(bn)
+                    else:
+                        block_numbers.add(bn)
+
+        if duplicates_in_form:
+            frappe.throw(
+                _("Duplicate block numbers in this form: {0}").format(
+                    ", ".join(sorted(set(duplicates_in_form)))
+                ),
+                title=_("Duplicate in Form")
+            )
+
+        if not block_numbers:
+            return
+
+        # 2. Check against existing 'Block' records (using 'block_number' field)
+        existing_blocks = frappe.db.get_all(
+            "Block",
+            filters={"block_number": ["in", list(block_numbers)]},
+            pluck="block_number"
+        )
+
+        existing_set = set(existing_blocks)
+        duplicates_in_db = block_numbers & existing_set
+
+        if duplicates_in_db:
+            frappe.throw(
+                _("The following block numbers already exist in the system and cannot be reused:<br><br>{}").format(
+                    "<br>".join([f"<b>{bn}</b>" for bn in sorted(duplicates_in_db)])
+                ),
+                title=_("Block Number Already Exists")
+            )
+
     def on_update(self):
-        """Auto-create Block documents when updating"""
+        """Auto-create Block documents when updating."""
         self.create_blocks_from_details()
 
     def on_update_after_submit(self):
-        """Mark linked Block Stone Receipt Items as Selected"""
+        """Mark linked Block Stone Receipt Items as 'Selected'."""
         for d in (self.block_selection_details or []):
             frappe.db.set_value("Block Stone Receipt Item", d.block_number, "block_status", "Selected")
 
     def create_blocks_from_details(self):
-        """Create Block docs from Block Selection child rows"""
+        """Create Block docs from Block Selection child rows."""
         if not self.block_selection_details:
             return
-
-        prefix = generate_block_prefix(self.project_name, self.trade_partner)
 
         for row in self.block_selection_details:
             if not row.block_number:
@@ -67,9 +149,6 @@ class BlockSelection(Document):
 
             if frappe.db.exists("Block", {"block_number": row.block_number}):
                 continue  # Skip if already exists
-
-            # Auto-generate block_custom_code as PREFIX + block_number
-            block_custom_code = f"{prefix}{row.block_number}"
 
             block_doc = frappe.get_doc({
                 "doctype": "Block",
@@ -81,8 +160,9 @@ class BlockSelection(Document):
                 "party": self.party,
                 "material_type": self.material_type,
                 "status": "Available",
-                "colour": getattr(row, 'colour', None),
+                "color": getattr(row, 'color', None),
                 "grain": getattr(row, 'grain', None),
+                "site": self.site,
                 "l1": getattr(row, 'l1', None),
                 "l2": getattr(row, 'l2', None),
                 "b1": getattr(row, 'b1', None),
@@ -91,14 +171,14 @@ class BlockSelection(Document):
                 "h2": getattr(row, 'h2', None),
                 "wt": getattr(row, 'wt', None),
                 "volume": getattr(row, 'volume', None),
-                "block_custom_code": block_custom_code,
+                "block_custom_code": getattr(row, 'block_custom_code', None)
             })
             block_doc.insert(ignore_permissions=True)
 
 
 @frappe.whitelist()
 def get_last_block_number(trade_partner, project_name, current_docname=None):
-    """Get the last generated block number for a Trade Partner + Project"""
+    """Get the last generated block number for a Trade Partner + Project."""
     filters = {
         "trade_partner": trade_partner,
         "project_name": project_name,
@@ -116,6 +196,44 @@ def get_last_block_number(trade_partner, project_name, current_docname=None):
         limit_page_length=1
     )
 
-    if last_block:
-        return last_block[0].block_number
-    return None
+    return last_block[0].block_number if last_block else None
+
+
+@frappe.whitelist()
+def get_next_block_number(project, trade_partner):
+    """
+    Return next block number for given project and trade partner.
+    Called from client-side when adding a new row.
+    """
+    if not project or not trade_partner:
+        return None
+
+    project_code = frappe.db.get_value("Baps Project", project, "project_code")
+    trade_code = frappe.db.get_value("Trade Partner", trade_partner, "trade_partner_code")
+
+    if not project_code or not trade_code:
+        return None
+
+    prefix = f"{project_code}{trade_code}"
+
+    last = frappe.db.sql(
+        """
+        SELECT block_number FROM `tabBlock Selection Detail`
+        WHERE block_number LIKE %s
+        ORDER BY block_number DESC
+        LIMIT 1
+        """,
+        (f"{prefix}%",),
+    )
+
+    if last and last[0][0]:
+        last_num_str = last[0][0].replace(prefix, "") or "0"
+        try:
+            last_num = int(last_num_str)
+        except ValueError:
+            last_num = 0
+        next_num = last_num + 1
+    else:
+        next_num = 1
+
+    return f"{prefix}{next_num:04d}"

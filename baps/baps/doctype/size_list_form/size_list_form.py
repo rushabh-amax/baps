@@ -13,6 +13,7 @@ class SizeListForm(Document):
     def validate(self):
         """Before saving — always calculate total volume"""
         self.calculate_total_volume()
+        self.validate_zero_volume()
 
     def before_save(self):
         """Before saving - check workflow transitions and handle duplicates automatically"""
@@ -101,6 +102,23 @@ class SizeListForm(Document):
         self.total_volume = round(total, 3)
 
 
+    def validate_zero_volume(self):
+        """Reject saving if any stone detail has 0 or missing volume."""
+        invalid_rows = []
+        for row in getattr(self, "stone_details", []):
+            if not row.volume or float(row.volume) == 0:
+                invalid_rows.append(row.stone_name or row.stone_code or f"Row {row.idx}")
+
+        if invalid_rows:
+            msg = (
+                "Stone data with 0 volume should not be accepted.<br>"
+                "Please correct the following rows:<br><ul>"
+            )
+            for name in invalid_rows:
+                msg += f"<li>{frappe.utils.escape_html(name)}</li>"
+            msg += "</ul>"
+            frappe.throw(msg, title="Invalid Volume Entries")
+
 # =============================================================================
 # PERMISSION CONTROL
 # =============================================================================
@@ -117,13 +135,13 @@ def get_permission_query_conditions(user):
 
     if "Size List Data Entry Operator" in roles:
         conditions.append(
-            f"(`tabSize List Form`.`workflow_state` IN ('Draft','Submitted','Under Verification','Under Rechange','Verified') "
+            f"(`tabSize List Form`.`workflow_state` IN ('Draft','Submitted','Under Verification','Under Rechange','Verified','Published') "
             f"AND `tabSize List Form`.`owner` = '{user}')"
         )
 
     if "Size List Data Checker" in roles:
         conditions.append(
-            "(`tabSize List Form`.`workflow_state` IN ('Submitted','Under Verification','Under Rechange','Verified'))"
+            "(`tabSize List Form`.`workflow_state` IN ('Submitted','Under Verification','Under Rechange','Verified','Published'))"
         )
 
     if "Project Manager" in roles:
@@ -359,6 +377,8 @@ def check_global_duplicates(size_list_name):
 # UTILITY
 # =============================================================================
 
+
+
 @frappe.whitelist()
 def get_duplicate_records_for_row(row_data, current_size_list):
     """Get all duplicate records for a specific row to show to operator - checks both Size List Forms AND Size List Creations"""
@@ -548,3 +568,122 @@ def check_stone_name_duplicates(baps_project, stone_name, exclude_size_list=None
     except Exception as e:
         frappe.log_error(f"Error in check_stone_name_duplicates: {str(e)}", "Stone Name Duplicate Check")
         return []
+    
+
+@frappe.whitelist()
+def get_duplicate_records_for_row(row_data, current_size_list):
+    """
+    Get duplicate records for a specific row.
+    Checks both Size List Form (or Size List) and Size List Creation.
+    Safely handles missing workflow_state field.
+    """
+    try:
+        row_data = frappe.parse_json(row_data) if isinstance(row_data, str) else row_data or {}
+
+        if not row_data.get("baps_project"):
+            return []
+
+        # Detect parent doctype dynamically
+        parent_doctype = None
+        if frappe.db.exists("Size List Form", current_size_list):
+            parent_doctype = "Size List Form"
+        elif frappe.db.exists("Size List Form", current_size_list):
+            parent_doctype = "Size List Form"
+        else:
+            parent_doctype = "Size List Form"
+
+        # Detect child table from meta
+        try:
+            parent_meta = frappe.get_meta(parent_doctype)
+            child_table_field = next((f for f in parent_meta.fields if f.fieldtype == "Table"), None)
+            child_doctype = child_table_field.options if child_table_field else "Size List Details"
+        except Exception:
+            child_doctype = "Size List Details"
+
+        child_table = f"`tab{child_doctype}`"
+
+        # --- Build expanded stone codes ---
+        expanded_codes = set()
+        stone_code_raw = (row_data.get("stone_code") or "").strip()
+        base_code = ''.join([ch for ch in stone_code_raw if not ch.isdigit()]).strip() if stone_code_raw else ""
+
+        if row_data.get("range"):
+            nums = expand_range(row_data.get("range") or "")
+            for n in nums:
+                code = f"{base_code}{str(n).zfill(3)}".upper() if base_code else str(n).zfill(3).upper()
+                expanded_codes.add(code)
+        else:
+            if stone_code_raw:
+                expanded_codes.add(stone_code_raw.upper())
+
+        if not expanded_codes:
+            return []
+
+        codes_list = list(expanded_codes)
+        placeholders = ",".join(["%s"] * len(codes_list))
+
+        # Check if workflow_state exists for Size List Creation
+        workflow_col = ""
+        try:
+            columns = frappe.db.sql("SHOW COLUMNS FROM `tabSize List Creation` LIKE 'workflow_state'", as_dict=True)
+            if columns:
+                workflow_col = "COALESCE(p.workflow_state, '') AS workflow_state,"
+        except Exception:
+            workflow_col = ""
+
+        # --- Query Size List Creation Items ---
+        creation_sql = f"""
+            SELECT
+                p.name AS source_document,
+                'Size List Creation' AS source_type,
+                {workflow_col}
+                c.stone_name,
+                c.stone_code,
+                '' AS `range`,
+                c.l1, c.l2, c.b1, c.b2, c.h1, c.h2
+            FROM `tabSize List Creation Item` c
+            JOIN `tabSize List Creation` p ON c.parent = p.name
+            WHERE p.baps_project = %s
+              AND c.stone_code IN ({placeholders})
+              AND p.docstatus != 2
+            ORDER BY p.creation DESC
+        """
+
+        params_creation = [row_data["baps_project"]] + codes_list
+        creation_duplicates = frappe.db.sql(creation_sql, tuple(params_creation), as_dict=True)
+
+        # --- Query Size List / Size List Form ---
+        workflow_col2 = ""
+        try:
+            columns2 = frappe.db.sql(f"SHOW COLUMNS FROM `tab{parent_doctype}` LIKE 'workflow_state'", as_dict=True)
+            if columns2:
+                workflow_col2 = "COALESCE(p.workflow_state, '') AS workflow_state,"
+        except Exception:
+            workflow_col2 = ""
+
+        size_list_sql = f"""
+            SELECT
+                p.name AS source_document,
+                '{parent_doctype}' AS source_type,
+                {workflow_col2}
+                d.stone_name,
+                d.stone_code,
+                d.`range`,
+                d.l1, d.l2, d.b1, d.b2, d.h1, d.h2
+            FROM {child_table} d
+            JOIN `tab{parent_doctype}` p ON p.name = d.parent
+            WHERE p.baps_project = %s
+              AND p.name != %s
+              AND d.stone_code IN ({placeholders})
+              AND p.docstatus != 2
+            ORDER BY p.creation DESC
+        """
+
+        params_size_list = [row_data["baps_project"], current_size_list] + codes_list
+        size_list_duplicates = frappe.db.sql(size_list_sql, tuple(params_size_list), as_dict=True)
+
+        return (creation_duplicates or []) + (size_list_duplicates or [])
+
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "get_duplicate_records_for_row")
+        frappe.throw(f"Error fetching duplicates: {str(e)}")

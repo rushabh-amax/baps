@@ -58,7 +58,7 @@
 #     # Commit all the database changes at once
 #     frappe.db.commit()
 
-#     # Show a success message to the user in the UI 😃
+#     # Show a success message to the user in the UI 
 #     frappe.msgprint(f"Successfully generated {num_books} Gate Pass Books, each with {num_passes_per_book} passes.")
 
 ##################################################################################
@@ -112,7 +112,7 @@
 #     # Commit all the database changes
 #     frappe.db.commit()
 
-#     # Show a success message to the user 😃
+#     # Show a success message to the user 
 #     frappe.msgprint(f"Successfully generated {num_books} Gate Pass Books with correctly numbered passes.")
 
 ##################################################################################

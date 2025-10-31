@@ -1,43 +1,35 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "GPBNO-.####",
- "creation": "2025-09-03 11:54:13.256773",
- "default_view": "List",
+ "autoname": "field:driver_name",
+ "creation": "2025-10-28 15:05:38.921505",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "gate_pass_bookno",
-  "page_limit",
-  "assigned_to"
+  "driver_name",
+  "driver_mobile_no"
  ],
  "fields": [
   {
-   "fieldname": "gate_pass_bookno",
+   "fieldname": "driver_name",
    "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Gate Pass Book No"
+   "label": "Driver Name",
+   "unique": 1
   },
   {
-   "fieldname": "page_limit",
-   "fieldtype": "Int",
-   "label": "Page Limit"
-  },
-  {
-   "fieldname": "assigned_to",
-   "fieldtype": "Link",
-   "label": "Assigned To",
-   "options": "User"
+   "fieldname": "driver_mobile_no",
+   "fieldtype": "Phone",
+   "label": "Driver Mobile No"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-16 18:13:30.768108",
+ "modified": "2025-10-28 15:10:43.651580",
  "modified_by": "Administrator",
  "module": "Baps",
- "name": "Gate Pass Book",
- "naming_rule": "Expression (old style)",
+ "name": "Baps Driver Details",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -55,6 +47,6 @@
  ],
  "row_format": "Dynamic",
  "sort_field": "modified",
- "sort_order": "ASC",
+ "sort_order": "DESC",
  "states": []
 }

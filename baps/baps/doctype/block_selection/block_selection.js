@@ -99,98 +99,70 @@ function calculate_volume(frm, cdt, cdn) {
 }
 
 //==================================================
-// 3. Block Number Logic
+// Auto-set 5-letter prefix in block_number (NO auto digits)
 //==================================================
-function get_project_code(project_name) {
-    if (!project_name) return "XX";
-    let text = project_name.trim();
-    let initials = "";
-    let words = text.split(/\s+/);
-
-    for (let word of words) {
-        if (initials.length >= 2) break;
-        if (word.length > 0) {
-            initials += word[0].toUpperCase();
-        }
-    }
-
-    if (initials.length < 2 && words[0]) {
-        for (let i = 0; i < words[0].length && initials.length < 2; i++) {
-            initials += words[0][i].toUpperCase();
-        }
-    }
-
-    while (initials.length < 2) {
-        initials += "X";
-    }
-
-    return initials.substring(0, 2);
-}
-
-function get_partner_code(trade_partner) {
-    if (!trade_partner) return "XXX";
-    let text = trade_partner.trim();
-    let initials = "";
-    let words = text.split(/\s+/);
-
-    for (let word of words) {
-        if (initials.length >= 3) break;
-        if (word.length > 0) {
-            initials += word[0].toUpperCase();
-        }
-    }
-
-    if (initials.length < 3 && words[0]) {
-        for (let i = 0; i < words[0].length && initials.length < 3; i++) {
-            initials += words[0][i].toUpperCase();
-        }
-    }
-
-    while (initials.length < 3) {
-        initials += "X";
-    }
-
-    return initials.substring(0, 3);
-}
 
 frappe.ui.form.on("Block Selection", {
-    project_name: function(frm) {
-        frm.trigger("update_block_numbers");
+    refresh: function(frm) {
+        // Re-apply prefix logic if codes change
+        frm.trigger("apply_block_prefix_to_rows");
     },
-    trade_partner: function(frm) {
-        frm.trigger("update_block_numbers");
+    project_code: function(frm) {
+        frm.trigger("apply_block_prefix_to_rows");
     },
-    update_block_numbers: function(frm) {
-        if (!frm.doc.project_name || !frm.doc.trade_partner) return;
+    trade_partner_code: function(frm) {
+        frm.trigger("apply_block_prefix_to_rows");
+    },
 
-        let prefix = get_project_code(frm.doc.project_name) + get_partner_code(frm.doc.trade_partner);
-        let max_num = 0;
+    apply_block_prefix_to_rows: function(frm) {
+        if (!frm.doc.project_code || !frm.doc.trade_partner_code) return;
 
-        (frm.doc.block_selection_details || []).forEach(row => {
-            if (row.block_number && row.block_number.startsWith(prefix)) {
-                let numPart = row.block_number.replace(prefix, "");
-                let n = parseInt(numPart);
-                if (!isNaN(n) && n > max_num) max_num = n;
+        let prefix = getFiveLetterPrefix(frm.doc.project_code, frm.doc.trade_partner_code);
+
+        // Apply prefix ONLY to rows that have NO block_number yet
+        frm.doc.block_selection_details.forEach(row => {
+            if (!row.block_number) {
+                // Set ONLY the 5-letter prefix — no numbers
+                row.block_number = prefix;
             }
+            // If block_number already exists (e.g., "ABCDE1234"), leave it untouched
         });
-
-        frm.last_block_no = max_num;
+        frm.refresh_field("block_selection_details");
     }
 });
+
+// When a new row is added
+frappe.ui.form.on("Block Selection Detail", {
+    block_selection_details_add: function(frm, cdt, cdn) {
+        if (!frm.doc.project_code || !frm.doc.trade_partner_code) return;
+
+        let prefix = getFiveLetterPrefix(frm.doc.project_code, frm.doc.trade_partner_code);
+        let row = locals[cdt][cdn];
+
+        // Only set if not already set
+        if (!row.block_number) {
+            frappe.model.set_value(cdt, cdn, "block_number", prefix);
+        }
+    }
+});
+
+
 
 //==================================================
 // 4. Auto-number new child rows manually
 //==================================================
 frappe.ui.form.on('Block Selection Detail', {
     block_selection_details_add: function(frm, cdt, cdn) {
-        if (!frm.doc.project_name || !frm.doc.trade_partner) return;
+        if (!frm.doc.project_code || !frm.doc.trade_partner_code) {
+            console.log("Cannot add row - missing codes"); // 👈 DEBUG
+            return;
+        }
 
-        let prefix = get_project_code(frm.doc.project_name) + get_partner_code(frm.doc.trade_partner);
+        let prefix = get_project_code(frm.doc.project_code) + get_partner_code(frm.doc.trade_partner_code);
         let next_num = (frm.last_block_no || 0) + 1;
 
         frappe.model.set_value(cdt, cdn, 'block_number', prefix + String(next_num).padStart(4, "0"));
         frm.last_block_no = next_num;
-        // NO refresh_field — Frappe updates UI automatically
     }
 });
 
@@ -214,10 +186,10 @@ frappe.ui.form.on("Block Selection", {
 //==================================================
 frappe.ui.form.on('Block Selection', {
     last_block_number: function(frm) {
-        if (!frm.doc.project_name || !frm.doc.trade_partner) {
-            frappe.msgprint({ title: _('Missing Info'), message: _('Fill Trade Partner & Project first'), indicator: 'orange' });
-            return;
-        }
+        // if (!frm.doc.project_name || !frm.doc.trade_partner) {
+        //     frappe.msgprint({ title: _('Missing Info'), message: _('Fill Trade Partner & Project first'), indicator: 'orange' });
+        //     return;
+        // }
 
         frappe.call({
             method: 'baps.baps.doctype.block_selection.block_selection.get_last_block_number',
@@ -246,6 +218,7 @@ frappe.ui.form.on('Block Selection', {
         });
     }
 });
+
 
 //==================================================
 // 9. Header fields lock after saving or when child rows exist
@@ -329,6 +302,35 @@ frappe.ui.form.on('Block Selection', {
             frm.set_query('party', function() {
                 return { filters: { trade_partner: frm.doc.trade_partner } };
             });
+        }
+    }
+});
+
+
+
+function getFiveLetterPrefix(project_code, trade_partner_code) {
+    // Combine and extract only letters
+    let combined = (project_code || "") + (trade_partner_code || "");
+    let letters = combined.replace(/[^A-Za-z]/g, "").toUpperCase();
+
+    // Take first 5 letters; if fewer than 5, pad with 'X'
+    if (letters.length < 5) {
+        letters = (letters + "XXXXX").substring(0, 5);
+    } else {
+        letters = letters.substring(0, 5);
+    }
+
+    return letters;
+}
+
+frappe.ui.form.on("Block Selection Detail", {
+    block_number: function(frm, cdt, cdn) {
+        let value = locals[cdt][cdn].block_number;
+        if (value && !/^[A-Z]{5}\d{4}$/.test(value)) {
+            frappe.show_alert({
+                message: __("Block number must be 5 letters + 4 digits (e.g., ABCDE1234)"),
+                indicator: "orange"
+            }, 5);
         }
     }
 });
