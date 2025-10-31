@@ -86,6 +86,12 @@ function bind_all_grid_rows(frm, grid, verify_fields, can_edit) {
         }
         if (!$checkbox?.length) return;
 
+        // 🔹 Always reflect saved verify state (for all users)
+        const all_checked = verify_fields.every(f => !!child[f]);
+        if ($checkbox.prop("checked") !== all_checked) {
+            $checkbox.prop("checked", all_checked);
+        }
+
         // Only bind once
         if ($checkbox.data("_sync_bound")) return;
         $checkbox.data("_sync_bound", true);
@@ -100,11 +106,17 @@ function bind_all_grid_rows(frm, grid, verify_fields, can_edit) {
         // Checker (or Admin) can toggle
         $checkbox.on("change", function () {
             const checked = $(this).is(":checked") ? 1 : 0;
+
+            // 🔸 Update all verify fields in this row
             verify_fields.forEach(fn => {
                 if (child.hasOwnProperty(fn) || child[fn] !== undefined) {
                     frappe.model.set_value(child.doctype, child.name, fn, checked);
                 }
             });
+
+            // 🔹 Also keep checkbox visually synced instantly
+            $checkbox.prop("checked", !!checked);
+
             frappe.show_alert({
                 message: checked ? `✅ Row verified (all checks)` : `❌ Row unverified (all checks cleared)`,
                 indicator: checked ? "green" : "orange"
@@ -122,16 +134,15 @@ function bind_all_grid_rows(frm, grid, verify_fields, can_edit) {
                         if (!ch) return;
                         const $cb = $r.find(".grid-row-check input[type='checkbox']").first();
                         if (!$cb.length) return;
-                        const all_checked = verify_fields.every(f => !!ch[f]);
-                        if (all_checked && !$cb.prop("checked")) $cb.prop("checked", true);
-                        else if (!all_checked && $cb.prop("checked")) $cb.prop("checked", false);
+                        const all_checked_now = verify_fields.every(f => !!ch[f]);
+                        if ($cb.prop("checked") !== all_checked_now) {
+                            $cb.prop("checked", all_checked_now);
+                        }
                     });
                 } catch {}
             }, 600);
         }
     });
-    // refresh visuals
-    // (optional) highlight rows where all verified — you can add class toggles here
 }
 
 //remove delete button from child table for checker role
@@ -155,6 +166,15 @@ frappe.ui.form.on('Size List Form', {
     refresh: function(frm) {
         const workflow_state = get_workflow_state(frm);
         
+        // Setup Sub Part query filter based on Main Part
+        setup_sub_part_query(frm);
+        
+        // Hide Duplicate Row button from child table
+        hide_duplicate_row_button(frm);
+        
+        // Setup stone_name query filter based on main_part and sub_part
+        setup_stone_name_query_for_all_rows(frm);
+        
         // Setup field permissions based on verification status
         setup_field_permissions(frm);
         
@@ -166,6 +186,9 @@ frappe.ui.form.on('Size List Form', {
         
         // Lock header fields if child rows exist
         lock_header_fields_if_children_exist(frm);
+
+        // Lock stone_name only in rows that already have values
+        lock_child_stone_name_if_already_set(frm);
         
         // Setup child table row permissions based on verification
         setup_child_row_verification_permissions(frm);
@@ -253,6 +276,18 @@ frappe.ui.form.on('Size List Form', {
                 return false;
             }
         }
+        
+        // Validate Main Part and Sub Part relationship
+        if (!frm.doc.main_part && frm.doc.sub_part) {
+            frappe.throw("You cannot add a Sub Part without selecting a Main Part.");
+        }
+        
+        // Validate that child rows exist only when Main Part and Sub Part are selected
+        if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
+            if (!frm.doc.main_part || !frm.doc.sub_part) {
+                frappe.throw("Cannot save Stone Details without Main Part and Sub Part. Please select both or remove all Stone Details rows.");
+            }
+        }
     },
     
     before_workflow_action: function(frm) {
@@ -271,6 +306,9 @@ frappe.ui.form.on('Size List Form', {
     },
     
     onload: function(frm) {
+        // Setup Sub Part query filter based on Main Part
+        setup_sub_part_query(frm);
+        
         // Setup field permissions based on verification status
         setup_field_permissions(frm);
         
@@ -372,18 +410,30 @@ frappe.ui.form.on('Size List Form', {
     
     // Main Part and Sub Part handlers
     main_part: function(frm) {
-        if (!frm.doc.main_part) frm.set_value('sub_part', '');
-        
-        frm.set_query("sub_part", function() {
-            if (!frm.doc.main_part) {
-                frappe.throw("Please select Main Part before choosing a Sub Part.");
+        // If main_part is cleared, clear sub_part and all child rows
+        if (!frm.doc.main_part) {
+            frm.set_value('sub_part', '');
+            
+            // Clear all child table rows when main_part is cleared
+            if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
+                frappe.confirm(
+                    'Clearing Main Part will remove all Stone Details rows. Do you want to continue?',
+                    function() {
+                        // User confirmed - clear all rows
+                        frm.clear_table('stone_details');
+                        frm.refresh_field('stone_details');
+                    },
+                    function() {
+                        // User cancelled - restore the previous main_part value if available
+                        // This prevents the field from being cleared
+                        frm.reload_doc();
+                    }
+                );
             }
-            return {
-                filters: {
-                    main_part: frm.doc.main_part
-                }
-            };
-        });
+        }
+        
+        // Setup Sub Part query filter
+        setup_sub_part_query(frm);
 
         // clear sub_part if mismatch
         if (frm.doc.sub_part) {
@@ -394,12 +444,73 @@ frappe.ui.form.on('Size List Form', {
             });
         }
         
+        // Update stone_name query filter
+        setup_stone_name_query_for_all_rows(frm);
+        
         // Check for duplicates when main part changes
         check_for_duplicates(frm);
     },
     
     sub_part: function(frm) {
-        if (!frm.doc.sub_part) frm.set_value('main_part', '');
+        // First, validate that sub_part belongs to the selected main_part
+        if (frm.doc.sub_part && frm.doc.main_part) {
+            frappe.db.get_value("Sub Part", frm.doc.sub_part, "main_part", function(r) {
+                if (r && r.main_part !== frm.doc.main_part) {
+                    // Sub Part doesn't match Main Part
+                    frappe.msgprint({
+                        title: 'Invalid Sub Part',
+                        message: `The selected Sub Part "${frm.doc.sub_part}" does not belong to Main Part "${frm.doc.main_part}". Please select a valid Sub Part.`,
+                        indicator: 'red'
+                    });
+                    
+                    // Clear sub_part and child rows
+                    frm.set_value('sub_part', '');
+                    if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
+                        frm.clear_table('stone_details');
+                        frm.refresh_field('stone_details');
+                    }
+                    return;
+                }
+            });
+        }
+        
+        // If sub_part is cleared, clear all child rows
+        if (!frm.doc.sub_part) {
+            // Clear all child table rows when sub_part is cleared
+            if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
+                frappe.confirm(
+                    'Clearing Sub Part will remove all Stone Details rows. Do you want to continue?',
+                    function() {
+                        // User confirmed - clear all rows
+                        frm.clear_table('stone_details');
+                        frm.refresh_field('stone_details');
+                    },
+                    function() {
+                        // User cancelled - restore the previous sub_part value
+                        frm.reload_doc();
+                    }
+                );
+            }
+        } else if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
+            // Sub part is being changed (not just cleared) and child rows exist
+            // Clear child rows with confirmation
+            frappe.confirm(
+                'Changing Sub Part will remove all existing Stone Details rows. Do you want to continue?',
+                function() {
+                    // User confirmed - clear all rows
+                    frm.clear_table('stone_details');
+                    frm.refresh_field('stone_details');
+                },
+                function() {
+                    // User cancelled - restore the previous sub_part value
+                    frm.reload_doc();
+                }
+            );
+        }
+        
+        // Update stone_name query filter
+        setup_stone_name_query_for_all_rows(frm);
+        
         // Check for duplicates when sub part changes
         check_for_duplicates(frm);
     },
@@ -416,18 +527,25 @@ frappe.ui.form.on('Size List Form', {
     
     // Stone details add handler
     stone_details_add: function(frm, cdt, cdn) {
+        // Validate that Main Part and Sub Part are selected before adding rows
+        if (!frm.doc.main_part || !frm.doc.sub_part) {
+            // Remove the newly added row
+            const row = locals[cdt][cdn];
+            frm.get_field('stone_details').grid.grid_rows_by_docname[cdn].remove();
+            
+            frappe.msgprint({
+                title: 'Cannot Add Row',
+                message: 'Please select both Main Part and Sub Part before adding Stone Details.',
+                indicator: 'red'
+            });
+            return false;
+        }
+        
         // Note: chemical, dry_fitting, polishing are parent-level fields
         // They are set on the Size List form, not on individual stone rows
         
         // Lock header fields after first child row is added
         lock_header_fields_if_children_exist(frm);
-    },
-    
-    // Validation
-    validate: function(frm) {
-        if (!frm.doc.main_part && frm.doc.sub_part) {
-            frappe.throw("You cannot add a Sub Part without selecting a Main Part.");
-        }
     }
 });
 
@@ -455,6 +573,31 @@ frappe.ui.form.on('Size List Details', {
     // Before row is displayed - setup query
     stone_details_add: function(frm, cdt, cdn) {
         setup_stone_name_query(frm, cdt, cdn);
+        
+        // For new rows in Under Rechange/Recheck, ensure fields are editable
+        const row = locals[cdt][cdn];
+        const is_under_rechange = get_workflow_state(frm) === 'Under Rechange';
+        const is_under_recheck = get_workflow_state(frm) === 'Under Recheck';
+        const is_data_operator = frappe.user_roles.includes('Size List Data Entry Operator');
+        
+        if (is_data_operator && (is_under_rechange || is_under_recheck)) {
+            // For new empty rows, make sure all fields are editable
+            setTimeout(() => {
+                const row_wrapper = frm.fields_dict.stone_details?.grid?.grid_rows_by_docname[cdn];
+                if (row_wrapper && !row.stone_name) {
+                    const fields = ['stone_name', 'stone_code', 'range', 'l1', 'l2', 'b1', 'b2', 'h1', 'h2'];
+                    fields.forEach(field => {
+                        const field_wrapper = row_wrapper.get_field(field);
+                        if (field_wrapper && field_wrapper.$input) {
+                            field_wrapper.$input.prop('readonly', false);
+                            field_wrapper.$input.prop('disabled', false);
+                            field_wrapper.$input.css('background-color', '');
+                            field_wrapper.$input.css('cursor', 'text');
+                        }
+                    });
+                }
+            }, 100);
+        }
     },
     
     // Verification checkbox events for child table
@@ -473,17 +616,7 @@ frappe.ui.form.on('Size List Details', {
         
         // Check if user is trying to check range_verified
         if (row.range_verified == 1) {
-            // Check if all other verification checkboxes are checked
-            // const required_verifications = [
-            //     'stone_name_verified',
-            //     'stone_code_verified', 
-            //     'l1_verified',
-            //     'l2_verified',
-            //     'b1_verified',
-            //     'b2_verified',
-            //     'h1_verified',
-            //     'h2_verified'
-            // ];
+           
             
             const unchecked_fields = required_verifications.filter(field => !row[field]);
             
@@ -516,36 +649,6 @@ frappe.ui.form.on('Size List Details', {
         
         // control_child_field_editability(frm, cdt, cdn, 'range', locals[cdt][cdn].range_verified);
     },
-    
-    // l1_verified: function(frm, cdt, cdn) {
-    //     control_child_field_editability(frm, cdt, cdn, 'l1', locals[cdt][cdn].l1_verified);
-    //     control_range_verification_access(frm, cdt, cdn);
-    // },
-    
-    // l2_verified: function(frm, cdt, cdn) {
-    //     control_child_field_editability(frm, cdt, cdn, 'l2', locals[cdt][cdn].l2_verified);
-    //     control_range_verification_access(frm, cdt, cdn);
-    // },
-    
-    // b1_verified: function(frm, cdt, cdn) {
-    //     control_child_field_editability(frm, cdt, cdn, 'b1', locals[cdt][cdn].b1_verified);
-    //     control_range_verification_access(frm, cdt, cdn);
-    // },
-    
-    // b2_verified: function(frm, cdt, cdn) {
-    //     control_child_field_editability(frm, cdt, cdn, 'b2', locals[cdt][cdn].b2_verified);
-    //     control_range_verification_access(frm, cdt, cdn);
-    // },
-    
-    // h1_verified: function(frm, cdt, cdn) {
-    //     control_child_field_editability(frm, cdt, cdn, 'h1', locals[cdt][cdn].h1_verified);
-    //     control_range_verification_access(frm, cdt, cdn);
-    // },
-    
-    // h2_verified: function(frm, cdt, cdn) {
-    //     control_child_field_editability(frm, cdt, cdn, 'h2', locals[cdt][cdn].h2_verified);
-    //     control_range_verification_access(frm, cdt, cdn);
-    // },
     
     // Show Duplicates button event
     show_duplicates: function(frm, cdt, cdn) {
@@ -609,6 +712,33 @@ frappe.ui.form.on('Size List Details', {
     
     size_list_details_remove: function(frm) {
         calculate_total_volume(frm);
+        
+        // Check if all child rows have been removed
+        if (!frm.doc.stone_details || frm.doc.stone_details.length === 0) {
+            // All rows removed - clear Main Part and Sub Part with confirmation
+            if (frm.doc.main_part || frm.doc.sub_part) {
+                frappe.confirm(
+                    'All Stone Details rows have been removed. Do you want to clear Main Part and Sub Part as well?',
+                    function() {
+                        // User confirmed - clear Main Part and Sub Part
+                        frm.set_value('main_part', '');
+                        frm.set_value('sub_part', '');
+                        frappe.show_alert({
+                            message: 'Main Part and Sub Part have been cleared',
+                            indicator: 'green'
+                        });
+                    },
+                    function() {
+                        // User cancelled - keep Main Part and Sub Part
+                        frappe.show_alert({
+                            message: 'Main Part and Sub Part kept unchanged',
+                            indicator: 'blue'
+                        });
+                    }
+                );
+            }
+        }
+        
         // Check if fields should be unlocked after row removal
         lock_header_fields_if_children_exist(frm);
     },
@@ -702,10 +832,9 @@ function setup_field_permissions(frm) {
     
     if (is_data_checker) {
         if (is_under_verification) {
-            // Under Verification: Checkboxes editable, unticked fields editable, ticked fields read-only
+            // Under Verification: Checkboxes editable, ALL header fields read-only
             Object.keys(field_verification_map).forEach(field => {
                 const verification_field = field_verification_map[field];
-                const is_verified = frm.doc[verification_field];
                 
                 if (checker_excluded_fields.includes(field)) {
                     // Hide verification checkbox for form_number and prep_date
@@ -715,26 +844,29 @@ function setup_field_permissions(frm) {
                     // Show verification checkbox (editable)
                     frm.set_df_property(verification_field, 'hidden', 0);
                     frm.set_df_property(verification_field, 'read_only', 0);  // Checkbox editable
-                    // Control field editability based on verification status
-                    control_field_editability(frm, field, is_verified);
+                    // Make header field read-only for Data Checker
+                    frm.set_df_property(field, 'read_only', 1);
+                    frm.set_df_property(field, 'description', '');
                 }
             });
             
         } else {
-            // Other statuses: Show verification fields with normal edit control
+            // Other statuses: All fields read-only for Data Checker
             Object.keys(field_verification_map).forEach(field => {
                 const verification_field = field_verification_map[field];
-                const is_verified = frm.doc[verification_field];
                 
                 if (checker_excluded_fields.includes(field)) {
                     // Hide verification checkbox for form_number and prep_date
                     frm.set_df_property(verification_field, 'hidden', 1);
-                    frm.set_df_property(field, 'read_only', 0);
+                    frm.set_df_property(field, 'read_only', 1);
                     frm.set_df_property(field, 'description', '');
                 } else {
-                    // Show verification checkbox and apply permissions
+                    // Show verification checkbox as read-only
                     frm.set_df_property(verification_field, 'hidden', 0);
-                    control_field_editability(frm, field, is_verified);
+                    frm.set_df_property(verification_field, 'read_only', 1);
+                    // Make header field read-only
+                    frm.set_df_property(field, 'read_only', 1);
+                    frm.set_df_property(field, 'description', '');
                 }
             });
         }
@@ -777,7 +909,20 @@ function setup_field_permissions(frm) {
 }
 
 function control_field_editability(frm, field_name, is_verified) {
-    // Control field editability based on verification status
+    // Check if user is Data Checker
+    const is_data_checker = frappe.user_roles.includes('Size List Data Checker');
+    const workflow_state = get_workflow_state(frm);
+    const is_under_verification = workflow_state === 'Under Verification';
+    
+    // For Data Checker: ALWAYS keep fields read-only
+    if (is_data_checker && is_under_verification) {
+        frm.set_df_property(field_name, 'read_only', 1);
+        frm.set_df_property(field_name, 'description', '');
+        frm.refresh_field(field_name);
+        return;
+    }
+    
+    // For other roles: Control field editability based on verification status
     if (is_verified) {
         // Field is verified (ticked) - make read-only
         frm.set_df_property(field_name, 'read_only', 1);
@@ -901,24 +1046,7 @@ function control_range_verification_access(frm, cdt, cdn) {
     const all_verified = required_verifications.every(field => row[field] == 1);
     const range_wrapper = row_wrapper.get_field('range_verified');
     
-    // if (range_wrapper && range_wrapper.$input) {
-    //     if (all_verified) {
-    //         // Enable range verification
-    //         range_wrapper.$input.prop('disabled', false);
-    //         range_wrapper.$input.css('opacity', '1');
-    //         range_wrapper.$input.attr('title', 'All other fields verified. Range verification now available.');
-    //     } else {
-    //         // Disable range verification and uncheck if checked
-    //         range_wrapper.$input.prop('disabled', true);
-    //         range_wrapper.$input.css('opacity', '0.5');
-    //         range_wrapper.$input.attr('title', 'Please verify all other fields first before verifying Range.');
-            
-    //         // If range is currently checked, uncheck it
-    //         if (row.range_verified == 1) {
-    //             frappe.model.set_value(cdt, cdn, 'range_verified', 0);
-    //         }
-    //     }
-    // }
+
 }
 
 // Control Show Duplicates button visibility based on user roles and workflow state
@@ -1021,11 +1149,7 @@ function load_project_flags(frm) {
 
 // Set child grid readonly based on project flags
 function set_child_grid_readonly(frm) {
-    // This function can be used to set specific fields as readonly
-    // based on project configuration if needed
     
-    // Currently just logging, but can be extended to make certain fields readonly
-    // based on the project configuration
 }
 
 // ALWAYS hide child table verification columns
@@ -1185,19 +1309,17 @@ function control_child_table_add_button(frm) {
     const is_data_operator = frappe.user_roles.includes('Size List Data Entry Operator');
     const is_under_rechange = get_workflow_state(frm) === 'Under Rechange';
     const is_under_recheck = get_workflow_state(frm) === 'Under Recheck';
-    const is_correction_mode = is_under_rechange || is_under_recheck;
-    
     
     const grid = frm.fields_dict.stone_details;
     
     if (grid && grid.grid) {
         if (is_data_operator) {
-            if (is_correction_mode) {
-                // Data Entry Operator in correction mode - HIDE add button
-                grid.grid.cannot_add_rows = true;
+            // Data Entry Operator can add rows in normal mode and Under Rechange
+            // But NOT in Under Recheck
+            if (is_under_recheck) {
+                grid.grid.cannot_add_rows = true;  // HIDE add button in Under Recheck
             } else {
-                // Data Entry Operator in normal mode - SHOW add button
-                grid.grid.cannot_add_rows = false;
+                grid.grid.cannot_add_rows = false;  // SHOW add button in Draft/Under Rechange
             }
         } else {
             // Non-Data Entry Operator - HIDE add button
@@ -1209,102 +1331,218 @@ function control_child_table_add_button(frm) {
     }
 }
 
-// Lock header/parent fields after child rows are added
+
 function lock_header_fields_if_children_exist(frm) {
+    if (!frm.doc) return;
+
     const has_children = frm.doc.stone_details && frm.doc.stone_details.length > 0;
-    const workflow_state = get_workflow_state(frm);
-    const is_under_verification = workflow_state === 'Under Verification';
-    const is_under_rechange = workflow_state === 'Under Rechange';
-    const is_under_recheck = workflow_state === 'Under Recheck';
-    const is_data_operator = frappe.user_roles.includes('Size List Data Entry Operator');
-    const is_data_checker = frappe.user_roles.includes('Size List Data Checker');
-    
-    // Critical fields that should ALWAYS be locked when children exist
-    // These define the fundamental identity of the size list
-    const critical_header_fields = [
-        'baps_project',
-        'main_part', 
-        'sub_part'
-    ];
-    
-    // Other header fields that can be locked based on workflow (but NOT when children exist)
-    const other_header_fields = [
-        'form_number',
-        'prep_date',
-        'stone_type',
-        'cutting_region'
-    ];
-    
+
+    const critical_header_fields = [];
+    const editable_header_fields = ['main_part', 'sub_part','baps_project', 'form_number', 'prep_date', 'stone_type', 'cutting_region'];
+
     if (has_children) {
-        // ALWAYS lock critical fields when children exist - regardless of workflow state
+        // ALWAYS lock critical fields when children exist
         critical_header_fields.forEach(fieldname => {
             frm.set_df_property(fieldname, 'read_only', 1);
         });
-        
-        // DO NOT lock other fields when children exist - only the critical ones
-        // Explicitly ensure other fields remain editable even when children exist
-        other_header_fields.forEach(fieldname => {
-            // Only unlock if not already locked by verification
-            const verification_field = fieldname + '_verified';
-            const is_verified = frm.doc[verification_field];
-            
-            if (!is_verified) {
-                frm.set_df_property(fieldname, 'read_only', 0);
-            }
+
+        // For editable fields: only lock if they are verified; otherwise, keep editable
+        editable_header_fields.forEach(fieldname => {
+            const is_verified = frm.doc[fieldname + '_verified'];
+            frm.set_df_property(fieldname, 'read_only', is_verified ? 1 : 0);
         });
     } else {
-        // Unlock fields if no children (and not already locked by verification)
-        const all_header_fields = [...critical_header_fields, ...other_header_fields];
-        all_header_fields.forEach(fieldname => {
-            // Only unlock if not already locked by verification
-            const verification_field = fieldname + '_verified';
-            const is_verified = frm.doc[verification_field];
-            
-            if (!is_verified) {
-                frm.set_df_property(fieldname, 'read_only', 0);
-            }
+        // No children: unlock all fields (unless verified)
+        [...critical_header_fields, ...editable_header_fields].forEach(fieldname => {
+            const is_verified = frm.doc[fieldname + '_verified'];
+            frm.set_df_property(fieldname, 'read_only', is_verified ? 1 : 0);
         });
-        frm._header_lock_message_shown = false;
     }
 }
 
-// Setup stone_name query to prevent duplicate stone names
-// function setup_stone_name_query(frm, cdt, cdn) {
-//     // Get already selected stone names in this Size List
-//     const selected_stones = [];
-//     if (frm.doc.stone_details) {
-//         frm.doc.stone_details.forEach(row => {
-//             if (row.stone_name && row.name !== cdn) {
-//                 selected_stones.push(row.stone_name);
-//             }
-//         });
-//     }
+// Lock stone_name in child rows when any child exists (to preserve stone_code integrity)
+function lock_child_stone_name_if_children_exist(frm) {
+    if (!frm.doc || !frm.doc.stone_details || frm.doc.stone_details.length === 0) {
+        return;
+    }
+
+    const grid = frm.fields_dict?.stone_details?.grid;
+    if (!grid) return;
+
+    // Update field definition so new rows also respect this
+    const stone_name_df = frappe.meta.get_docfield('Size List Details', 'stone_name');
+    if (stone_name_df) {
+        stone_name_df.read_only = 1;
+    }
+
+    // Lock stone_name in all existing rendered rows
+    frm.doc.stone_details.forEach((row) => {
+        const grid_row = grid.grid_rows_by_docname?.[row.name];
+        if (grid_row && grid_row.get_field) {
+            const field = grid_row.get_field('stone_name');
+            if (field && field.$input) {
+                field.$input.prop('readonly', true).css({
+                    'background-color': '#f0f0f0',
+                    'cursor': 'not-allowed'
+                });
+            }
+        }
+    });
+
+    // Refresh to apply
+    frm.refresh_field('stone_details');
+}
+// Lock stone_name in child rows if it has already been set (to preserve stone_code integrity)
+function lock_child_stone_name_if_already_set(frm) {
+    if (!frm.doc || !frm.doc.stone_details || !frm.fields_dict.stone_details?.grid) {
+        return;
+    }
+
+    const grid = frm.fields_dict.stone_details.grid;
+
+    // Reset base field to editable by default (for new empty rows)
+    const base_df = frappe.meta.get_docfield('Size List Details', 'stone_name');
+    if (base_df) {
+        base_df.read_only = 0;
+    }
+
+    frm.doc.stone_details.forEach((row) => {
+        const grid_row = grid.grid_rows_by_docname?.[row.name];
+        if (!grid_row) return;
+
+        const field = grid_row.get_field('stone_name');
+        if (!field || !field.$input) return;
+
+        const should_lock = !!row.stone_name?.toString().trim();
+
+        if (should_lock) {
+            field.$input.prop('readonly', true).css({
+                'background-color': '#f0f0f0',
+                'cursor': 'not-allowed'
+            });
+            field.df.read_only = 1;
+        } else {
+            field.$input.prop('readonly', false).css({
+                'background-color': '',
+                'cursor': 'text'
+            });
+            field.df.read_only = 0;
+        }
+    });
+
+    frm.refresh_field('stone_details');
+}
+
+// Setup query for stone_name field to filter by main_part and sub_part
+function setup_stone_name_query(frm, cdt, cdn) {
+    if (!frm || !frm.doc || !frm.fields_dict.stone_details) return;
     
+    // Get the main_part and sub_part from the parent form
+    const main_part = frm.doc.main_part;
+    const sub_part = frm.doc.sub_part;
     
-//     // Set query with filters to exclude already selected stones
-//     if (selected_stones.length > 0) {
-//         frm.fields_dict.stone_details.grid.update_docfield_property(
-//             'stone_name', 
-//             'get_query', 
-//             function() {
-//                 return {
-//                     filters: {
-//                         'name': ['not in', selected_stones]
-//                     }
-//                 };
-//             }
-//         );
-//     } else {
-//         // No stones selected yet, show all
-//         frm.fields_dict.stone_details.grid.update_docfield_property(
-//             'stone_name', 
-//             'get_query', 
-//             function() {
-//                 return {};
-//             }
-//         );
-//     }
-// }
+    // Set query filter for stone_name field in child table
+    frm.fields_dict.stone_details.grid.get_field('stone_name').get_query = function(doc, cdt, cdn) {
+        const filters = {};
+        
+        // Filter by main_part if selected
+        if (main_part) {
+            filters.main_part = main_part;
+        }
+        
+        // Filter by sub_part if selected
+        if (sub_part) {
+            filters.sub_part = sub_part;
+        }
+        
+        return {
+            filters: filters
+        };
+    };
+}
+
+// Apply stone_name query filter to all existing rows
+function setup_stone_name_query_for_all_rows(frm) {
+    if (!frm || !frm.doc || !frm.fields_dict.stone_details) return;
+    
+    const main_part = frm.doc.main_part;
+    const sub_part = frm.doc.sub_part;
+    
+    // Set the query at the grid level
+    frm.fields_dict.stone_details.grid.get_field('stone_name').get_query = function(doc, cdt, cdn) {
+        const filters = {};
+        
+        if (main_part) {
+            filters.main_part = main_part;
+        }
+        
+        if (sub_part) {
+            filters.sub_part = sub_part;
+        }
+        
+        return {
+            filters: filters
+        };
+    };
+    
+    // Refresh the grid to apply the filter
+    frm.refresh_field('stone_details');
+}
+
+// Setup query filter for Sub Part dropdown to show only Sub Parts belonging to selected Main Part
+function setup_sub_part_query(frm) {
+    if (!frm) return;
+    
+    frm.set_query("sub_part", function() {
+        if (!frm.doc.main_part) {
+            frappe.msgprint({
+                title: 'Main Part Required',
+                message: 'Please select Main Part before choosing Sub Part.',
+                indicator: 'orange'
+            });
+            return {
+                filters: {
+                    name: ['=', '']  // Return no results
+                }
+            };
+        }
+        return {
+            filters: {
+                main_part: frm.doc.main_part
+            }
+        };
+    });
+}
+
+// Hide the "Duplicate Row" button from child table
+function hide_duplicate_row_button(frm) {
+    if (!frm.fields_dict.stone_details) return;
+    
+    const grid = frm.fields_dict.stone_details.grid;
+    if (!grid) return;
+    
+    // Hide duplicate button using CSS
+    setTimeout(() => {
+        // Hide the duplicate row button
+        grid.wrapper.find('.grid-duplicate-row').hide();
+        grid.wrapper.find('[data-label="Duplicate"]').hide();
+        grid.wrapper.find('button:contains("Duplicate")').hide();
+        
+        // Also hide it from the dropdown menu if it exists
+        grid.wrapper.find('.dropdown-menu a:contains("Duplicate")').parent().hide();
+    }, 100);
+    
+    // Override the grid's add_custom_button to prevent duplicate button from appearing
+    if (grid.add_custom_button) {
+        const original_add_custom_button = grid.add_custom_button.bind(grid);
+        grid.add_custom_button = function(label) {
+            if (label && label.toLowerCase().includes('duplicate')) {
+                return; // Don't add duplicate button
+            }
+            return original_add_custom_button.apply(this, arguments);
+        };
+    }
+}
 
 // Validate all fields are verified
 function validate_all_fields_verified(frm) {
@@ -1453,18 +1691,17 @@ function setup_child_row_verification_permissions(frm) {
             if (is_data_checker && is_under_verification) {
                 Object.keys(child_fields).forEach(field => {
                     const verification_field = child_fields[field];
-                    const is_verified = row[verification_field];
                     const field_obj = grid_row.get_field(field);
+                    const verify_field_obj = grid_row.get_field(verification_field);
                     
-                    // Control field editability based on verification status
+                    // Make ALL data fields read-only for Data Checker
                     if (field_obj) {
-                        if (is_verified) {
-                            // Verified field → READ-ONLY
-                            field_obj.$input.prop('readonly', true);
-                        } else {
-                            // Not verified field → EDITABLE
-                            field_obj.$input.prop('readonly', false);
-                        }
+                        field_obj.$input.prop('readonly', true);
+                    }
+                    
+                    // Make verification checkboxes editable
+                    if (verify_field_obj) {
+                        verify_field_obj.$input.prop('disabled', false);
                     }
                 });
             }
@@ -1518,13 +1755,8 @@ function control_child_field_editability(frm, cdt, cdn, field_name, is_verified)
             const field_obj = grid_row_idx.get_field(field_name);
             
             if (field_obj) {
-                if (is_verified) {
-                    // Checkbox CHECKED → Field becomes READ-ONLY
-                    field_obj.$input.prop('readonly', true);
-                } else {
-                    // Checkbox UNCHECKED → Field becomes EDITABLE
-                    field_obj.$input.prop('readonly', false);
-                }
+                // Always keep data fields read-only for Data Checker
+                field_obj.$input.prop('readonly', true);
             }
             
             frm.refresh_field('stone_details');
@@ -1836,19 +2068,6 @@ frappe.ui.form.on('Size List', {
 });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 function highlight_duplicate_rows(frm) {
     if (!frm.fields_dict || !frm.fields_dict.stone_details) return;
     let grid = frm.fields_dict.stone_details.grid;
@@ -1935,78 +2154,28 @@ function auto_uncheck_range_verification_for_duplicates(frm) {
     });
     
     if (unchecked_count > 0) {
-        // Show alert about automatic unchecking
-        // frappe.show_alert({
-        //     message: `⚠️ Auto-unchecked Range verification for ${unchecked_count} duplicate row(s). Please fix the duplicates and resubmit.`,
-        //     indicator: 'orange'
-        // });
         
-        // // Refresh the form to show the changes
-        // setTimeout(() => {
-        //     frm.refresh();
-        // }, 1000);
     }
 }
 
 // Show duplicate records for a specific row
 function show_duplicate_records(frm, cdt, cdn) {
     const row = locals[cdt][cdn];
-    
-    // Check if row has any data to search for duplicates
-    if (!row.stone_name && !row.range && !row.stone_code && !row.l1 && !row.l2 && !row.b1 && !row.b2 && !row.h1 && !row.h2) {
-        frappe.msgprint('This row has no data to check for duplicates.');
-        return;
-    }
-    
-    // Get the current row data for comparison
-    const current_data = {
-        stone_name: row.stone_name,
-        stone_code: row.stone_code,
-        range: row.range,
-        l1: row.l1,
-        l2: row.l2,
-        b1: row.b1,
-        b2: row.b2,
-        h1: row.h1,
-        h2: row.h2,
-        baps_project: frm.doc.baps_project,
-        main_part: frm.doc.main_part,
-        sub_part: frm.doc.sub_part
-    };
-    
-    // Validate required fields
-    if (!current_data.baps_project) {
-        frappe.msgprint('BAPS Project is required to search for duplicates.');
-        return;
-    }
-    
-    // Call server method to get duplicate records
     frappe.call({
-        method: 'baps.baps.doctype.size_list_form.size_list_form.get_duplicate_records_for_row',
+        method: "baps.baps.doctype.size_list_form.size_list_form.get_duplicate_records_for_row",
         args: {
-            row_data: current_data,
+            row_data: {
+                baps_project: frm.doc.baps_project,
+                main_part: frm.doc.main_part,
+                sub_part: frm.doc.sub_part,
+                stone_name: row.stone_name,
+                stone_code: row.stone_code,
+                range: row.range
+            },
             current_size_list: frm.doc.name
         },
-        callback: function(r) {
-            if (r.message && r.message.length > 0) {
-                frappe.model.set_value(row.doctype, row.name, 'duplicate_flag', 1);
-                update_duplicate_flag_visibility(frm, row.doctype, row.name);
-                
-                show_duplicate_records_dialog(r.message, row);
-            } else {
-                frappe.model.set_value(row.doctype, row.name, 'duplicate_flag', 1);
-                update_duplicate_flag_visibility(frm, row.doctype, row.name);
-
-                // frappe.msgprint({
-                //     title: 'No Duplicates Found',
-                //     message: `No duplicate records found for:<br>
-                //             <strong>Stone Name:</strong> ${current_data.stone_name || 'Not set'}<br>
-                //             <strong>Range:</strong> ${current_data.range || 'Not set'}<br>
-                //             <strong>Stone Code:</strong> ${current_data.stone_code || 'Not set'}<br>
-                //             <br>This means this row is unique in the current project/part combination.`,
-                //     indicator: 'green'
-                // });
-            }
+        callback: function (r) {
+            show_duplicate_records_dialog(r.message || []);
         }
     });
 }
@@ -2023,68 +2192,6 @@ function update_duplicate_flag_visibility(frm, cdt, cdn) {
     // frm.refresh_field('stone_details');
 }
 
-// Show duplicate records in a dialog
-// function show_duplicate_records_dialog(duplicate_records, current_row) {
-//     let dialog = new frappe.ui.Dialog({
-//         title: `Duplicate Records for Range: ${current_row.range}`,
-//         size: 'extra-large',
-//         fields: [
-//             {
-//                 fieldtype: 'HTML',
-//                 fieldname: 'duplicate_info'
-//             }
-//         ]
-//     });
-    
-//     // Create HTML table to show duplicate records
-//     let html = `
-//         <div style="margin: 10px 0;">
-//             <p><strong>Found ${duplicate_records.length} duplicate record(s):</strong></p>
-//             <table class="table table-bordered table-striped" style="font-size: 12px;">
-                
-//                 <tbody>
-//     `;
-    
-//     // duplicate_records.forEach(record => {
-//     //     html += `
-//     //         <tr style="background-color: #ffebee;">
-//     //             <td><a href="/app/size-list/${record.size_list}" target="_blank">${record.size_list}</a></td>
-//     //             <td>${record.stone_name || ''}</td>
-//     //             <td><strong style="color: red;">${record.range || ''}</strong></td>
-//     //             <td>${record.stone_code || ''}</td>
-//     //             <td>${record.l1 || ''}</td>
-//     //             <td>${record.l2 || ''}</td>
-//     //             <td>${record.b1 || ''}</td>
-//     //             <td>${record.b2 || ''}</td>
-//     //             <td>${record.h1 || ''}</td>
-//     //             <td>${record.h2 || ''}</td>
-//     //             <td><span class="indicator ${get_status_indicator(record.workflow_state)}">${record.workflow_state || 'Draft'}</span></td>
-//     //             <td>
-//     //                 <button class="btn btn-xs btn-secondary" onclick="frappe.set_route('Form', 'Size List', '${record.size_list}')">
-//     //                     View
-//     //                 </button>
-//     //             </td>
-//     //         </tr>
-//     //     `;
-//     // });
-    
-//     html += `
-//                 </tbody>
-//             </table>
-//             <div class="alert alert-warning" style="margin-top: 15px;">
-//                 <strong>Action Required:</strong> 
-//                 <ul style="margin-bottom: 0;">
-//                     <li>Either <strong>delete this duplicate row</strong> from the current Size List</li>
-//                     <li>Or <strong>change the range value</strong> to make it unique</li>
-//                     <li>Then resubmit the document for verification</li>
-//                 </ul>
-//             </div>
-//         </div>
-//     `;
-    
-//     dialog.fields_dict.duplicate_info.$wrapper.html(html);
-//     dialog.show();
-// }
 function show_duplicate_records_dialog(duplicate_records, current_row) {
     let dialog = new frappe.ui.Dialog({
         title: `⚠️ Range "${current_row.range}" Already Exists`,
@@ -2153,45 +2260,6 @@ function get_status_indicator(status) {
     }
 }
 
-// Test function to check if highlighting works
-// function test_highlighting(frm) {
-//     console.log('=== Testing highlighting system ===');
-    
-//     if (!frm.fields_dict || !frm.fields_dict.stone_details) {
-//         console.log('No stone_details field found');
-//         return;
-//     }
-    
-//     let grid = frm.fields_dict.stone_details.grid;
-//     if (!grid) {
-//         console.log('No grid found');
-//         return;
-//     }
-    
-//     console.log('Grid found:', grid);
-//     console.log('Grid wrapper:', grid.wrapper);
-    
-//     // Try to find and highlight the first row as a test
-//     let $firstRow = grid.wrapper.find('.grid-row').first();
-//     console.log('First row found:', $firstRow);
-    
-//     if ($firstRow.length > 0) {
-//         console.log('Applying test highlighting to first row');
-//         $firstRow.css({
-//             'background-color': '#ffebee',
-//             'border-left': '5px solid #f44336'
-//         });
-        
-//         // Add test badge
-//         if (!$firstRow.find('.test-badge').length) {
-//             $firstRow.find('.grid-row-index').append('<span class="test-badge" style="background: red; color: white; padding: 2px 4px; margin-left: 5px;">TEST</span>');
-//         }
-        
-//         console.log('Test highlighting applied successfully');
-//     } else {
-//         console.log('No grid rows found to highlight');
-//     }
-// }
 
 // Check each row individually for duplicates and highlight
 function check_and_highlight_all_duplicate_rows(frm) {
@@ -2258,136 +2326,177 @@ function check_single_row_for_duplicates(frm, row, index) {
     });
 }
 
-// Apply visual highlighting to duplicate rows
-// function apply_duplicate_highlighting(frm) {
-//     console.log('=== Applying duplicate highlighting ===');
-    
-//     if (!frm.fields_dict || !frm.fields_dict.stone_details) {
-//         console.log('No stone_details field found');
-//         return;
-//     }
-    
-//     let grid = frm.fields_dict.stone_details.grid;
-//     if (!grid) {
-//         console.log('No grid found');
-//         return;
-//     }
-    
-//     console.log('Grid found, looking for rows...');
-    
-//     // Use a more reliable way to find grid rows
-//     setTimeout(() => {
-//         // Try different selectors for grid rows
-//         let $gridRows = grid.wrapper.find('.grid-row, [data-fieldname="stone_details"] .grid-row');
-//         console.log('Found grid rows:', $gridRows.length);
-        
-//         if ($gridRows.length === 0) {
-//             // Try alternative approach using grid rows by docname
-//             console.log('Trying alternative approach...');
-//             console.log('Grid rows by docname:', grid.grid_rows_by_docname);
-            
-//             if (grid.grid_rows_by_docname) {
-//                 Object.keys(grid.grid_rows_by_docname).forEach(docname => {
-//                     let gridRow = grid.grid_rows_by_docname[docname];
-//                     if (gridRow && gridRow.row) {
-//                         console.log('Found grid row via docname:', docname);
-//                         let $row = $(gridRow.row);
-                        
-//                         // Apply test styling to see if it works
-//                         $row.css({
-//                             'background-color': '#ffebee !important',
-//                             'border-left': '5px solid #f44336'
-//                         });
-                        
-//                         console.log('Applied test styling to row');
-//                     }
-//                 });
-//             }
-//         }
-        
-//         // Clear existing highlighting first
-//         $gridRows.removeClass('row-duplicate');
-//         $gridRows.find('.duplicate-badge').remove();
-        
-//         // Apply highlighting to duplicate rows
-//         if (frm.doc.stone_details) {
-//             frm.doc.stone_details.forEach((row, index) => {
-//                 console.log(`Checking row ${index}: duplicate_flag = ${row.duplicate_flag}`);
-                
-//                 if (row.duplicate_flag == 1) {
-//                     console.log(`Row ${index} is duplicate, finding grid element...`);
-                    
-//                     // Try multiple ways to find the grid row
-//                     let $gridRow = $gridRows.eq(index);
-                    
-//                     if ($gridRow.length === 0) {
-//                         // Try by docname
-//                         let gridRowObj = grid.grid_rows_by_docname[row.name];
-//                         if (gridRowObj && gridRowObj.row) {
-//                             $gridRow = $(gridRowObj.row);
-//                         }
-//                     }
-                    
-//                     if ($gridRow.length > 0) {
-//                         console.log(`Highlighting duplicate row ${index}: ${row.stone_name || row.range}`);
-                        
-//                         // Apply highlighting
-//                         $gridRow.addClass('row-duplicate');
-//                         $gridRow.css({
-//                             'background-color': '#ffebee',
-//                             'border-left': '5px solid #f44336'
-//                         });
-                        
-//                         // Add warning badge
-//                         if (!$gridRow.find('.duplicate-badge').length) {
-//                             let $badge = $('<span class="duplicate-badge" title="This row has duplicate data">⚠️ DUPLICATE</span>');
-//                             $badge.css({
-//                                 'background': '#f44336',
-//                                 'color': 'white',
-//                                 'padding': '2px 6px',
-//                                 'border-radius': '12px',
-//                                 'font-size': '10px',
-//                                 'margin-left': '8px'
-//                             });
-//                             $gridRow.find('.grid-row-index, .row-index').first().append($badge);
-//                         }
-                        
-//                         console.log('Highlighting applied successfully');
-//                     } else {
-//                         console.log(`Could not find grid element for row ${index}`);
-//                     }
-//                 }
-//             });
-//         }
-//     }, 200);
-// }
 
-// CSS injection for duplicate row highlighting
-// if (!document.getElementById('size-list-duplicate-styles')) {
-//     let style = document.createElement('style');
-//     style.id = 'size-list-duplicate-styles';
-//     style.innerHTML = `
-//         .row-duplicate { 
-//             background: linear-gradient(90deg, #ffebee 0%, #fce4ec 100%) !important; 
-//             border-left: 5px solid #f44336 !important;
-//             box-shadow: 0 2px 4px rgba(244, 67, 54, 0.2) !important;
-//         }
-//         .duplicate-badge { 
-//             margin-left: 8px; 
-//             font-size: 11px; 
-//             color: #ffffff; 
-//             background: #f44336; 
-//             padding: 2px 6px; 
-//             border-radius: 12px; 
-//             font-weight: 600;
-//             text-shadow: none;
-//         }
-//         .row-duplicate .grid-row-check {
-//             background: #ffcdd2 !important;
-//         }
-//     `;
-//     document.head.appendChild(style);
-// }
+
+// ===============================================================
+// Size List Form — Show Duplicates Button (visible only when duplicates exist)
+// Works for both Checker and Operator roles.
+// ===============================================================
+
+// On load or refresh, check if duplicates exist and show button if needed
+frappe.ui.form.on("Size List Form", {
+    refresh(frm) {
+        toggle_show_duplicates_button(frm);
+    },
+    after_save(frm) {
+        toggle_show_duplicates_button(frm);
+    },
+    onload_post_render(frm) {
+        toggle_show_duplicates_button(frm);
+    },
+    stone_details_add(frm) {
+        setTimeout(() => toggle_show_duplicates_button(frm), 300);
+    },
+    stone_details_remove(frm) {
+        setTimeout(() => toggle_show_duplicates_button(frm), 300);
+    }
+});
+
+
+// --------------------------------------------------------------------
+// 🔹 Function: Show the custom "Show Duplicates" button conditionally
+// --------------------------------------------------------------------
+function toggle_show_duplicates_button(frm) {
+    try {
+        frm.page.clear_custom_buttons();
+    } catch (e) {}
+
+    if (!frm.doc || !frm.doc.stone_details || frm.doc.stone_details.length === 0) return;
+
+    // Check if any row has duplicate_flag = 1
+    const has_duplicates = frm.doc.stone_details.some(r => Number(r.duplicate_flag) === 1);
+
+    if (has_duplicates) {
+        frm.add_custom_button("🔍 Show Duplicates", () => {
+            show_global_duplicates_dialog(frm);
+        }, "Actions");
+    }
+}
+
+
+// --------------------------------------------------------------------
+// 🔹 Function: Show all duplicates in a dialog (clickable links)
+// --------------------------------------------------------------------
+function show_global_duplicates_dialog(frm) {
+    frappe.call({
+        method: "baps.baps.doctype.size_list_form.size_list_form.get_duplicate_records_for_row",
+        args: {
+            row_data: {
+                baps_project: frm.doc.baps_project,
+                main_part: frm.doc.main_part,
+                sub_part: frm.doc.sub_part
+            },
+            current_size_list: frm.doc.name
+        },
+        freeze: true,
+        callback: function (r) {
+            const duplicates = (r && r.message) ? r.message : [];
+
+            if (!duplicates || duplicates.length === 0) {
+                frappe.msgprint({
+                    title: "No Duplicates Found",
+                    message: "No duplicate records were found for this stone range.",
+                    indicator: "green"
+                });
+                return;
+            }
+
+            // Build HTML table with clickable document links
+            let rows_html = duplicates.map(d => {
+                const docname = d.source_document || "";
+                const source_type = d.source_type || "";
+                const route = source_type === "Size List Form"
+                    ? `/app/size-list-form/${docname}`
+                    : `/app/size-list-creation/${docname}`;
+
+                return `
+                    <tr>
+                        <td><a href="${route}" target="_blank" style="color:#1a73e8; text-decoration:none;">${frappe.utils.escape_html(docname)}</a></td>
+                        <td>${frappe.utils.escape_html(source_type)}</td>
+                        <td>${frappe.utils.escape_html(d.stone_name || "")}</td>
+                        <td>${frappe.utils.escape_html(d.stone_code || "")}</td>
+                        <td>${frappe.utils.escape_html(d.l1 || "")}</td>
+                        <td>${frappe.utils.escape_html(d.l2 || "")}</td>
+                        <td>${frappe.utils.escape_html(d.b1 || "")}</td>
+                        <td>${frappe.utils.escape_html(d.b2 || "")}</td>
+                        <td>${frappe.utils.escape_html(d.h1 || "")}</td>
+                        <td>${frappe.utils.escape_html(d.h2 || "")}</td>
+                    </tr>`;
+            }).join("");
+
+            const table_html = `
+                <div style="max-height:400px; overflow:auto;">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Document</th>
+                                <th>Source</th>
+                                <th>Stone Name</th>
+                                <th>Stone Code</th>
+                                <th>L1</th>
+                                <th>L2</th>
+                                <th>B1</th>
+                                <th>B2</th>
+                                <th>H1</th>
+                                <th>H2</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows_html}</tbody>
+                    </table>
+                </div>
+                <p style="margin-top:10px;color:gray;">💡 Tip: Click any document link to open it in a new tab.</p>
+            `;
+
+            const d = new frappe.ui.Dialog({
+                title: `🔍 Duplicate Records Found (${duplicates.length})`,
+                size: "extra-large",
+                primary_action_label: "Close",
+                primary_action: () => d.hide()
+            });
+
+            d.$body.html(table_html);
+            d.show();
+        },
+        error: function (err) {
+            frappe.msgprint("Error fetching duplicates: " + (err && err.exc ? err.exc : JSON.stringify(err)));
+        }
+    });
+}
+
+
+// --------------------------------------------------------------------
+// 🔹 Auto-show the button when Verify action fails due to duplicates
+// --------------------------------------------------------------------
+frappe.ui.form.on("Size List Form", {
+    before_workflow_action(frm, action) {
+        if (!action || action.toLowerCase().indexOf("verify") === -1) return;
+
+        frappe.call({
+            method: "baps.baps.doctype.size_list_form.size_list_form.check_global_duplicates",
+            args: { size_list_name: frm.doc.name },
+            freeze: true,
+            callback: function (r) {
+                const result = r.message || {};
+                const has_duplicates = result.has_duplicates === true;
+
+                if (has_duplicates) {
+                    frappe.validated = false; // block verify
+                    frappe.msgprint({
+                        title: "Duplicates Found",
+                        message: "Duplicates were detected. The document was not verified. Use 'Show Duplicates' to inspect.",
+                        indicator: "orange"
+                    });
+
+                    // Refresh UI so the button appears immediately
+                    frm.reload_doc();
+                    setTimeout(() => toggle_show_duplicates_button(frm), 500);
+                }
+            }
+        });
+    }
+});
+
+
 
 
 function show_duplicate_records_dialog(duplicates) {

@@ -1,5 +1,3 @@
-
-
 # baps/baps/doctype/size_list/size_list.py
 import frappe
 from frappe.model.document import Document
@@ -14,6 +12,23 @@ class SizeListForm(Document):
         """Before saving — always calculate total volume"""
         self.calculate_total_volume()
         self.validate_zero_volume()
+        self.validate_main_part_sub_part_relationship()
+
+    def validate_main_part_sub_part_relationship(self):
+        """Validate that Sub Part belongs to the selected Main Part"""
+        if self.sub_part and self.main_part:
+            # Get the main_part value from the Sub Part doctype
+            sub_part_main_part = frappe.db.get_value("Sub Part", self.sub_part, "main_part")
+            
+            if sub_part_main_part and sub_part_main_part != self.main_part:
+                frappe.throw(
+                    f"Invalid Sub Part selection. '{self.sub_part}' belongs to '{sub_part_main_part}', "
+                    f"not to the selected Main Part '{self.main_part}'. Please select a valid Sub Part."
+                )
+        
+        # If Sub Part is selected but Main Part is not, throw error
+        if self.sub_part and not self.main_part:
+            frappe.throw("Cannot select Sub Part without selecting Main Part first.")
 
     def before_save(self):
         """Before saving - check workflow transitions and handle duplicates automatically"""
@@ -33,6 +48,7 @@ class SizeListForm(Document):
 
     def auto_send_for_rechange_due_to_duplicates(self):
         """Automatically send document back to Under Rechange when duplicates found during verification"""
+        """and if found in the form wile antering the rnge then also it should show a msg over currently it is not showing condition is working """
         try:
             # Uncheck verification checkboxes for rows with duplicates first
             self.uncheck_verification_for_duplicate_rows()
@@ -46,7 +62,7 @@ class SizeListForm(Document):
             
             # Show message to user
             frappe.msgprint(
-                "⚠️ Duplicates detected! Document automatically sent back to Under Rechange. Range verification unchecked for duplicate rows (highlighted in red) so Data Entry Operator can make corrections.",
+                "⚠️ Duplicates detected!",
                 indicator="orange",
                 title="Auto-Sent for Rechange"
             )
@@ -87,10 +103,52 @@ class SizeListForm(Document):
             
         if getattr(self, "workflow_state", None) == "Verified":
             existing = frappe.db.get_value(
-                "Size List Creation", {"form_number": self.name}, "name"
+                "Size List Form", {"form_number": self.name}, "name"
             )
             if not existing:
                 create_size_list_creation_from_verified(self.name)
+    
+    def onload(self):
+        """Load verified Size List Creation Items into Tab 2"""
+        self.load_verified_items()
+    
+    def load_verified_items(self):
+        """Fetch and populate verified Size List Creation Items in table_item"""
+        # Clear existing items in Tab 2
+        self.table_item = []
+        
+        # Find Size List Creation record linked to this form
+        size_list_creation = frappe.db.get_value(
+            "Size List Creation",
+            {"form_number": self.name},
+            "name"
+        )
+        
+        if not size_list_creation:
+            return
+        
+        # Fetch all items from Size List Creation
+        items = frappe.get_all(
+            "Size List Creation Item",
+            filters={"parent": size_list_creation},
+            fields=["stone_code", "stone_name", "range", "l1", "l2", "b1", "b2", "h1", "h2", "volume"],
+            order_by="idx"
+        )
+        
+        # Populate table_item with fetched data
+        for item in items:
+            self.append("table_item", {
+                "stone_code": item.stone_code,
+                "stone_name": item.stone_name,
+                "range": item.range,
+                "l1": item.l1,
+                "l2": item.l2,
+                "b1": item.b1,
+                "b2": item.b2,
+                "h1": item.h1,
+                "h2": item.h2,
+                "volume": item.volume
+            })
 
     def calculate_total_volume(self):
         """Sum up total volume from child table"""
@@ -135,8 +193,7 @@ def get_permission_query_conditions(user):
 
     if "Size List Data Entry Operator" in roles:
         conditions.append(
-            f"(`tabSize List Form`.`workflow_state` IN ('Draft','Submitted','Under Verification','Under Rechange','Verified','Published') "
-            f"AND `tabSize List Form`.`owner` = '{user}')"
+            "(`tabSize List Form`.`workflow_state` IN ('Draft','Submitted','Under Verification','Under Rechange','Verified','Published'))"
         )
 
     if "Size List Data Checker" in roles:
@@ -167,7 +224,8 @@ def has_permission(doc, ptype, user):
         "Under Verification",
         "Under Rechange",
         "Verified",
-    ] and owner == user:
+        "Published",
+    ]:
         return True
 
     if "Size List Data Checker" in roles and state in [
@@ -250,7 +308,7 @@ def create_size_list_creation_from_verified(size_list_name):
     frappe.db.commit()
 
     frappe.msgprint(
-        f"✅ Size List Creation '{creation.name}' generated successfully ({total} items).",
+        f"✅ Size List '{creation.name}' generated successfully ({total} Records).",
         indicator="green",
     )
     return {"success": True, "creation": creation.name}
@@ -513,69 +571,13 @@ def get_all_existing_stone_codes():
     return existing_codes
 
 @frappe.whitelist()
-def check_stone_name_duplicates(baps_project, stone_name, exclude_size_list=None):
-    """Check if stone name exists in other Size Lists OR Size List Creations within the same project"""
-    try:
-        if not baps_project or not stone_name:
-            return []
-        
-        duplicates = []
-        
-        # 1. Check in Size List Forms
-        conditions = ["sl.baps_project = %(baps_project)s", "sld.stone_name = %(stone_name)s"]
-        args = {
-            'baps_project': baps_project,
-            'stone_name': stone_name
-        }
-        
-        if exclude_size_list and exclude_size_list != 'new':
-            conditions.append("sl.name != %(exclude_size_list)s")
-            args['exclude_size_list'] = exclude_size_list
-        
-        sql_size_list = """
-            SELECT sl.name as size_list_name, sl.form_number, sld.stone_name, 
-                   sld.stone_code, sld.range, sl.main_part, sl.sub_part, 'Size List Form' as source_type
-            FROM `tabSize List Form` sl
-            INNER JOIN `tabSize List Details` sld ON sl.name = sld.parent
-            WHERE {conditions}
-            ORDER BY sl.creation DESC
-        """.format(conditions=" AND ".join(conditions))
-        
-        size_list_duplicates = frappe.db.sql(sql_size_list, args, as_dict=True)
-        duplicates.extend(size_list_duplicates)
-        
-        # 2. Check in Size List Creations
-        sql_creation = """
-            SELECT slc.name as size_list_name, slc.form_number, slci.stone_name, 
-                   slci.stone_code, slci.range, slc.main_part, slc.sub_part, 'Size List Creation' as source_type
-            FROM `tabSize List Creation` slc
-            INNER JOIN `tabSize List Creation Item` slci ON slc.name = slci.parent
-            WHERE slc.baps_project = %(baps_project)s 
-            AND slci.stone_name = %(stone_name)s
-            AND slci.stone_name IS NOT NULL
-            AND slci.stone_name != ''
-            ORDER BY slc.creation DESC
-        """
-        
-        creation_duplicates = frappe.db.sql(sql_creation, {
-            'baps_project': baps_project,
-            'stone_name': stone_name
-        }, as_dict=True)
-        duplicates.extend(creation_duplicates)
-        
-        return duplicates
-        
-    except Exception as e:
-        frappe.log_error(f"Error in check_stone_name_duplicates: {str(e)}", "Stone Name Duplicate Check")
-        return []
-    
-
-@frappe.whitelist()
 def get_duplicate_records_for_row(row_data, current_size_list):
     """
     Get duplicate records for a specific row.
-    Checks both Size List Form (or Size List) and Size List Creation.
-    Safely handles missing workflow_state field.
+    Checks across:
+      ✅ Size List Creation
+      ✅ Other Size List Forms
+      ✅ Same Size List Form (internal duplicates)
     """
     try:
         row_data = frappe.parse_json(row_data) if isinstance(row_data, str) else row_data or {}
@@ -584,13 +586,7 @@ def get_duplicate_records_for_row(row_data, current_size_list):
             return []
 
         # Detect parent doctype dynamically
-        parent_doctype = None
-        if frappe.db.exists("Size List Form", current_size_list):
-            parent_doctype = "Size List Form"
-        elif frappe.db.exists("Size List Form", current_size_list):
-            parent_doctype = "Size List Form"
-        else:
-            parent_doctype = "Size List Form"
+        parent_doctype = "Size List Form"
 
         # Detect child table from meta
         try:
@@ -631,7 +627,7 @@ def get_duplicate_records_for_row(row_data, current_size_list):
         except Exception:
             workflow_col = ""
 
-        # --- Query Size List Creation Items ---
+        # --- Query 1: Duplicates in Size List Creation ---
         creation_sql = f"""
             SELECT
                 p.name AS source_document,
@@ -648,11 +644,10 @@ def get_duplicate_records_for_row(row_data, current_size_list):
               AND p.docstatus != 2
             ORDER BY p.creation DESC
         """
-
         params_creation = [row_data["baps_project"]] + codes_list
         creation_duplicates = frappe.db.sql(creation_sql, tuple(params_creation), as_dict=True)
 
-        # --- Query Size List / Size List Form ---
+        # --- Query 2: Duplicates in other Size List Forms ---
         workflow_col2 = ""
         try:
             columns2 = frappe.db.sql(f"SHOW COLUMNS FROM `tab{parent_doctype}` LIKE 'workflow_state'", as_dict=True)
@@ -678,11 +673,50 @@ def get_duplicate_records_for_row(row_data, current_size_list):
               AND p.docstatus != 2
             ORDER BY p.creation DESC
         """
-
         params_size_list = [row_data["baps_project"], current_size_list] + codes_list
         size_list_duplicates = frappe.db.sql(size_list_sql, tuple(params_size_list), as_dict=True)
 
-        return (creation_duplicates or []) + (size_list_duplicates or [])
+        # --- Query 3: Duplicates within same Size List Form ---
+        internal_duplicates = []
+        try:
+            internal_rows = frappe.get_all(
+                child_doctype,
+                filters={"parent": current_size_list},
+                fields=["name", "stone_name", "stone_code", "range", "l1", "l2", "b1", "b2", "h1", "h2"]
+            )
+
+            for r in internal_rows:
+                # skip same row if name matches
+                if r.name == row_data.get("name"):
+                    continue
+
+                same_code = r.stone_code and r.stone_code.strip().upper() in expanded_codes
+                same_range = (
+                    (r.range and row_data.get("range")) and
+                    (any(n in expand_range(r.range) for n in expand_range(row_data.get("range"))))
+                )
+
+                if same_code or same_range:
+                    internal_duplicates.append({
+                        "source_document": current_size_list,
+                        "source_type": parent_doctype,
+                        "workflow_state": "Same Form (Internal Duplicate)",
+                        "stone_name": r.stone_name,
+                        "stone_code": r.stone_code,
+                        "range": r.range,
+                        "l1": r.l1,
+                        "l2": r.l2,
+                        "b1": r.b1,
+                        "b2": r.b2,
+                        "h1": r.h1,
+                        "h2": r.h2
+                    })
+        except Exception:
+            frappe.log_error(frappe.get_traceback(), "Internal Duplicate Detection Error")
+
+        # Combine all duplicates together
+        all_duplicates = (creation_duplicates or []) + (size_list_duplicates or []) + (internal_duplicates or [])
+        return all_duplicates
 
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "get_duplicate_records_for_row")

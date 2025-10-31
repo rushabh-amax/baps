@@ -3,6 +3,7 @@
  "allow_rename": 1,
  "autoname": "SizeList-.####",
  "creation": "2025-09-19 14:29:05.223297",
+ "default_view": "Report",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -15,9 +16,8 @@
   "stone_type",
   "main_part",
   "column_break_uoie",
-  "sub_part",
-  "total_volume",
   "cutting_region",
+  "sub_part",
   "section_break_vvov",
   "polishing",
   "dry_fitting",
@@ -43,7 +43,6 @@
    "default": "0",
    "fieldname": "polishing",
    "fieldtype": "Check",
-   "hidden": 1,
    "label": "Polishing Required",
    "read_only_depends_on": "eval:frappe.user_roles.includes(\"Project Manager\")\n"
   },
@@ -51,21 +50,18 @@
    "default": "0",
    "fieldname": "dry_fitting",
    "fieldtype": "Check",
-   "hidden": 1,
    "label": "Dry Fitting Required"
   },
   {
    "default": "0",
    "fieldname": "carving",
    "fieldtype": "Check",
-   "hidden": 1,
    "label": "Carving Required"
   },
   {
    "default": "0",
    "fieldname": "chemicaling",
    "fieldtype": "Check",
-   "hidden": 1,
    "label": "Chemical Required"
   },
   {
@@ -79,7 +75,6 @@
   {
    "fieldname": "prep_date",
    "fieldtype": "Date",
-   "hidden": 1,
    "in_list_view": 1,
    "label": "Prep Date"
   },
@@ -94,27 +89,23 @@
    "fetch_from": "baps_project.project_name",
    "fieldname": "project_name",
    "fieldtype": "Data",
-   "hidden": 1,
    "label": "Project Name"
   },
   {
    "fieldname": "stone_type",
    "fieldtype": "Link",
-   "hidden": 1,
    "label": "Material Type",
    "options": "Material Type"
   },
   {
    "fieldname": "main_part",
    "fieldtype": "Link",
-   "hidden": 1,
    "label": "Main Part",
    "options": "Main Part"
   },
   {
    "fieldname": "sub_part",
    "fieldtype": "Link",
-   "hidden": 1,
    "label": "Sub Part",
    "options": "Sub Part"
   },
@@ -127,15 +118,8 @@
    "unique": 1
   },
   {
-   "fieldname": "total_volume",
-   "fieldtype": "Float",
-   "hidden": 1,
-   "label": "Total Volume(CFT)"
-  },
-  {
    "fieldname": "cutting_region",
    "fieldtype": "Link",
-   "hidden": 1,
    "label": "Cutting Region",
    "options": "Region"
   },
@@ -155,7 +139,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-17 11:12:14.364486",
+ "modified": "2025-10-30 17:47:31.609794",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Size List Creation",

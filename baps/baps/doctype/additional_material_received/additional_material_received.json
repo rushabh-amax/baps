@@ -3,53 +3,28 @@
  "allow_rename": 1,
  "creation": "2025-08-29 14:06:15.250879",
  "doctype": "DocType",
+ "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "baps_project",
-  "item_type",
   "item_number",
-  "block_number",
-  "stone_number",
-  "box_number",
-  "volume"
+  "item_type",
+  "baps_project"
  ],
  "fields": [
-  {
-   "fieldname": "block_number",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Block ID"
-  },
-  {
-   "fieldname": "volume",
-   "fieldtype": "Float",
-   "hidden": 1,
-   "label": "Volume"
-  },
-  {
-   "fieldname": "stone_number",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Stone ID"
-  },
-  {
-   "fieldname": "box_number",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Box ID"
-  },
   {
    "fieldname": "baps_project",
    "fieldtype": "Link",
    "label": "Baps Project",
-   "options": "Baps Project"
+   "options": "Baps Project",
+   "read_only": 1
   },
   {
    "fieldname": "item_type",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Item Type",
-   "options": "Item Type"
+   "options": "Item Type",
+   "read_only": 1
   },
   {
    "fieldname": "item_number",
@@ -61,7 +36,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-09-25 22:25:24.828742",
+ "modified": "2025-10-31 00:01:07.853978",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Additional Material Received",

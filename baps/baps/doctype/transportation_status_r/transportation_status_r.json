@@ -37,6 +37,7 @@
    "in_list_view": 1,
    "label": "Item Type",
    "read_only": 1,
+   "read_only_depends_on": "eval:frappe.user.has_role(\"Transportation Receiver\")",
    "reqd": 1
   },
   {
@@ -46,14 +47,17 @@
    "label": "Project ",
    "options": "Baps Project",
    "read_only": 1,
+   "read_only_depends_on": "eval:frappe.user.has_role(\"Transportation Receiver\")",
    "reqd": 1
   },
   {
    "fieldname": "item_no",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Item No",
+   "options": "Block",
    "read_only": 1,
+   "read_only_depends_on": "eval:frappe.user.has_role(\"Transportation Receiver\")",
    "reqd": 1
   }
  ],
@@ -61,7 +65,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-10-15 17:46:03.969454",
+ "modified": "2025-10-29 16:15:36.966195",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Transportation Status R",

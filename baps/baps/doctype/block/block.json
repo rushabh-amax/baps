@@ -7,7 +7,6 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "column_break_yfwd",
   "block_number",
   "block_custom_code",
   "colour",
@@ -106,11 +105,6 @@
    "in_filter": 1,
    "label": "Material Type",
    "options": "Material Type",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_break_yfwd",
-   "fieldtype": "Column Break",
    "read_only": 1
   },
   {
@@ -222,6 +216,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "Can Transit",
    "fieldname": "transportation_status",
    "fieldtype": "Select",
    "in_list_view": 1,
@@ -241,7 +236,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-28 10:10:25.196071",
+ "modified": "2025-10-29 14:29:39.547973",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Block",

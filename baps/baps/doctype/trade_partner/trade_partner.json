@@ -11,8 +11,7 @@
   "gstin",
   "column_break_pcju",
   "phone",
-  "email_id",
-  "site"
+  "tp_email"
  ],
  "fields": [
   {
@@ -27,25 +26,19 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "phone",
-   "fieldtype": "Data",
-   "label": "Phone"
-  },
-  {
-   "fieldname": "email_id",
-   "fieldtype": "Data",
-   "label": "Email"
-  },
-  {
    "fieldname": "gstin",
    "fieldtype": "Data",
    "label": "GSTIN"
   },
   {
-   "fieldname": "site",
-   "fieldtype": "Link",
-   "label": "Site",
-   "options": "Site"
+   "fieldname": "tp_email",
+   "fieldtype": "Data",
+   "label": "Email"
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Phone",
+   "label": "Phone"
   },
   {
    "fieldname": "trade_partner_code",
@@ -57,7 +50,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-28 16:59:08.018286",
+ "modified": "2025-10-28 12:09:11.589994",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Trade Partner",

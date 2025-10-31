@@ -8,7 +8,7 @@
  "field_order": [
   "site_name",
   "site_type",
-  "column_break_qvjy",
+  "column_break_gajj",
   "region",
   "trade_partner"
  ],
@@ -35,7 +35,7 @@
    "options": "Project Site\nTrade Partner Site\nWorking Site"
   },
   {
-   "depends_on": "eval: doc.site_type ==\"Trade Partner Site\"",
+   "depends_on": "eval:doc.site_type==\"Trade Partner Site\"",
    "fieldname": "trade_partner",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -43,14 +43,14 @@
    "options": "Trade Partner"
   },
   {
-   "fieldname": "column_break_qvjy",
+   "fieldname": "column_break_gajj",
    "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-08 11:52:24.959185",
+ "modified": "2025-10-28 12:41:33.302151",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Site",

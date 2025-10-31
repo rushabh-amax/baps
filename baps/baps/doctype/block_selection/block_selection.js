@@ -334,3 +334,5 @@ frappe.ui.form.on("Block Selection Detail", {
         }
     }
 });
+
+

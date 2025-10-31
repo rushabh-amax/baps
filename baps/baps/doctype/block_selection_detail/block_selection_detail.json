@@ -86,6 +86,7 @@
    "precision": "2"
   },
   {
+   "bold": 1,
    "fieldname": "volume",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -107,13 +108,14 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-10-07 16:08:24.536787",
+ "modified": "2025-10-08 10:53:54.152253",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Block Selection Detail",
  "owner": "Administrator",
  "permissions": [],
  "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

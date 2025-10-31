@@ -44,7 +44,9 @@
   "checked_by",
   "data_yptw",
   "column_break_akpv",
-  "approved_date"
+  "approved_date",
+  "tab_2_tab",
+  "table_item"
  ],
  "fields": [
   {
@@ -263,12 +265,22 @@
    "hidden": 1,
    "label": "Baps Project",
    "options": "Baps Project"
+  },
+  {
+   "fieldname": "tab_2_tab",
+   "fieldtype": "Tab Break",
+   "label": "Tab 2"
+  },
+  {
+   "fieldname": "table_item",
+   "fieldtype": "Table",
+   "options": "Size List Creation Item"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-17 12:12:00.188526",
+ "modified": "2025-10-30 16:27:57.081748",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Size List Form",
@@ -290,6 +302,7 @@
   {
    "email": 1,
    "export": 1,
+   "if_owner": 0,
    "print": 1,
    "read": 1,
    "report": 1,
@@ -300,6 +313,7 @@
    "create": 1,
    "email": 1,
    "export": 1,
+   "if_owner": 0,
    "print": 1,
    "read": 1,
    "report": 1,
@@ -309,6 +323,7 @@
   {
    "email": 1,
    "export": 1,
+   "if_owner": 0,
    "print": 1,
    "read": 1,
    "report": 1,

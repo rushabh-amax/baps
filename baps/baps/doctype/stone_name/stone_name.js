@@ -1,54 +1,125 @@
-// frappe.ui.form.on("Stone Name", {
-//   main_part: function (frm) {
-//     updateStoneCode(frm);
-//   },
-//   sub_part: function (frm) {
-//     updateStoneCode(frm);
-//   },
-//   stone_name: function (frm) {
-//     updateStoneCode(frm);
-//   },
-// });
+// Client-side validation for Stone Name uniqueness constraints
+frappe.ui.form.on("Stone Name", {
+    main_part: function(frm) {
+        if (frm.doc.main_part) {
+            check_main_part_uniqueness(frm);
+        }
+        // Setup Sub Part query filter
+        setup_sub_part_filter(frm);
+    },
+    
+    sub_part: function(frm) {
+        if (frm.doc.main_part && frm.doc.sub_part) {
+            check_main_sub_part_uniqueness(frm);
+        }
+    },
+    
+    stone_name: function(frm) {
+        if (frm.doc.main_part && frm.doc.sub_part && frm.doc.stone_name) {
+            check_full_combination_uniqueness(frm);
+        }
+    },
+    
+    refresh: function(frm) {
+        // Setup Sub Part query filter
+        setup_sub_part_filter(frm);
+    }
+});
 
-// function abbrevMainPart(text) {
-//   if (!text) return "";
-//   const words = text.trim().split(/\s+/);
-//   if (words[0].toLowerCase() === "ground") {
-//     return "B" + words[words.length - 1][0].toUpperCase(); // Ground Floor = BM
-//   }
-//   return words[0][0].toUpperCase() + words[words.length - 1][0].toUpperCase();
-// }
+// Setup Sub Part filter to show only Sub Parts for selected Main Part
+function setup_sub_part_filter(frm) {
+    frm.set_query("sub_part", function() {
+        if (!frm.doc.main_part) {
+            frappe.msgprint({
+                title: 'Main Part Required',
+                message: 'Please select Main Part before choosing Sub Part.',
+                indicator: 'orange'
+            });
+            return {
+                filters: {
+                    name: ['=', '']  // Return no results
+                }
+            };
+        }
+        return {
+            filters: {
+                main_part: frm.doc.main_part
+            }
+        };
+    });
+}
 
-// function abbrevSubPart(text) {
-//   if (!text) return "";
-//   if (text.toLowerCase().startsWith("type ")) {
-//     return text.replace("Type ", "").toUpperCase(); // Type A6 -> A6
-//   }
-//   return text.substring(0, 3).toUpperCase(); // Kharo -> KHR
-// }
+// Check if Main Part already exists
+function check_main_part_uniqueness(frm) {
+    frappe.call({
+        method: 'frappe.client.get_list',
+        args: {
+            doctype: 'Stone Name',
+            filters: {
+                main_part: frm.doc.main_part,
+                name: ['!=', frm.doc.name || 'new']
+            },
+            fields: ['name']
+        },
+        callback: function(r) {
+            if (r.message && r.message.length > 0) {
+                frappe.msgprint({
+                    title: 'Duplicate Main Part',
+                    message: `⚠️ Main Part "${frm.doc.main_part}" already exists in Stone Name: ${r.message[0].name}`,
+                    indicator: 'orange'
+                });
+            }
+        }
+    });
+}
 
-// function abbrevStoneName(text) {
-//   if (!text) return "";
-//   const words = text.trim().split(/\s+/);
-//   if (words.length === 1) {
-//     return text.substring(0, 2).toUpperCase(); // Rekha -> RE
-//   }
-//   return words.map(w => (/^\d+$/.test(w) ? w : w[0].toUpperCase())).join(""); 
-//   // Layer 1 -> L1, Pillar Theko -> PT
-// }
+// Check if Main Part + Sub Part combination already exists
+function check_main_sub_part_uniqueness(frm) {
+    frappe.call({
+        method: 'frappe.client.get_list',
+        args: {
+            doctype: 'Stone Name',
+            filters: {
+                main_part: frm.doc.main_part,
+                sub_part: frm.doc.sub_part,
+                name: ['!=', frm.doc.name || 'new']
+            },
+            fields: ['name']
+        },
+        callback: function(r) {
+            if (r.message && r.message.length > 0) {
+                frappe.msgprint({
+                    title: 'Duplicate Combination',
+                    message: `⚠️ Main Part "${frm.doc.main_part}" + Sub Part "${frm.doc.sub_part}" already exists in: ${r.message[0].name}`,
+                    indicator: 'orange'
+                });
+            }
+        }
+    });
+}
 
-// function generateStoneCode(mainPart, subPart, stoneName) {
-//   const mainCode = abbrevMainPart(mainPart);
-//   const subCode = abbrevSubPart(subPart);
-//   const stoneCode = abbrevStoneName(stoneName);
-//   return (mainCode + subCode + stoneCode).toUpperCase();
-// }
-
-// function updateStoneCode(frm) {
-//   if (frm.doc.main_part && frm.doc.sub_part && frm.doc.stone_name) {
-//     frm.set_value(
-//       "stone_code",
-//       generateStoneCode(frm.doc.main_part, frm.doc.sub_part, frm.doc.stone_name)
-//     );
-//   }
-// }
+// Check if full combination already exists
+function check_full_combination_uniqueness(frm) {
+    frappe.call({
+        method: 'frappe.client.get_list',
+        args: {
+            doctype: 'Stone Name',
+            filters: {
+                main_part: frm.doc.main_part,
+                sub_part: frm.doc.sub_part,
+                stone_name: frm.doc.stone_name,
+                name: ['!=', frm.doc.name || 'new']
+            },
+            fields: ['name']
+        },
+        callback: function(r) {
+            if (r.message && r.message.length > 0) {
+                frappe.msgprint({
+                    title: 'Duplicate Record',
+                    message: `⚠️ This exact combination already exists in: ${r.message[0].name}`,
+                    indicator: 'red'
+                });
+            }
+        }
+    });
+}
