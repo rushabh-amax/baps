@@ -134,6 +134,9 @@ frappe.ui.form.on("Block Selection", {
 // When a new row is added
 frappe.ui.form.on("Block Selection Detail", {
     block_selection_details_add: function(frm, cdt, cdn) {
+        // Lock header fields immediately when row is added
+        lock_header_fields_if_children_exist(frm);
+
         if (!frm.doc.project_code || !frm.doc.trade_partner_code) return;
 
         let prefix = getFiveLetterPrefix(frm.doc.project_code, frm.doc.trade_partner_code);
@@ -143,26 +146,14 @@ frappe.ui.form.on("Block Selection Detail", {
         if (!row.block_number) {
             frappe.model.set_value(cdt, cdn, "block_number", prefix);
         }
-    }
-});
+    },
 
-
-
-//==================================================
-// 4. Auto-number new child rows manually
-//==================================================
-frappe.ui.form.on('Block Selection Detail', {
-    block_selection_details_add: function(frm, cdt, cdn) {
-        if (!frm.doc.project_code || !frm.doc.trade_partner_code) {
-            console.log("Cannot add row - missing codes"); // 👈 DEBUG
-            return;
-        }
-
-        let prefix = get_project_code(frm.doc.project_code) + get_partner_code(frm.doc.trade_partner_code);
-        let next_num = (frm.last_block_no || 0) + 1;
-
-        frappe.model.set_value(cdt, cdn, 'block_number', prefix + String(next_num).padStart(4, "0"));
-        frm.last_block_no = next_num;
+    block_selection_details_remove: function(frm, cdt, cdn) {
+        // Re-check lock status when row is removed
+        // Small delay to ensure DOM is updated with new row count
+        setTimeout(() => {
+            lock_header_fields_if_children_exist(frm);
+        }, 200);
     }
 });
 
@@ -186,10 +177,7 @@ frappe.ui.form.on("Block Selection", {
 //==================================================
 frappe.ui.form.on('Block Selection', {
     last_block_number: function(frm) {
-        // if (!frm.doc.project_name || !frm.doc.trade_partner) {
-        //     frappe.msgprint({ title: _('Missing Info'), message: _('Fill Trade Partner & Project first'), indicator: 'orange' });
-        //     return;
-        // }
+    
 
         frappe.call({
             method: 'baps.baps.doctype.block_selection.block_selection.get_last_block_number',
@@ -219,31 +207,92 @@ frappe.ui.form.on('Block Selection', {
     }
 });
 
-
 //==================================================
 // 9. Header fields lock after saving or when child rows exist
 //==================================================
 let headerLockState = { has_rows: false, is_saved: false };
 
 frappe.ui.form.on('Block Selection', {
-    refresh: function(frm) { toggle_header_fields(frm); },
-    after_save: function(frm) {
-        toggle_header_fields(frm);
-        frappe.msgprint({ message: __('Header fields are now locked.'), indicator: 'blue' });
+    refresh: function(frm) { 
+        lock_header_fields_if_children_exist(frm); 
     },
-    block_selection_details_add: function(frm) { toggle_header_fields(frm); },
-    block_selection_details_remove: function(frm) { toggle_header_fields(frm); }
+    after_save: function(frm) {
+        lock_header_fields_if_children_exist(frm);
+    }
 });
 
-function toggle_header_fields(frm) {
+function lock_header_fields_if_children_exist(frm) {
+    const has_rows = (frm.doc.block_selection_details || []).length > 0;
+    const is_saved = !frm.is_new();
+    
+    // Lock if: (has rows AND not saved) OR (is saved)
+    // Unlock if: (no rows AND not saved)
+    const should_lock = has_rows || is_saved;
+
+    // Check if lock state is changing to show notification
+    const was_locked = headerLockState.has_rows || headerLockState.is_saved;
+    
+    // Skip redundant updates
+    if (headerLockState.has_rows === has_rows && headerLockState.is_saved === is_saved) {
+        return;
+    }
+    
+    headerLockState.has_rows = has_rows;
+    headerLockState.is_saved = is_saved;
+
+    // All header fields that should be locked when child rows exist or after save
+    const header_fields_to_lock = [
+        'trade_partner',
+        'baps_project'
+    ];
+
+    // Apply lock/unlock to all header fields
+    header_fields_to_lock.forEach(fieldname => {
+        if (frm.fields_dict[fieldname]) {
+            frm.set_df_property(fieldname, 'read_only', should_lock ? 1 : 0);
+        }
+    });
+
+    // Show notification when lock state changes
+    if (!is_saved) { // Only show notifications for unsaved forms
+        if (!was_locked && should_lock && has_rows) {
+            frappe.show_alert({
+                message: __('Header fields are now locked'),
+                indicator: 'blue'
+            }, 3);
+        } else if (was_locked && !should_lock && !has_rows) {
+            frappe.show_alert({
+                message: __('Header fields are now editable'),
+                indicator: 'green'
+            }, 3);
+        }
+    }
+}
+
+//==================================================
+// 9. Header fields lock after saving or when child rows exist (Version 2)
+//==================================================
+let headerLockState2 = { has_rows: false, is_saved: false };
+
+frappe.ui.form.on('Block Selection', {
+    refresh: function(frm) { toggle_header_fields_v2(frm); },
+    after_save: function(frm) {
+        toggle_header_fields_v2(frm);
+        frappe.msgprint({ message: __('Header fields are now locked.'), indicator: 'blue' });
+    },
+    block_selection_details_add: function(frm) { toggle_header_fields_v2(frm); },
+    block_selection_details_remove: function(frm) { toggle_header_fields_v2(frm); }
+});
+
+function toggle_header_fields_v2(frm) {
     const has_rows = (frm.doc.block_selection_details || []).length > 0;
     const is_saved = !frm.is_new();
 
-    if (headerLockState.has_rows === has_rows && headerLockState.is_saved === is_saved) {
+    if (headerLockState2.has_rows === has_rows && headerLockState2.is_saved === is_saved) {
         return; // Skip redundant updates
     }
-    headerLockState.has_rows = has_rows;
-    headerLockState.is_saved = is_saved;
+    headerLockState2.has_rows = has_rows;
+    headerLockState2.is_saved = is_saved;
 
     const permanently_locked = ['trade_partner', 'site', 'baps_project', 'material_type'];
     const conditional_locked = ['date', 'party', 'invoice_to_be_paid_after_block_receipt', 'selected_by'];
@@ -265,6 +314,9 @@ function toggle_header_fields(frm) {
         frm.set_df_property('party', 'read_only', 0);
     }
 }
+
+
+
 
 //==================================================
 // Auto-set Selected By (User)
@@ -334,5 +386,3 @@ frappe.ui.form.on("Block Selection Detail", {
         }
     }
 });
-
-

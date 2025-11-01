@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "SizeList-.####",
+ "autoname": "field:form_number",
  "creation": "2025-09-19 14:29:05.223297",
  "default_view": "Report",
  "doctype": "DocType",
@@ -139,11 +139,11 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-30 17:47:31.609794",
+ "modified": "2025-11-01 11:43:55.191419",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Size List Creation",
- "naming_rule": "Expression (old style)",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

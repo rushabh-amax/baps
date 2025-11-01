@@ -16,7 +16,8 @@
    "fieldname": "stone_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Stone Name"
+   "label": "Stone Name",
+   "unique": 1
   },
   {
    "fieldname": "main_part",
@@ -38,13 +39,14 @@
    "fieldname": "stone_code",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Stone Code"
+   "label": "Stone Code",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-31 16:39:41.650366",
+ "modified": "2025-11-01 14:15:53.792078",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Stone Name",

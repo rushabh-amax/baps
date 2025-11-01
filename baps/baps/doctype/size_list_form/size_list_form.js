@@ -2170,12 +2170,25 @@ function show_duplicate_records(frm, cdt, cdn) {
                 sub_part: frm.doc.sub_part,
                 stone_name: row.stone_name,
                 stone_code: row.stone_code,
-                range: row.range
+                range: row.range,
+                name: row.name  // Pass the row name to exclude itself
             },
             current_size_list: frm.doc.name
         },
         callback: function (r) {
-            show_duplicate_records_dialog(r.message || []);
+            const result = r.message || {};
+            const duplicates = result.duplicates || [];
+            const overlapping_codes = result.overlapping_codes || {};
+            
+            if (duplicates.length === 0) {
+                frappe.msgprint({
+                    title: 'No Duplicates Found',
+                    message: `✅ No duplicates found for range "<b>${row.range}</b>"`,
+                    indicator: 'green'
+                });
+            } else {
+                show_duplicate_records_dialog(duplicates, row, overlapping_codes);
+            }
         }
     });
 }
@@ -2192,24 +2205,64 @@ function update_duplicate_flag_visibility(frm, cdt, cdn) {
     // frm.refresh_field('stone_details');
 }
 
-function show_duplicate_records_dialog(duplicate_records, current_row) {
+function show_duplicate_records_dialog(duplicate_records, current_row, overlapping_codes) {
+    if (!duplicate_records || duplicate_records.length === 0) {
+        frappe.msgprint({
+            title: 'No Duplicates',
+            message: '✅ No duplicate records found.',
+            indicator: 'green'
+        });
+        return;
+    }
+
     let dialog = new frappe.ui.Dialog({
-        title: `⚠️ Range "${current_row.range}" Already Exists`,
+        title: `⚠️ Duplicate Stone Codes Found (${duplicate_records.length})`,
         size: 'large',
         fields: [{ fieldtype: 'HTML', fieldname: 'duplicate_info' }]
     });
 
+    // Build overlapping codes summary
+    let overlapping_summary = '';
+    if (overlapping_codes && Object.keys(overlapping_codes).length > 0) {
+        overlapping_summary = `
+            <div style="background: #fff3cd; padding: 10px; margin-bottom: 15px; border-radius: 4px; border-left: 4px solid #ffc107;">
+                <strong>⚠️ Duplicate Stone Codes Detected:</strong><br>
+                <ul style="margin: 8px 0 0 20px; padding: 0;">
+        `;
+        for (let code in overlapping_codes) {
+            const rows = overlapping_codes[code];
+            overlapping_summary += `<li><b>${code}</b> in rows: ${rows.join(', ')}</li>`;
+        }
+        overlapping_summary += `
+                </ul>
+                <i style="font-size: 12px; color: #856404;">Please correct the overlapping ranges.</i>
+            </div>
+        `;
+    }
+
     let rows = duplicate_records.map(record => {
-        // Safely escape single quotes in size_list name to prevent JS break
-        const safeName = String(record.size_list).replace(/'/g, "\\'");
+        // Safely escape single quotes in document name to prevent JS break
+        const safeName = String(record.source_document).replace(/'/g, "\\'");
+        const sourceType = record.source_type || 'Unknown';
+        const workflowState = record.workflow_state || 'N/A';
+        
+        // Show overlapping codes for internal duplicates
+        let overlappingCodesHtml = '';
+        if (record.overlapping_codes && record.overlapping_codes.length > 0) {
+            overlappingCodesHtml = `<br><small style="color: #dc3545;">Overlapping: ${record.overlapping_codes.join(', ')}</small>`;
+        }
+        
         return `
             <tr>
-                <td style="font-family: monospace;">${record.size_list}</td>
-                <td>${record.stone_name || ''}</td>
-                <td><strong>${record.range}</strong></td>
+                <td style="font-family: monospace;">${record.source_document || 'N/A'}</td>
+                <td><span class="badge badge-info">${sourceType}</span></td>
+                <td><span class="badge badge-warning">${workflowState}</span></td>
+                <td>${record.stone_name || 'N/A'}</td>
+                <td><strong>${record.range || 'N/A'}</strong>${overlappingCodesHtml}</td>
+                <td>${record.stone_code || 'N/A'}</td>
                 <td>
                     <button class="btn btn-xs btn-secondary"
-                            onclick="frappe.set_route('Form', 'Size List', '${safeName}')">
+                            onclick="frappe.set_route('Form', '${sourceType}', '${safeName}')">
                         View
                     </button>
                 </td>
@@ -2219,17 +2272,20 @@ function show_duplicate_records_dialog(duplicate_records, current_row) {
 
     let html = `
         <div style="padding: 12px; font-size: 13px; color: #555;">
+            ${overlapping_summary}
             <p style="margin: 0 0 12px;">
-                The range <strong>"${current_row.range}"</strong> is already defined in 
-                <strong>${duplicate_records.length}</strong> other Size List record(s).
+                Found <strong>${duplicate_records.length}</strong> duplicate record(s) with overlapping stone codes.
             </p>
-            <div style="max-height: 200px; overflow: auto; border: 1px solid #eee; border-radius: 4px;">
+            <div style="max-height: 400px; overflow: auto; border: 1px solid #eee; border-radius: 4px;">
                 <table class="table table-bordered" style="margin: 0; font-size: 12px;">
                     <thead>
                         <tr>
-                            <th>Size List</th>
+                            <th>Document</th>
+                            <th>Source Type</th>
+                            <th>Status</th>
                             <th>Stone Name</th>
                             <th>Range</th>
+                            <th>Stone Code</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -2239,7 +2295,7 @@ function show_duplicate_records_dialog(duplicate_records, current_row) {
                 </table>
             </div>
             <p style="margin-top: 12px; font-size: 12px; color: #888;">
-                → Change the range or remove this row to proceed.
+                → Change the range to avoid duplicate stone codes.
             </p>
         </div>
     `;

@@ -3,6 +3,51 @@
 
 frappe.query_reports["Size List"] = {
 	"filters": [
-
+		{
+			"fieldname": "form_number",
+			"label": __("Size List Form No."),
+			"fieldtype": "Link",
+			"options": "Size List Form"
+		},
+		{
+			"fieldname": "baps_project",
+			"label": __("BAPS Project"),
+			"fieldtype": "Link",
+			"options": "Baps Project"
+		},
+		{
+			"fieldname": "stone_type",
+			"label": __("Material Type"),
+			"fieldtype": "Link",
+			"options": "Material Type"
+		},
+		{
+			"fieldname": "main_part",
+			"label": __("Main Part"),
+			"fieldtype": "Link",
+			"options": "Main Part"
+		},
+		{
+			"fieldname": "sub_part",
+			"label": __("Sub Part"),
+			"fieldtype": "Link",
+			"options": "Sub Part"
+		},
+		{
+			"fieldname": "cutting_region",
+			"label": __("Cutting Region"),
+			"fieldtype": "Link",
+			"options": "Region"
+		},
+		{
+			"fieldname": "prep_date_from",
+			"label": __("Prep Date From"),
+			"fieldtype": "Date"
+		},
+		{
+			"fieldname": "prep_date_to",
+			"label": __("Prep Date To"),
+			"fieldtype": "Date"
+		}
 	]
 };

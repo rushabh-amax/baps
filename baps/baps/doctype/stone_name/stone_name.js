@@ -63,11 +63,11 @@ function check_main_part_uniqueness(frm) {
         },
         callback: function(r) {
             if (r.message && r.message.length > 0) {
-                frappe.msgprint({
-                    title: 'Duplicate Main Part',
-                    message: `⚠️ Main Part "${frm.doc.main_part}" already exists in Stone Name: ${r.message[0].name}`,
-                    indicator: 'orange'
-                });
+                // frappe.msgprint({
+                //     title: 'Duplicate Main Part',
+                //     // message: `⚠️ Main Part "${frm.doc.main_part}" already exists in Stone Name: ${r.message[0].name}`,
+                //     indicator: 'orange'
+                // });
             }
         }
     });
@@ -88,11 +88,11 @@ function check_main_sub_part_uniqueness(frm) {
         },
         callback: function(r) {
             if (r.message && r.message.length > 0) {
-                frappe.msgprint({
-                    title: 'Duplicate Combination',
-                    message: `⚠️ Main Part "${frm.doc.main_part}" + Sub Part "${frm.doc.sub_part}" already exists in: ${r.message[0].name}`,
-                    indicator: 'orange'
-                });
+                // frappe.msgprint({
+                //     title: 'Duplicate Combination',
+                //     message: `Main Part "${frm.doc.main_part}" + Sub Part "${frm.doc.sub_part}" already exists in: ${r.message[0].name}`,
+                //     indicator: 'orange'
+                // });
             }
         }
     });
@@ -116,7 +116,7 @@ function check_full_combination_uniqueness(frm) {
             if (r.message && r.message.length > 0) {
                 frappe.msgprint({
                     title: 'Duplicate Record',
-                    message: `⚠️ This exact combination already exists in: ${r.message[0].name}`,
+                    message: `This exact combination already exists in: ${r.message[0].name}`,
                     indicator: 'red'
                 });
             }

@@ -1,4 +1,2 @@
 Baps
 cutting_demo
-newworskspace
-new2workspace

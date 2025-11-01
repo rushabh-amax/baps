@@ -17,23 +17,26 @@ class BlockSelection(Document):
         project_code = frappe.db.get_value("Baps Project", self.baps_project, "project_code")
         trade_code = frappe.db.get_value("Trade Partner", self.trade_partner, "trade_partner_code")
 
-        # if not project_code or not trade_code:
-        #     frappe.throw("Project or Trade Partner code missing — please save them first.")
+        if not project_code or not trade_code:
+            frappe.throw("Project or Trade Partner code missing — please save them first.")
 
-        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        # ADDED: Validate block number uniqueness (within form + against Block doctype)
-        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        # NEW: Validate block number format (9 chars: 5-letter prefix + 4 digits)
+        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        self.validate_block_number_format()
+        # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        # Validate block number uniqueness
+        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         self.validate_block_number_uniqueness()
-        # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-        # Process child table rows
-        seq = 1
+        # Process child table rows (NO auto-generation of block_number)
         total = 0.0
-        for row in (self.block_selection_details or []):
-            # Auto-generate block number if missing (fallback using seq)
-            if not row.block_number:
-                row.block_number = str(seq).zfill(3)
-            seq += 1
+        for idx, row in enumerate(self.block_selection_details or [], 1):
+            # ⚠️ REMOVED: Do NOT auto-generate block_number
+            # User must enter full 9-digit code manually
 
             # Calculate volume (ft + inch conversion)
             l = (row.l1 or 0) + (row.l2 or 0) / 12.0
@@ -44,7 +47,7 @@ class BlockSelection(Document):
             # Validate volume is positive
             if not row.volume or row.volume <= 0:
                 frappe.throw(
-                    f'Block "{row.block_number or seq - 1}" has 0 or invalid volume. '
+                    f'Block "{row.block_number or idx}" has 0 or invalid volume. '
                     'Please enter valid L, B, and H values before saving.'
                 )
 
@@ -53,6 +56,34 @@ class BlockSelection(Document):
         # Set total volume on parent if field exists
         if hasattr(self, 'total_volume'):
             self.total_volume = round(total, 3)
+
+    def validate_block_number_format(self):
+        """Validate block_number is exactly 9 chars: [5-letter prefix][4 digits]"""
+        # Get expected prefix from linked documents
+        project_code = frappe.db.get_value("Baps Project", self.baps_project, "project_code") or ""
+        trade_code = frappe.db.get_value("Trade Partner", self.trade_partner, "trade_partner_code") or ""
+        expected_prefix = (project_code + trade_code).upper()
+
+        for row in (self.block_selection_details or []):
+            bn = (row.block_number or "").strip()
+            
+            # 1. Mandatory
+            if not bn:
+                frappe.throw(_("Row #{0}: Block Number is mandatory.").format(row.idx))
+            
+            # 2. Must be 9 characters
+            if len(bn) != 9:
+                frappe.throw(_("Row #{0}: Block Number must be exactly 9 characters long.").format(row.idx))
+            
+            # 3. Must start with correct prefix
+            if not bn.upper().startswith(expected_prefix):
+                frappe.throw(
+                    _("Row #{0}: Block Number must start with '{1}'.").format(row.idx, expected_prefix)
+                )
+            
+            # 4. Last 4 must be digits
+            if not bn[-4:].isdigit():
+                frappe.throw(_("Row #{0}: Last 4 characters must be digits (e.g., 0001).").format(row.idx))
 
     def validate_block_number_uniqueness(self):
         """Prevent duplicate block numbers within form and against existing Block records."""
