@@ -434,20 +434,20 @@ height: var(--classic_height);
 /* list style table layout order change */
 /* ------------------------------------ */
 
-.list-row-head .list-row-col:nth-child(1),
-.list-row .list-row-col:nth-child(1) { order: 1; } /* Full Name */
+/* .list-row-head .list-row-col:nth-child(1),
+.list-row .list-row-col:nth-child(1) { order: 1; } 
 
 .list-row-head .list-row-col:nth-child(2),
-.list-row .list-row-col:nth-child(2) { order: 2; } /* Tag */
+.list-row .list-row-col:nth-child(2) { order: 2; } 
 
 .list-row-head .list-row-col:nth-child(3),
-.list-row .list-row-col:nth-child(3) { order: 5; } /* Status -> move to last */
+.list-row .list-row-col:nth-child(3) { order: 5; } 
 
 .list-row-head .list-row-col:nth-child(4),
-.list-row .list-row-col:nth-child(4) { order: 3; } /* User Type */
+.list-row .list-row-col:nth-child(4) { order: 3; } 
 
 .list-row-head .list-row-col:nth-child(5),
-.list-row .list-row-col:nth-child(5) { order: 4; } /* ID */
+.list-row .list-row-col:nth-child(5) { order: 4; }  */
 
 /* ====================================================== */
 

@@ -1,6 +1,6 @@
 @import "https://fonts.googleapis.com/css2?family=Didact+Gothic&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap";
 
-/* ../../../../../../tmp/tmp-184238-OC450f0bL10N/baps/baps/public/css/baps.bundle.css */
+/* ../../../../../../tmp/tmp-224044-mlZiXu27lVNa/19a3f27d58a1/baps.bundle.css */
 .hide-breadcrumb {
   display: none !important;
 }
@@ -294,26 +294,6 @@ kbd {
 .grid-static-col .static-area {
   text-align: center !important;
 }
-.list-row-head .list-row-col:nth-child(1),
-.list-row .list-row-col:nth-child(1) {
-  order: 1;
-}
-.list-row-head .list-row-col:nth-child(2),
-.list-row .list-row-col:nth-child(2) {
-  order: 2;
-}
-.list-row-head .list-row-col:nth-child(3),
-.list-row .list-row-col:nth-child(3) {
-  order: 5;
-}
-.list-row-head .list-row-col:nth-child(4),
-.list-row .list-row-col:nth-child(4) {
-  order: 3;
-}
-.list-row-head .list-row-col:nth-child(5),
-.list-row .list-row-col:nth-child(5) {
-  order: 4;
-}
 .form-tabs-list .form-tabs .nav-item .nav-link.active {
   --_primary-bg-color:#ea582d !important;
   --text-color:var(--_primary-bg-color);
@@ -602,4 +582,6 @@ select,
 .notification-null-state {
   padding-inline: .25em;
 }
-/*# sourceMappingURL=baps.bundle.YZJHM53K.css.map */
+
+/* ../../../../../../tmp/tmp-224044-mlZiXu27lVNa/baps/baps/public/css/theme.bundle.css */
+/*# sourceMappingURL=theme.bundle.MKBWJMUD.css.map */
