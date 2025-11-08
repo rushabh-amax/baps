@@ -7,6 +7,113 @@ function get_workflow_state(frm) {
     return frm.doc.workflow_state || get_workflow_state(frm) || frm.doc.__wf || '';
 }
 
+
+// MAIN PART AND SUB PART FILTER VALIDATION AND CONFIRMATION
+// -------------------------------------------------------
+
+
+let previous_main_part = null;
+let previous_sub_part = null;
+
+frappe.ui.form.on("Size List Form", {
+    onload(frm) {
+        // Save initial values
+        previous_main_part = frm.doc.main_part;
+        previous_sub_part = frm.doc.sub_part;
+    },
+
+    refresh(frm) {
+        // Update previous values after every refresh
+        previous_main_part = frm.doc.main_part;
+        previous_sub_part = frm.doc.sub_part;
+    },
+
+    main_part(frm) {
+        handle_main_or_sub_part_change(frm, "main_part");
+    },
+
+    sub_part(frm) {
+        handle_main_or_sub_part_change(frm, "sub_part");
+    }
+});
+
+function handle_main_or_sub_part_change(frm, changed_field) {
+    const new_main = frm.doc.main_part;
+    const new_sub = frm.doc.sub_part;
+
+    // ✅ CASE 1: User cleared Main Part (blank)
+    if (changed_field === "main_part" && !new_main) {
+        frappe.confirm(
+            "You removed the Main Part. This will clear all related data.<br><br><b>Do you want to proceed?</b>",
+            () => {
+                // ✅ User clicked Yes → clear sub part and stone details
+                frm.set_value("sub_part", "");
+                frm.clear_table("stone_details");
+                frm.refresh_field("stone_details");
+                frappe.show_alert({
+                    message: "Main Part removed. Sub Part and Stone Details cleared.",
+                    indicator: "orange"
+                });
+                previous_main_part = null;
+                previous_sub_part = null;
+            },
+            () => {
+                // ❌ User clicked No → restore old values silently
+                frappe.run_serially([
+                    () => frm.set_value("main_part", previous_main_part),
+                    () => frm.set_value("sub_part", previous_sub_part)
+                ]);
+            }
+        );
+        return;
+    }
+
+    // ✅ CASE 2: Normal change (user selected another Main/Sub Part)
+    if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
+        frappe.confirm(
+            "You changed the Main Part or Sub Part. " +
+            "Existing Stone Details may no longer be valid.<br><br>" +
+            "<b>Do you want to clear all Stone Details?</b>",
+            () => {
+                // ✅ Yes → clear the table
+                frm.clear_table("stone_details");
+                frm.refresh_field("stone_details");
+                frappe.show_alert({
+                    message: "Stone Details cleared due to Main/Sub Part change.",
+                    indicator: "orange"
+                });
+
+                // Save new values as latest
+                previous_main_part = new_main;
+                previous_sub_part = new_sub;
+            },
+            () => {
+                // ❌ No → restore old values silently
+                frappe.run_serially([
+                    () => frm.set_value("main_part", previous_main_part),
+                    () => frm.set_value("sub_part", previous_sub_part)
+                ]);
+            }
+        );
+    } else {
+        // ✅ No stone details → just update previous values
+        previous_main_part = new_main;
+        previous_sub_part = new_sub;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 // size_list.js — Robust row-checkbox ↔ verify-fields sync (Checker-only editable)
 frappe.ui.form.on("Size List Form", {
     refresh(frm) {
@@ -277,17 +384,17 @@ frappe.ui.form.on('Size List Form', {
             }
         }
         
-        // Validate Main Part and Sub Part relationship
-        if (!frm.doc.main_part && frm.doc.sub_part) {
-            frappe.throw("You cannot add a Sub Part without selecting a Main Part.");
-        }
+        // // Validate Main Part and Sub Part relationship
+        // if (!frm.doc.main_part && frm.doc.sub_part) {
+        //     frappe.throw("You cannot add a Sub Part without selecting a Main Part.");
+        // }
         
-        // Validate that child rows exist only when Main Part and Sub Part are selected
-        if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
-            if (!frm.doc.main_part || !frm.doc.sub_part) {
-                frappe.throw("Cannot save Stone Details without Main Part and Sub Part. Please select both or remove all Stone Details rows.");
-            }
-        }
+        // // Validate that child rows exist only when Main Part and Sub Part are selected
+        // if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
+        //     if (!frm.doc.main_part || !frm.doc.sub_part) {
+        //         frappe.throw("Cannot save Stone Details without Main Part and Sub Part. Please select both or remove all Stone Details rows.");
+        //     }
+        // }
     },
     
     before_workflow_action: function(frm) {
@@ -409,144 +516,144 @@ frappe.ui.form.on('Size List Form', {
     },
     
     // Main Part and Sub Part handlers
-    main_part: function(frm) {
-        // If main_part is cleared, clear sub_part and all child rows
-        if (!frm.doc.main_part) {
-            frm.set_value('sub_part', '');
+    // main_part: function(frm) {
+    //     // If main_part is cleared, clear sub_part and all child rows
+    //     if (!frm.doc.main_part) {
+    //         frm.set_value('sub_part', '');
             
-            // Clear all child table rows when main_part is cleared
-            if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
-                frappe.confirm(
-                    'Clearing Main Part will remove all Stone Details rows. Do you want to continue?',
-                    function() {
-                        // User confirmed - clear all rows
-                        frm.clear_table('stone_details');
-                        frm.refresh_field('stone_details');
-                    },
-                    function() {
-                        // User cancelled - restore the previous main_part value if available
-                        // This prevents the field from being cleared
-                        frm.reload_doc();
-                    }
-                );
-            }
-        }
+    //         // Clear all child table rows when main_part is cleared
+    //         if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
+    //             frappe.confirm(
+    //                 'Clearing Main Part will remove all Stone Details rows. Do you want to continue?',
+    //                 function() {
+    //                     // User confirmed - clear all rows
+    //                     frm.clear_table('stone_details');
+    //                     frm.refresh_field('stone_details');
+    //                 },
+    //                 function() {
+    //                     // User cancelled - restore the previous main_part value if available
+    //                     // This prevents the field from being cleared
+    //                     frm.reload_doc();
+    //                 }
+    //             );
+    //         }
+    //     }
         
-        // Setup Sub Part query filter
-        setup_sub_part_query(frm);
+    //     // Setup Sub Part query filter
+    //     setup_sub_part_query(frm);
 
-        // clear sub_part if mismatch
-        if (frm.doc.sub_part) {
-            frappe.db.get_value("Sub Part", frm.doc.sub_part, "main_part", function(r) {
-                if (r && r.main_part !== frm.doc.main_part) {
-                    frm.set_value("sub_part", null);
-                }
-            });
-        }
+    //     // clear sub_part if mismatch
+    //     if (frm.doc.sub_part) {
+    //         frappe.db.get_value("Sub Part", frm.doc.sub_part, "main_part", function(r) {
+    //             if (r && r.main_part !== frm.doc.main_part) {
+    //                 frm.set_value("sub_part", null);
+    //             }
+    //         });
+    //     }
         
-        // Update stone_name query filter
-        setup_stone_name_query_for_all_rows(frm);
+    //     // Update stone_name query filter
+    //     setup_stone_name_query_for_all_rows(frm);
         
-        // Check for duplicates when main part changes
-        check_for_duplicates(frm);
-    },
+    //     // Check for duplicates when main part changes
+    //     check_for_duplicates(frm);
+    // },
     
-    sub_part: function(frm) {
-        // First, validate that sub_part belongs to the selected main_part
-        if (frm.doc.sub_part && frm.doc.main_part) {
-            frappe.db.get_value("Sub Part", frm.doc.sub_part, "main_part", function(r) {
-                if (r && r.main_part !== frm.doc.main_part) {
-                    // Sub Part doesn't match Main Part
-                    frappe.msgprint({
-                        title: 'Invalid Sub Part',
-                        message: `The selected Sub Part "${frm.doc.sub_part}" does not belong to Main Part "${frm.doc.main_part}". Please select a valid Sub Part.`,
-                        indicator: 'red'
-                    });
+    // sub_part: function(frm) {
+    //     // First, validate that sub_part belongs to the selected main_part
+    //     if (frm.doc.sub_part && frm.doc.main_part) {
+    //         frappe.db.get_value("Sub Part", frm.doc.sub_part, "main_part", function(r) {
+    //             if (r && r.main_part !== frm.doc.main_part) {
+    //                 // Sub Part doesn't match Main Part
+    //                 frappe.msgprint({
+    //                     title: 'Invalid Sub Part',
+    //                     message: `The selected Sub Part "${frm.doc.sub_part}" does not belong to Main Part "${frm.doc.main_part}". Please select a valid Sub Part.`,
+    //                     indicator: 'red'
+    //                 });
                     
-                    // Clear sub_part and child rows
-                    frm.set_value('sub_part', '');
-                    if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
-                        frm.clear_table('stone_details');
-                        frm.refresh_field('stone_details');
-                    }
-                    return;
-                }
-            });
-        }
+    //                 // Clear sub_part and child rows
+    //                 frm.set_value('sub_part', '');
+    //                 if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
+    //                     frm.clear_table('stone_details');
+    //                     frm.refresh_field('stone_details');
+    //                 }
+    //                 return;
+    //             }
+    //         });
+    //     }
         
-        // If sub_part is cleared, clear all child rows
-        if (!frm.doc.sub_part) {
-            // Clear all child table rows when sub_part is cleared
-            if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
-                frappe.confirm(
-                    'Clearing Sub Part will remove all Stone Details rows. Do you want to continue?',
-                    function() {
-                        // User confirmed - clear all rows
-                        frm.clear_table('stone_details');
-                        frm.refresh_field('stone_details');
-                    },
-                    function() {
-                        // User cancelled - restore the previous sub_part value
-                        frm.reload_doc();
-                    }
-                );
-            }
-        } else if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
-            // Sub part is being changed (not just cleared) and child rows exist
-            // Clear child rows with confirmation
-            frappe.confirm(
-                'Changing Sub Part will remove all existing Stone Details rows. Do you want to continue?',
-                function() {
-                    // User confirmed - clear all rows
-                    frm.clear_table('stone_details');
-                    frm.refresh_field('stone_details');
-                },
-                function() {
-                    // User cancelled - restore the previous sub_part value
-                    frm.reload_doc();
-                }
-            );
-        }
+    //     // If sub_part is cleared, clear all child rows
+    //     if (!frm.doc.sub_part) {
+    //         // Clear all child table rows when sub_part is cleared
+    //         if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
+    //             frappe.confirm(
+    //                 'Clearing Sub Part will remove all Stone Details rows. Do you want to continue?',
+    //                 function() {
+    //                     // User confirmed - clear all rows
+    //                     frm.clear_table('stone_details');
+    //                     frm.refresh_field('stone_details');
+    //                 },
+    //                 function() {
+    //                     // User cancelled - restore the previous sub_part value
+    //                     frm.reload_doc();
+    //                 }
+    //             );
+    //         }
+    //     } else if (frm.doc.stone_details && frm.doc.stone_details.length > 0) {
+    //         // Sub part is being changed (not just cleared) and child rows exist
+    //         // Clear child rows with confirmation
+    //         frappe.confirm(
+    //             'Changing Sub Part will remove all existing Stone Details rows. Do you want to continue?',
+    //             function() {
+    //                 // User confirmed - clear all rows
+    //                 frm.clear_table('stone_details');
+    //                 frm.refresh_field('stone_details');
+    //             },
+    //             function() {
+    //                 // User cancelled - restore the previous sub_part value
+    //                 frm.reload_doc();
+    //             }
+    //         );
+    //     }
         
-        // Update stone_name query filter
-        setup_stone_name_query_for_all_rows(frm);
+    //     // Update stone_name query filter
+    //     setup_stone_name_query_for_all_rows(frm);
         
-        // Check for duplicates when sub part changes
-        check_for_duplicates(frm);
-    },
+    //     // Check for duplicates when sub part changes
+    //     check_for_duplicates(frm);
+    // },
     
-    stone_type: function(frm) {
-        // Check for duplicates when stone type changes
-        check_for_duplicates(frm);
-    },
+    // stone_type: function(frm) {
+    //     // Check for duplicates when stone type changes
+    //     check_for_duplicates(frm);
+    // },
     
-    cutting_region: function(frm) {
-        // Check for duplicates when cutting region changes
-        check_for_duplicates(frm);
-    },
+    // cutting_region: function(frm) {
+    //     // Check for duplicates when cutting region changes
+    //     check_for_duplicates(frm);
+    // },
     
-    // Stone details add handler
-    stone_details_add: function(frm, cdt, cdn) {
-        // Validate that Main Part and Sub Part are selected before adding rows
-        if (!frm.doc.main_part || !frm.doc.sub_part) {
-            // Remove the newly added row
-            const row = locals[cdt][cdn];
-            frm.get_field('stone_details').grid.grid_rows_by_docname[cdn].remove();
+    // // Stone details add handler
+    // stone_details_add: function(frm, cdt, cdn) {
+    //     // Validate that Main Part and Sub Part are selected before adding rows
+    //     if (!frm.doc.main_part || !frm.doc.sub_part) {
+    //         // Remove the newly added row
+    //         const row = locals[cdt][cdn];
+    //         frm.get_field('stone_details').grid.grid_rows_by_docname[cdn].remove();
             
-            frappe.msgprint({
-                title: 'Cannot Add Row',
-                message: 'Please select both Main Part and Sub Part before adding Stone Details.',
-                indicator: 'red'
-            });
-            return false;
-        }
+    //         frappe.msgprint({
+    //             title: 'Cannot Add Row',
+    //             message: 'Please select both Main Part and Sub Part before adding Stone Details.',
+    //             indicator: 'red'
+    //         });
+    //         return false;
+    //     }
         
-        // Note: chemical, dry_fitting, polishing are parent-level fields
-        // They are set on the Size List form, not on individual stone rows
+    //     // Note: chemical, dry_fitting, polishing are parent-level fields
+    //     // They are set on the Size List form, not on individual stone rows
         
-        // Lock header fields after first child row is added
-        lock_header_fields_if_children_exist(frm);
-    }
+    //     // Lock header fields after first child row is added
+    //     lock_header_fields_if_children_exist(frm);
+    // }
 });
 
 // Child table events
@@ -1307,23 +1414,53 @@ function hide_child_verification_columns(frm) {
 // Control "Add Row" button visibility in child table
 function control_child_table_add_button(frm) {
     const is_data_operator = frappe.user_roles.includes('Size List Data Entry Operator');
-    const is_under_rechange = get_workflow_state(frm) === 'Under Rechange';
-    const is_under_recheck = get_workflow_state(frm) === 'Under Recheck';
+    const is_project_manager = frappe.user_roles.includes('Size List Project Manager') || frappe.user_roles.includes('Project Manager');
+    const is_admin = frappe.user_roles.includes('Administrator');
+    
+    const workflow_state = get_workflow_state(frm);
+    const is_under_rechange = workflow_state === 'Under Rechange';
+    const is_under_recheck = workflow_state === 'Under Recheck';
+    const is_verified = workflow_state === 'Verified';
+    const is_published = workflow_state === 'Published';
     
     const grid = frm.fields_dict.stone_details;
     
     if (grid && grid.grid) {
+        let should_hide_buttons = false;
+        
         if (is_data_operator) {
             // Data Entry Operator can add rows in normal mode and Under Rechange
-            // But NOT in Under Recheck
-            if (is_under_recheck) {
-                grid.grid.cannot_add_rows = true;  // HIDE add button in Under Recheck
+            // But NOT in Under Recheck, Verified, or Published
+            if (is_under_recheck || is_verified || is_published) {
+                should_hide_buttons = true;
             } else {
-                grid.grid.cannot_add_rows = false;  // SHOW add button in Draft/Under Rechange
+                should_hide_buttons = false;
             }
+        } else if (is_project_manager && !is_admin) {
+            // Project Manager CANNOT add/delete rows when Verified or Published
+            if (is_verified || is_published) {
+                should_hide_buttons = true;
+            } else {
+                should_hide_buttons = false;
+            }
+        } else if (!is_admin) {
+            // Other roles (like Checker) - ALWAYS hide buttons
+            should_hide_buttons = true;
         } else {
-            // Non-Data Entry Operator - HIDE add button
-            grid.grid.cannot_add_rows = true;
+            // Admin - Always allow
+            should_hide_buttons = false;
+        }
+        
+        // Apply the setting
+        grid.grid.cannot_add_rows = should_hide_buttons;
+        
+        // Also hide delete buttons if needed
+        if (should_hide_buttons) {
+            setTimeout(() => {
+                $(grid.grid.wrapper).find('.grid-remove-rows, .grid-delete-row, .btn-open-row').hide();
+            }, 100);
+        } else {
+            $(grid.grid.wrapper).find('.grid-remove-rows, .grid-delete-row, .btn-open-row').show();
         }
         
         // Refresh the grid to apply changes
@@ -1433,7 +1570,7 @@ function lock_child_stone_name_if_already_set(frm) {
     frm.refresh_field('stone_details');
 }
 
-// Setup query for stone_name field to filter by main_part and sub_part
+// Setup query for stone_name and stone_code fields to filter by main_part and sub_part
 function setup_stone_name_query(frm, cdt, cdn) {
     if (!frm || !frm.doc || !frm.fields_dict.stone_details) return;
     
@@ -1459,6 +1596,25 @@ function setup_stone_name_query(frm, cdt, cdn) {
             filters: filters
         };
     };
+    
+    // Set query filter for stone_code field in child table
+    frm.fields_dict.stone_details.grid.get_field('stone_code').get_query = function(doc, cdt, cdn) {
+        const filters = {};
+        
+        // Filter by main_part if selected
+        if (main_part) {
+            filters.main_part = main_part;
+        }
+        
+        // Filter by sub_part if selected
+        if (sub_part) {
+            filters.sub_part = sub_part;
+        }
+        
+        return {
+            filters: filters
+        };
+    };
 }
 
 // Apply stone_name query filter to all existing rows
@@ -1468,8 +1624,25 @@ function setup_stone_name_query_for_all_rows(frm) {
     const main_part = frm.doc.main_part;
     const sub_part = frm.doc.sub_part;
     
-    // Set the query at the grid level
+    // Set the query at the grid level for stone_name
     frm.fields_dict.stone_details.grid.get_field('stone_name').get_query = function(doc, cdt, cdn) {
+        const filters = {};
+        
+        if (main_part) {
+            filters.main_part = main_part;
+        }
+        
+        if (sub_part) {
+            filters.sub_part = sub_part;
+        }
+        
+        return {
+            filters: filters
+        };
+    };
+    
+    // Set the query at the grid level for stone_code
+    frm.fields_dict.stone_details.grid.get_field('stone_code').get_query = function(doc, cdt, cdn) {
         const filters = {};
         
         if (main_part) {

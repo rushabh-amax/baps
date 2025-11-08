@@ -1,12 +1,13 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:sub_part_name",
+ "autoname": "format:{main_part}-{sub_part_name}",
  "creation": "2025-08-29 11:42:42.898567",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "main_part",
+  "sub_part_code",
   "sub_part_name"
  ],
  "fields": [
@@ -14,8 +15,7 @@
    "fieldname": "sub_part_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Sub Part Name",
-   "unique": 1
+   "label": "Sub Part Name"
   },
   {
    "fieldname": "main_part",
@@ -23,16 +23,22 @@
    "in_list_view": 1,
    "label": "Main Part",
    "options": "Main Part"
+  },
+  {
+   "fieldname": "sub_part_code",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Sub code (hidden field)"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-17 11:13:50.172561",
+ "modified": "2025-11-02 22:28:11.046075",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Sub Part",
- "naming_rule": "By fieldname",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

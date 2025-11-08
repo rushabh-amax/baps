@@ -32,8 +32,9 @@
  ],
  "fields": [
   {
+   "fetch_from": "stone_code.stone_name",
    "fieldname": "stone_name",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Stone Name",
    "options": "Stone Name"
@@ -145,12 +146,11 @@
    "read_only_depends_on": "eval:frappe.user_roles.includes(\"Size List Data Entry Operator\")"
   },
   {
-   "fetch_from": "stone_name.stone_code",
    "fieldname": "stone_code",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Stone Code ",
-   "read_only": 1,
+   "options": "Stone Name",
    "read_only_depends_on": "eval:doc.verification_status==\"Verified\"\r\n"
   },
   {
@@ -201,7 +201,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-10-31 15:30:19.445876",
+ "modified": "2025-11-03 11:20:06.134304",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Size List Details",

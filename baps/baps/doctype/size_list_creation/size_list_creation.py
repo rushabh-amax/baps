@@ -472,11 +472,11 @@ def auto_create_from_verified_size_list(size_list_name):
     # Safety check
     if size_list_form.workflow_state != "Verified":
         return {"success": False, "message": "Only verified Size Lists can be converted."}
-
+ 
     # Avoid duplicates
-    existing = frappe.db.exists("Size List Creation", {"form_number": size_list_name})
+    existing = frappe.db.exists("Size List ", {"form_number": size_list_name})
     if existing:
-        return {"success": False, "message": f"Size List Creation already exists: {existing}"}
+        return {"success": False, "message": f"Size List already exists: {existing}"}
 
     # Create the new Size List Creation document
     creation = frappe.new_doc("Size List Creation")

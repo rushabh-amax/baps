@@ -25,7 +25,13 @@
   "carving",
   "chemicaling",
   "section_break_pnlg",
-  "stone_details"
+  "stone_details",
+  "section_break_dfpm",
+  "stone_id",
+  "order_id",
+  "column_break_gobb",
+  "selection_id",
+  "lot_id"
  ],
  "fields": [
   {
@@ -134,12 +140,40 @@
   {
    "fieldname": "section_break_pnlg",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_dfpm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "stone_id",
+   "fieldtype": "Data",
+   "label": "Stone"
+  },
+  {
+   "fieldname": "order_id",
+   "fieldtype": "Data",
+   "label": "Order"
+  },
+  {
+   "fieldname": "selection_id",
+   "fieldtype": "Data",
+   "label": "Selection "
+  },
+  {
+   "fieldname": "lot_id",
+   "fieldtype": "Data",
+   "label": "Lot"
+  },
+  {
+   "fieldname": "column_break_gobb",
+   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-01 11:43:55.191419",
+ "modified": "2025-11-06 14:34:14.599434",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Size List Creation",

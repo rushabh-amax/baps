@@ -27,13 +27,9 @@ body[frappe-session-status="logged-out"][data-path="login"] {
   height: 100vh;
   display: grid;
   place-items: center;
-  /* give full path here not ../../ = x : give full /assets/.../img */
-background: url("/assets/baps/images/photo13.jpeg") no-repeat center center !important;
-background-size: cover !important;
-
-  /* background: url("../images/bg-hos.jpg") no-repeat center center !important; */
-  /* background: url("https://images.pexels.com/photos/40568/medical-appointment-doctor-healthcare-40568.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1") no-repeat center center !important; */
+  background: url("/assets/baps/images/photo13.jpeg") no-repeat center center !important;
   background-size: cover !important;
+
 }
 
 

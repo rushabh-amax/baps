@@ -1,4 +1,4 @@
-/* ../../../../../../tmp/tmp-224044-UvYOSTnz6amP/baps/baps/public/css/login.bundle.css */
+/* ../../../../../../tmp/tmp-193481-eqf95AC1DNsN/baps/baps/public/css/login.bundle.css */
 body[frappe-session-status=logged-out] .page-card-body {
   margin-bottom: .5em;
 }
@@ -15,7 +15,6 @@ body[frappe-session-status=logged-out][data-path=login] {
   display: grid;
   place-items: center;
   background: url(/assets/baps/images/photo13.jpeg) no-repeat center center !important;
-  background-size: cover !important;
   background-size: cover !important;
 }
 body[frappe-session-status=logged-out] .navbar-light {
@@ -201,4 +200,4 @@ body[frappe-session-status=logged-out][data-path=login] .forgot-password-message
   width: 70% !important;
   font: 600;
 }
-/*# sourceMappingURL=login.bundle.UMDPUZRK.css.map */
+/*# sourceMappingURL=login.bundle.HRBJPTIK.css.map */

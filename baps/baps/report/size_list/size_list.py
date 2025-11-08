@@ -17,28 +17,31 @@ def get_columns():
         {"label": _("Material Type"), "fieldname": "stone_type", "fieldtype": "Link", "options": "Material Type", "width": 120},
         {"label": _("Main Part"), "fieldname": "main_part", "fieldtype": "Link", "options": "Main Part", "width": 110},
         {"label": _("Sub Part"), "fieldname": "sub_part", "fieldtype": "Link", "options": "Sub Part", "width": 110},
-        {"label": _("Total Volume (CFT)"), "fieldname": "total_volume", "fieldtype": "Float", "width": 120},
+        # {"label": _("Total Volume (CFT)"), "fieldname": "total_volume", "fieldtype": "Float", "width": 120},
         {"label": _("Cutting Region"), "fieldname": "cutting_region", "fieldtype": "Link", "options": "Region", "width": 120},
+        # {"label": _("Split"), "fieldname": "split", "fieldtype": "Check", "width": 100},
 
         {"label": _("Stone Code"), "fieldname": "stone_code", "fieldtype": "Data", "width": 110},
         {"label": _("Stone Name"), "fieldname": "stone_name", "fieldtype": "Data", "width": 130},
-        {"label": _("Range"), "fieldname": "range", "fieldtype": "Data", "width": 90},
+        # {"label": _("Range"), "fieldname": "range", "fieldtype": "Data", "width": 90},
         {"label": _("L1"), "fieldname": "l1", "fieldtype": "Int", "width": 60},
         {"label": _("L2"), "fieldname": "l2", "fieldtype": "Float", "width": 60},
         {"label": _("B1"), "fieldname": "b1", "fieldtype": "Int", "width": 60},
         {"label": _("B2"), "fieldname": "b2", "fieldtype": "Float", "width": 60},
         {"label": _("H1"), "fieldname": "h1", "fieldtype": "Int", "width": 60},
         {"label": _("H2"), "fieldname": "h2", "fieldtype": "Float", "width": 60},
-        {"label": _("Item Volume (CFT)"), "fieldname": "volume", "fieldtype": "Float", "width": 110},
+        {"label": _("Volume "), "fieldname": "volume", "fieldtype": "Float", "width": 110},
+        # {"label": _("Split "), "fieldname": "split", "fieldtype": "Check", "width": 100},
+
     ]
 
 def get_data(filters):
     conditions = []
     values = {}
 
-    if filters.get("form_number"):
-        conditions.append("p.form_number = %(form_number)s")
-        values["form_number"] = filters["form_number"]
+    # if filters.get("form_number"):
+    #     conditions.append("p.form_number = %(form_number)s")
+    #     values["form_number"] = filters["form_number"]
 
     if filters.get("baps_project"):
         conditions.append("p.baps_project = %(baps_project)s")
@@ -67,6 +70,10 @@ def get_data(filters):
     if filters.get("prep_date_to"):
         conditions.append("p.prep_date <= %(prep_date_to)s")
         values["prep_date_to"] = filters["prep_date_to"]
+
+    if filters.get("stone_name"):
+        conditions.append("c.stone_name LIKE %(stone_name)s")
+        values["stone_name"] = f"%{filters['stone_name']}%"
 
     where_clause = " AND ".join(conditions) if conditions else "1=1"
 

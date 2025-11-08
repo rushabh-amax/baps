@@ -386,3 +386,17 @@ frappe.ui.form.on("Block Selection Detail", {
         }
     }
 });
+
+
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+// PREVENT ADDING ROWS AFTER SAVE 
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+frappe.ui.form.on('Block Selection', {
+    refresh: function(frm) {
+        // Only if document is already saved (not new)
+        if (!frm.is_new()) {
+            // Hide "+ Add Row" button in child table
+            frm.fields_dict.block_selection_details.grid.wrapper.find('.grid-add-row').hide();
+        }
+    }
+});

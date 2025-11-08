@@ -13,10 +13,12 @@ class SizeListForm(Document):
         self.calculate_total_volume()
         self.validate_zero_volume()
         self.validate_main_part_sub_part_relationship()
+        
+        # Update duplicate flags BEFORE checking (so flags are set even if validation fails)
+        self.update_duplicate_flags()
+        
+        # Now check for duplicates (this may throw error)
         self.check_internal_duplicates()
-        # Check and update duplicate flags
-        if self.name:  # Only for existing documents
-            self.update_duplicate_flags()
 
     def validate_main_part_sub_part_relationship(self):
         """Validate that Sub Part belongs to the selected Main Part"""
@@ -73,99 +75,35 @@ class SizeListForm(Document):
                 
                 local_stone_codes[potential_code].append(idx + 1)
         
-
+        # Show error if internal duplicates found
+        if duplicate_info:
+            # Group by code to avoid repetition
+            seen_codes = {}
+            for dup in duplicate_info:
+                code = dup['code']
+                if code not in seen_codes:
+                    seen_codes[code] = set(dup['duplicate_rows'])
+                else:
+                    seen_codes[code].update(dup['duplicate_rows'])
+            
+            # Build short message
+            total = len(seen_codes)
+            sample_code = list(seen_codes.keys())[0] if seen_codes else ""
+            sample_rows = seen_codes[sample_code] if sample_code else set()
+            
     def update_duplicate_flags(self):
-        """Update duplicate flags for all rows based on current data"""
+        """Update duplicate flags based on overlapping expanded stone codes (internal + cross-form duplicates)"""
         if not self.stone_details or len(self.stone_details) == 0:
             return
         
-        # Get project for global checks
-        project = getattr(self, "baps_project", None)
-        if not project:
-            return
+        # First, reset all flags to 0
+        for row in self.stone_details:
+            row.duplicate_flag = 0
         
-        # Get existing stone codes from Size List Creations
-        existing_stone_codes = set()
-        creation_stone_codes = frappe.db.sql_list(
-            """
-            SELECT slci.stone_code
-            FROM `tabSize List Creation Item` slci
-            JOIN `tabSize List Creation` slc ON slc.name = slci.parent
-            WHERE slc.baps_project = %s AND slci.stone_code IS NOT NULL AND slci.stone_code != ''
-            """,
-            (project,),
-        )
-        for code in creation_stone_codes:
-            if code and code.strip():
-                existing_stone_codes.add(code.strip().upper())
-        
-        # Get existing ranges from other Size List Forms
-        other_size_list_stones = frappe.db.sql(
-            """
-            SELECT sld.stone_code, sld.range
-            FROM `tabSize List Details` sld
-            JOIN `tabSize List Form` slf ON slf.name = sld.parent
-            WHERE slf.baps_project = %s AND slf.name != %s 
-              AND sld.stone_code IS NOT NULL AND sld.stone_code != ''
-              AND sld.range IS NOT NULL AND sld.range != ''
-            """,
-            (project, self.name),
-            as_dict=True
-        )
-        
-        # Expand other forms' stone codes
-        for other_stone in other_size_list_stones:
-            if other_stone.stone_code and other_stone.range:
-                prefix = ''.join([c for c in other_stone.stone_code if not c.isdigit()])
-                nums = expand_range(other_stone.range)
-                for num in nums:
-                    code = f"{prefix}{str(num).zfill(3)}".upper()
-                    existing_stone_codes.add(code)
-        
-        # Track local stone codes
+        # Track expanded stone codes: {stone_code: [row_indices]}
         local_stone_codes = {}
         
-        # Check each row
-        for row in self.stone_details:
-            row_has_dup = False
-            stone_range = getattr(row, 'range', '') or ''
-            stone_code_prefix = getattr(row, 'stone_code', '') or ''
-            
-            if stone_range and stone_range.strip() and stone_code_prefix:
-                prefix = ''.join([c for c in stone_code_prefix if not c.isdigit()])
-                range_numbers = expand_range(stone_range.strip())
-                
-                for num in range_numbers:
-                    potential_code = f"{prefix}{str(num).zfill(3)}".upper()
-                    
-                    # Check against existing codes (external)
-                    if potential_code in existing_stone_codes:
-                        row_has_dup = True
-                        break
-                    
-                    # Check against local codes (internal)
-                    if potential_code in local_stone_codes:
-                        row_has_dup = True
-                        # Mark the previous row too
-                        prev_row_name = local_stone_codes[potential_code]
-                        for prev_row in self.stone_details:
-                            if prev_row.name == prev_row_name:
-                                prev_row.duplicate_flag = 1
-                        break
-                    
-                    local_stone_codes[potential_code] = row.name
-            
-            # Update the flag
-            row.duplicate_flag = 1 if row_has_dup else 0
-
-    def check_internal_duplicates_silent(self):
-        """Check for duplicate stone codes within the current form - returns True/False without showing message"""
-        if not self.stone_details or len(self.stone_details) == 0:
-            return False
-        
-        local_stone_codes = {}  # Track stone codes: {code: [row_numbers]}
-        has_duplicates = False
-        
+        # Build a map of all stone codes and which rows they appear in
         for idx, row in enumerate(self.stone_details):
             stone_range = getattr(row, 'range', '') or ''
             stone_code_prefix = getattr(row, 'stone_code', '') or ''
@@ -179,23 +117,317 @@ class SizeListForm(Document):
             # Expand the range to get individual numbers
             range_numbers = expand_range(stone_range.strip())
             
-            # Generate stone codes
+            # Generate stone codes and track them by row index
             for num in range_numbers:
                 potential_code = f"{prefix}{str(num).zfill(3)}".upper()
                 
-                # Check if this code already exists in our tracking
-                if potential_code in local_stone_codes:
-                    has_duplicates = True
-                    break
-                else:
+                if potential_code not in local_stone_codes:
                     local_stone_codes[potential_code] = []
                 
-                local_stone_codes[potential_code].append(idx + 1)
-            
-            if has_duplicates:
-                break
+                # Store the row index instead of row.name
+                local_stone_codes[potential_code].append(idx)
         
-        return has_duplicates
+        # Mark internal duplicates only (code appears in multiple rows within same form)
+        for code, row_indices in local_stone_codes.items():
+            if len(row_indices) > 1:  # Code appears in multiple rows
+                # Mark all rows with this code as duplicate
+                for idx in row_indices:
+                    self.stone_details[idx].duplicate_flag = 1
+
+    def update_cross_form_duplicate_flags(self):
+        """Update duplicate flags for cross-form duplicates - only called during verification"""
+        if not self.baps_project or not self.name:
+            return
+        
+        # Get cross-form duplicates
+        cross_form_duplicates = self.check_cross_form_duplicates_silent()
+        
+        if cross_form_duplicates:
+            # Mark rows that have cross-form duplicates
+            for idx, row in enumerate(self.stone_details):
+                stone_range = getattr(row, 'range', '') or ''
+                stone_code_prefix = getattr(row, 'stone_code', '') or ''
+                
+                if not stone_range or not stone_range.strip() or not stone_code_prefix:
+                    continue
+                
+                prefix = ''.join([c for c in stone_code_prefix if not c.isdigit()])
+                range_numbers = expand_range(stone_range.strip())
+                
+                # Check if any code from this row exists in cross_form_duplicates
+                for num in range_numbers:
+                    potential_code = f"{prefix}{str(num).zfill(3)}".upper()
+                    if potential_code in cross_form_duplicates:
+                        self.stone_details[idx].duplicate_flag = 1
+                        break  # No need to check other codes in this row
+
+    def check_internal_duplicates_silent(self):
+        """Check for duplicate stone codes within the current form - returns True/False without showing message
+        Note: Checks for overlapping expanded stone codes (e.g., FFTAB001)"""
+        if not self.stone_details or len(self.stone_details) == 0:
+            return False
+
+        local_stone_codes = set()
+        for row in self.stone_details:
+            stone_range = getattr(row, 'range', '') or ''
+            stone_code_prefix = getattr(row, 'stone_code', '') or ''
+
+            # Skip if range or stone_code is empty
+            if not stone_range or not stone_range.strip() or not stone_code_prefix:
+                continue
+
+            # Get the alphabetic prefix
+            prefix = ''.join([c for c in stone_code_prefix if not c.isdigit()])
+            
+            # Expand the range to get individual numbers
+            range_numbers = expand_range(stone_range.strip())
+            
+            # Generate stone codes and check for duplicates
+            for num in range_numbers:
+                potential_code = f"{prefix}{str(num).zfill(3)}".upper()
+                
+                # Check if this code already exists
+                if potential_code in local_stone_codes:
+                    return True  # Duplicate stone code found
+                    
+                local_stone_codes.add(potential_code)
+
+        return False
+
+    def check_cross_form_duplicates_silent(self):
+        """Check if stone codes already exist in other Size List Forms - returns dict of duplicates"""
+        if not self.stone_details or not self.baps_project:
+            return {}
+        
+        # Build set of all expanded stone codes from current form
+        current_codes = set()
+        for row in self.stone_details:
+            stone_range = getattr(row, 'range', '') or ''
+            stone_code_prefix = getattr(row, 'stone_code', '') or ''
+            
+            if not stone_range or not stone_range.strip() or not stone_code_prefix:
+                continue
+            
+            prefix = ''.join([c for c in stone_code_prefix if not c.isdigit()])
+            range_numbers = expand_range(stone_range.strip())
+            
+            for num in range_numbers:
+                potential_code = f"{prefix}{str(num).zfill(3)}".upper()
+                current_codes.add(potential_code)
+        
+        if not current_codes:
+            return {}
+        
+        # Query other forms in the same project
+        other_forms = frappe.db.sql("""
+            SELECT d.stone_code, d.`range`, p.name as form_name, p.workflow_state
+            FROM `tabSize List Details` d
+            JOIN `tabSize List Form` p ON p.name = d.parent
+            WHERE p.baps_project = %s
+              AND p.name != %s
+              AND p.docstatus != 2
+              AND d.stone_code IS NOT NULL
+              AND d.stone_code != ''
+        """, (self.baps_project, self.name or "NEW"), as_dict=True)
+        
+        # Check for overlapping codes
+        duplicates_found = {}  # {code: [(form, state)]}
+        
+        for other_row in other_forms:
+            if not other_row.stone_code or not other_row.range:
+                continue
+            
+            prefix = ''.join([c for c in other_row.stone_code if not c.isdigit()])
+            range_numbers = expand_range(other_row.range)
+            
+            for num in range_numbers:
+                code = f"{prefix}{str(num).zfill(3)}".upper()
+                if code in current_codes:
+                    if code not in duplicates_found:
+                        duplicates_found[code] = []
+                    duplicates_found[code].append((other_row.form_name, other_row.workflow_state or 'Draft'))
+        
+        return duplicates_found
+
+    def check_creation_duplicates_silent(self):
+        """Check if stone codes already exist in Size List Creation items - returns list of duplicates"""
+        if not self.stone_details or not self.baps_project:
+            return []
+        
+        # Build list of all expanded stone codes from current form
+        current_codes = []
+        for row in self.stone_details:
+            stone_range = getattr(row, 'range', '') or ''
+            stone_code_prefix = getattr(row, 'stone_code', '') or ''
+            
+            if not stone_range or not stone_range.strip() or not stone_code_prefix:
+                continue
+            
+            prefix = ''.join([c for c in stone_code_prefix if not c.isdigit()])
+            range_numbers = expand_range(stone_range.strip())
+            
+            for num in range_numbers:
+                potential_code = f"{prefix}{str(num).zfill(3)}".upper()
+                current_codes.append(potential_code)
+        
+        if not current_codes:
+            return []
+        
+        # Query Size List Creation Items (use batching for large lists)
+        batch_size = 100
+        all_existing = []
+        
+        for i in range(0, len(current_codes), batch_size):
+            batch = current_codes[i:i + batch_size]
+            placeholders = ",".join(["%s"] * len(batch))
+            
+            existing = frappe.db.sql(f"""
+                SELECT DISTINCT c.stone_code, p.name as creation_name, p.form_number
+                FROM `tabSize List Creation Item` c
+                JOIN `tabSize List Creation` p ON p.name = c.parent
+                WHERE p.baps_project = %s
+                  AND p.form_number != %s
+                  AND c.stone_code IN ({placeholders})
+                  AND p.docstatus != 2
+                ORDER BY c.stone_code
+            """, tuple([self.baps_project, self.name or "NEW"] + batch), as_dict=True)
+            
+            all_existing.extend(existing)
+        
+        return all_existing
+
+    def check_cross_form_duplicates(self):
+        """Check if stone codes already exist in other Size List Forms in the same project"""
+        if not self.stone_details or not self.baps_project:
+            return
+        
+        # Build set of all expanded stone codes from current form
+        current_codes = set()
+        for row in self.stone_details:
+            stone_range = getattr(row, 'range', '') or ''
+            stone_code_prefix = getattr(row, 'stone_code', '') or ''
+            
+            if not stone_range or not stone_range.strip() or not stone_code_prefix:
+                continue
+            
+            prefix = ''.join([c for c in stone_code_prefix if not c.isdigit()])
+            range_numbers = expand_range(stone_range.strip())
+            
+            for num in range_numbers:
+                potential_code = f"{prefix}{str(num).zfill(3)}".upper()
+                current_codes.add(potential_code)
+        
+        if not current_codes:
+            return
+        
+        # Query other forms in the same project
+        other_forms = frappe.db.sql("""
+            SELECT d.stone_code, d.`range`, p.name as form_name, p.workflow_state
+            FROM `tabSize List Details` d
+            JOIN `tabSize List Form` p ON p.name = d.parent
+            WHERE p.baps_project = %s
+              AND p.name != %s
+              AND p.docstatus != 2
+              AND d.stone_code IS NOT NULL
+              AND d.stone_code != ''
+        """, (self.baps_project, self.name or "NEW"), as_dict=True)
+        
+        # Check for overlapping codes
+        duplicates_found = {}  # {code: [(form, state)]}
+        
+        for other_row in other_forms:
+            if not other_row.stone_code or not other_row.range:
+                continue
+            
+            prefix = ''.join([c for c in other_row.stone_code if not c.isdigit()])
+            range_numbers = expand_range(other_row.range)
+            
+            for num in range_numbers:
+                code = f"{prefix}{str(num).zfill(3)}".upper()
+                if code in current_codes:
+                    if code not in duplicates_found:
+                        duplicates_found[code] = []
+                    duplicates_found[code].append((other_row.form_name, other_row.workflow_state or 'Draft'))
+        
+        # If duplicates found, throw error
+        if duplicates_found:
+            msg = "<b>🚫 Cross-Form Duplicate Stone Codes Detected!</b><br><br>"
+            msg += f"The following stone codes already exist in other forms within project <b>{self.baps_project}</b>:<br><br>"
+            
+            # Show first 15 duplicates
+            for idx, (code, forms) in enumerate(list(duplicates_found.items())[:15]):
+                form_info = forms[0]  # Show first occurrence
+                msg += f"• <b>{code}</b> exists in <b>{form_info[0]}</b> (Status: {form_info[1]})<br>"
+            
+            if len(duplicates_found) > 15:
+                msg += f"<br>...and {len(duplicates_found) - 15} more duplicate codes."
+            
+            msg += "<br><br>Please use different stone codes or ranges to avoid conflicts."
+            
+            frappe.throw(msg, title="Duplicate Stone Codes Across Forms")
+
+    def check_creation_duplicates(self):
+        """Check if stone codes already exist in Size List Creation items"""
+        if not self.stone_details or not self.baps_project:
+            return
+        
+        # Build list of all expanded stone codes from current form
+        current_codes = []
+        for row in self.stone_details:
+            stone_range = getattr(row, 'range', '') or ''
+            stone_code_prefix = getattr(row, 'stone_code', '') or ''
+            
+            if not stone_range or not stone_range.strip() or not stone_code_prefix:
+                continue
+            
+            prefix = ''.join([c for c in stone_code_prefix if not c.isdigit()])
+            range_numbers = expand_range(stone_range.strip())
+            
+            for num in range_numbers:
+                potential_code = f"{prefix}{str(num).zfill(3)}".upper()
+                current_codes.append(potential_code)
+        
+        if not current_codes:
+            return
+        
+        # Query Size List Creation Items
+        # Use batching for large lists to avoid SQL query size limits
+        batch_size = 100
+        all_existing = []
+        
+        for i in range(0, len(current_codes), batch_size):
+            batch = current_codes[i:i + batch_size]
+            placeholders = ",".join(["%s"] * len(batch))
+            
+            existing = frappe.db.sql(f"""
+                SELECT DISTINCT c.stone_code, p.name as creation_name, p.form_number
+                FROM `tabSize List Creation Item` c
+                JOIN `tabSize List Creation` p ON p.name = c.parent
+                WHERE p.baps_project = %s
+                  AND p.form_number != %s
+                  AND c.stone_code IN ({placeholders})
+                  AND p.docstatus != 2
+                ORDER BY c.stone_code
+            """, tuple([self.baps_project, self.name or "NEW"] + batch), as_dict=True)
+            
+            all_existing.extend(existing)
+        
+        # If duplicates found, throw error
+        if all_existing:
+            msg = "<b>🚫 Stone Codes Already Exist in Generated Size Lists!</b><br><br>"
+            msg += f"The following stone codes are already in Size List Creation records for project <b>{self.baps_project}</b>:<br><br>"
+            
+            # Show first 15 duplicates
+            for idx, dup in enumerate(all_existing[:15]):
+                msg += f"• <b>{dup.stone_code}</b> in <b>{dup.creation_name}</b> (Form: {dup.form_number})<br>"
+            
+            if len(all_existing) > 15:
+                msg += f"<br>...and {len(all_existing) - 15} more duplicate codes."
+            
+            msg += "<br><br>These stone codes have already been generated and cannot be reused.<br>"
+            msg += "Please use different stone codes or ranges."
+            
+            frappe.throw(msg, title="Stone Codes Already Generated")
 
     def before_save(self):
         """Before saving - check workflow transitions and handle duplicates automatically"""
@@ -206,20 +438,33 @@ class SizeListForm(Document):
             
             # If trying to move to Verified from Under Verification
             if current_state == "Under Verification" and new_state == "Verified":
-                # Check for internal duplicates within this form
+                # Update cross-form duplicate flags during verification
+                self.update_cross_form_duplicate_flags()
+                
+                # Check for internal duplicates within this form only
                 has_internal_duplicates = self.check_internal_duplicates_silent()
                 
-                # Check for global duplicates across forms and Size List Creations
-                result = check_global_duplicates(self.name)
-                has_global_duplicates = result.get("has_duplicates", False)
+                # Check for cross-form duplicates (other forms in same project)
+                cross_form_duplicates = self.check_cross_form_duplicates_silent()
+                has_cross_form_duplicates = len(cross_form_duplicates) > 0
+                
+                # Check for creation duplicates (already generated items)
+                creation_duplicates = self.check_creation_duplicates_silent()
+                has_creation_duplicates = len(creation_duplicates) > 0
                 
                 # If any duplicates exist, prevent verification
-                if has_internal_duplicates or has_global_duplicates:
+                if has_internal_duplicates or has_cross_form_duplicates or has_creation_duplicates:
                     # Store flag to handle after save
                     self._has_duplicates_to_rechange = True
                     # Store which type of duplicates were found
                     self._has_internal_dup = has_internal_duplicates
-                    self._has_global_dup = has_global_duplicates
+                    self._has_cross_form_dup = has_cross_form_duplicates
+                    self._has_creation_dup = has_creation_duplicates
+                    # Store duplicate details for message
+                    if has_cross_form_duplicates:
+                        self._cross_form_details = cross_form_duplicates
+                    if has_creation_duplicates:
+                        self._creation_details = creation_duplicates
                     # Prevent the verification by keeping it in Under Verification
                     self.workflow_state = "Under Verification"
 
@@ -236,35 +481,38 @@ class SizeListForm(Document):
             # Reload the document to reflect changes
             self.reload()
             
-            # Prepare detailed message based on which type of duplicates were found
-            has_internal = getattr(self, '_has_internal_dup', False)
-            has_global = getattr(self, '_has_global_dup', False)
+            # Build short message based on which duplicates were found
+            msg_parts = []
             
-            if has_internal and has_global:
-                msg = (
-                    "⚠️ <b>Verification Failed - Duplicates Found</b><br><br>"
-                    "Status changed to <b>Under Rechange</b><br><br>"
-                    "<b>Issues:</b><br>"
-                    "• Internal duplicates (within form)<br>"
-                    "• External duplicates (in other Size Lists)<br><br>"
-                    "Check flagged rows and correct ranges."
-                )
-            elif has_internal:
-                msg = (
-                    "⚠️ <b>Verification Failed</b><br><br>"
-                    "Status changed to <b>Under Rechange</b><br><br>"
-                    "Internal duplicate stone codes found.<br>"
-                    "Check flagged rows and correct overlapping ranges."
-                )
-            elif has_global:
-                msg = (
-                    "⚠️ <b>Verification Failed</b><br><br>"
-                    "Status changed to <b>Under Rechange</b><br><br>"
-                    "Stone codes exist in other Size Lists.<br>"
-                    "Check flagged rows and correct ranges."
-                )
-            else:
-                msg = "⚠️ Duplicates found! Status changed to Under Rechange."
+            if getattr(self, '_has_internal_dup', False):
+                msg_parts.append("Internal overlapping ranges")
+            
+            if getattr(self, '_has_cross_form_dup', False):
+                if hasattr(self, '_cross_form_details'):
+                    cross_dups = self._cross_form_details
+                    dup_count = len(cross_dups)
+                    sample_code = list(cross_dups.keys())[0] if cross_dups else ""
+                    sample_form = cross_dups[sample_code][0][0] if cross_dups and sample_code else ""
+                    
+                    if dup_count == 1:
+                        msg_parts.append(f"{sample_code} exists in {sample_form}")
+                    else:
+                        msg_parts.append(f"{dup_count} codes exist in other forms (e.g. {sample_code})")
+            
+            if getattr(self, '_has_creation_dup', False):
+                if hasattr(self, '_creation_details'):
+                    creation_dups = self._creation_details
+                    dup_count = len(creation_dups)
+                    sample_code = creation_dups[0].stone_code if creation_dups else ""
+                    
+                    if dup_count == 1:
+                        msg_parts.append(f"{sample_code} already generated")
+                    else:
+                        msg_parts.append(f"{dup_count} codes already generated (e.g. {sample_code})")
+            
+            msg = "<b>Verification Failed - Duplicate Detected</b><br><br>"
+            msg += "<br>".join([f"• {part}" for part in msg_parts])
+            msg += "<br><br>Status changed to <b>Under Rechange</b>. Please correct and resubmit."
             
             # Show message to user
             frappe.msgprint(
@@ -276,7 +524,12 @@ class SizeListForm(Document):
             # Clear the flags
             self._has_duplicates_to_rechange = False
             self._has_internal_dup = False
-            self._has_global_dup = False
+            self._has_cross_form_dup = False
+            self._has_creation_dup = False
+            if hasattr(self, '_cross_form_details'):
+                delattr(self, '_cross_form_details')
+            if hasattr(self, '_creation_details'):
+                delattr(self, '_creation_details')
             
         except Exception as e:
             frappe.log_error(f"Error in auto_send_for_rechange_due_to_duplicates: {str(e)}")
@@ -463,21 +716,7 @@ def create_size_list_creation_from_verified(size_list_name):
     size_list = frappe.get_doc("Size List Form", size_list_name)
     project = getattr(size_list, "baps_project", None)
 
-    # --- Run duplicate check first ---
-    dup_result = check_global_duplicates(size_list_name)
-    has_duplicates = dup_result.get("has_duplicates", False)
-
-    # If duplicates exist → mark and stop creation
-    if has_duplicates:
-        frappe.db.set_value("Size List Form", size_list_name, "workflow_state", "Under Rechange")
-        frappe.msgprint(
-            "⚠️ Duplicates detected across Size Lists in this project. "
-            "Please correct flagged rows before proceeding.",
-            indicator="orange",
-        )
-        return {"success": False, "duplicates_found": True}
-
-    # --- No duplicates: proceed to generate ---
+    # --- Proceed to generate Size List Creation ---
     creation = frappe.new_doc("Size List Creation")
     creation.form_number = size_list.name
     creation.baps_project = project
@@ -529,130 +768,53 @@ def create_size_list_creation_from_verified(size_list_name):
 @frappe.whitelist()
 def check_global_duplicates(size_list_name):
     """
-    Check duplicates across *all* Size List Forms & Size List Creations within same project.
-    Flags duplicates in the source Size List Form without recursive save.
+    Check for duplicate stone codes within the same Size List Form only.
+    Checks for overlapping expanded stone codes (e.g., FFTAB001).
     """
     if not frappe.db.exists("Size List Form", size_list_name):
         return {"has_duplicates": False}
 
     doc = frappe.get_doc("Size List Form", size_list_name)
-    project = getattr(doc, "baps_project", None)
-    
-    if not project:
-        return {"has_duplicates": False}
     
     # Check if document has any stone details
     if not doc.stone_details or len(doc.stone_details) == 0:
         return {"has_duplicates": False}
     
-    existing_range_combinations = set()  # From other Size List Forms
-    existing_stone_codes = set()  # From Size List Creations (individual stones)
-
-    # --- Get existing individual stone codes from Size List Creations ---
-    creation_stone_codes = frappe.db.sql_list(
-        """
-        SELECT slci.stone_code
-        FROM `tabSize List Creation Item` slci
-        JOIN `tabSize List Creation` slc ON slc.name = slci.parent
-        WHERE slc.baps_project = %s AND slci.stone_code IS NOT NULL AND slci.stone_code != ''
-        """,
-        (project,),
-    )
-    
-    # Store existing stone codes
-    for code in creation_stone_codes:
-        if code and code.strip():
-            existing_stone_codes.add(code.strip().upper())
-
-    # --- Check against other Size List Forms for range conflicts ---
-    other_size_list_stones = frappe.db.sql(
-        """
-        SELECT sld.stone_name, sld.range
-        FROM `tabSize List Details` sld
-        JOIN `tabSize List Form` slf ON slf.name = sld.parent
-        WHERE slf.baps_project = %s AND slf.name != %s AND sld.stone_name IS NOT NULL AND sld.stone_name != ''
-        """,
-        (project, size_list_name),
-        as_dict=True
-    )
-
-    # Store stone+range combinations from other Size List Forms
-    for stone in other_size_list_stones:
-        stone_name = stone.stone_name.strip().lower() if stone.stone_name else ''
-        stone_range = stone.range.strip() if stone.range else ''
-        if stone_name and stone_range:
-            range_identifier = f"{stone_name}|{stone_range}".lower()
-            existing_range_combinations.add(range_identifier)
-
-    # --- Check current document for duplicates ---
+    # Check for duplicate stone codes within this document only
     has_duplicates = False
-    local_seen_ranges = set()
-    local_stone_codes = {}  # Track stone codes within this document: {code: row_idx}
+    local_stone_codes = {}  # Track stone codes: {code: row_name}
 
     for row in doc.stone_details:
-        if not row.stone_name or not row.stone_name.strip():
-            continue
-            
-        stone_name_lower = row.stone_name.strip().lower()
         stone_range = getattr(row, 'range', '') or ''
-        
+        stone_code_prefix = getattr(row, 'stone_code', '') or ''
         row_has_dup = False
-
-        # Check if expanding this range would create stone codes that already exist
-        current_row_codes = set()
-        if stone_range and stone_range.strip():
-            stone_code_prefix = getattr(row, 'stone_code', '') or ''
-            if stone_code_prefix:
-                # Get the alphabetic prefix (e.g., "FCBBH" from "FCBBH005" or "demo" from "demo2")
-                prefix = ''.join([c for c in stone_code_prefix if not c.isdigit()])
-                
-                # Expand the range to get individual numbers
-                range_numbers = expand_range(stone_range.strip())
-                
-                # Generate stone codes that would be created
-                for num in range_numbers:
-                    potential_code = f"{prefix}{str(num).zfill(3)}".upper()  # e.g., FCBBH005 or DEMO002
-                    current_row_codes.add(potential_code)
-                    
-                    # Check against existing stone codes in Size List Creations
-                    if potential_code in existing_stone_codes:
-                        row_has_dup = True
-                        break
-                    
-                    # Check against stone codes already seen in this document
-                    if potential_code in local_stone_codes:
-                        row_has_dup = True
-                        # Mark the previous row as duplicate too
-                        prev_row_idx = local_stone_codes[potential_code]
-                        if prev_row_idx < len(doc.stone_details):
-                            frappe.db.set_value("Size List Details", doc.stone_details[prev_row_idx].name, "duplicate_flag", 1)
-                        break
-                
-                # Add current row's codes to local tracking
-                if not row_has_dup:
-                    for code in current_row_codes:
-                        local_stone_codes[code] = row.idx - 1  # Store the index
-
-        # Check against existing stones in other documents
-        # Only check if this exact stone name+range combination exists in other Size List Forms
-        if stone_range and stone_range.strip():
-            range_identifier = f"{stone_name_lower}|{stone_range.strip()}".lower()
-            if range_identifier in existing_range_combinations:
-                row_has_dup = True
+        
+        # Check for overlapping stone codes
+        if stone_range and stone_range.strip() and stone_code_prefix:
+            # Get the alphabetic prefix
+            prefix = ''.join([c for c in stone_code_prefix if not c.isdigit()])
             
-        # Check for exact duplicate ranges within this document (same range text)
-        # Skip empty ranges
-        if stone_range and stone_range.strip():
-            range_lower = stone_range.strip().lower()
-            if range_lower in local_seen_ranges:
-                row_has_dup = True
-            local_seen_ranges.add(range_lower)
+            # Expand the range to get individual numbers
+            range_numbers = expand_range(stone_range.strip())
+            
+            # Generate stone codes and check for duplicates
+            for num in range_numbers:
+                potential_code = f"{prefix}{str(num).zfill(3)}".upper()
+                
+                # Check if this code already exists
+                if potential_code in local_stone_codes:
+                    row_has_dup = True
+                    has_duplicates = True
+                    # Mark the previous row as duplicate too
+                    prev_row_name = local_stone_codes[potential_code]
+                    frappe.db.set_value("Size List Details", prev_row_name, "duplicate_flag", 1)
+                    break
+                
+                local_stone_codes[potential_code] = row.name
 
         # Update duplicate flag
         new_flag = 1 if row_has_dup else 0
         frappe.db.set_value("Size List Details", row.name, "duplicate_flag", new_flag)
-        if row_has_dup:
-            has_duplicates = True
 
     frappe.db.commit()
     return {"has_duplicates": has_duplicates}

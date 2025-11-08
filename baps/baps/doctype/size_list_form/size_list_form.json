@@ -54,7 +54,8 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Project Name",
-   "options": "Baps Project"
+   "options": "Baps Project",
+   "reqd": 1
   },
   {
    "default": "0",
@@ -67,7 +68,8 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Main Part",
-   "options": "Main Part"
+   "options": "Main Part",
+   "reqd": 1
   },
   {
    "default": "0",
@@ -80,7 +82,8 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Sub Part",
-   "options": "Sub Part"
+   "options": "Sub Part",
+   "reqd": 1
   },
   {
    "default": "0",
@@ -93,6 +96,7 @@
    "fieldtype": "Data",
    "label": "Form Number",
    "read_only_depends_on": "eval:(parent.workflow_state != 'Draft' && doc.form_number)",
+   "reqd": 1,
    "unique": 1
   },
   {
@@ -162,14 +166,16 @@
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Preparation Date",
-   "read_only_depends_on": "eval:(parent.workflow_state != 'Draft' && doc.prep_date)"
+   "read_only_depends_on": "eval:(parent.workflow_state != 'Draft' && doc.prep_date)",
+   "reqd": 1
   },
   {
    "fieldname": "stone_type",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Material Type",
-   "options": "Material Type"
+   "options": "Material Type",
+   "reqd": 1
   },
   {
    "default": "0",
@@ -182,7 +188,8 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Cutting Region",
-   "options": "Region"
+   "options": "Region",
+   "reqd": 1
   },
   {
    "default": "0",
@@ -280,7 +287,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-30 16:27:57.081748",
+ "modified": "2025-11-03 16:42:07.133914",
  "modified_by": "Administrator",
  "module": "Baps",
  "name": "Size List Form",
@@ -302,7 +309,6 @@
   {
    "email": 1,
    "export": 1,
-   "if_owner": 0,
    "print": 1,
    "read": 1,
    "report": 1,
@@ -313,7 +319,6 @@
    "create": 1,
    "email": 1,
    "export": 1,
-   "if_owner": 0,
    "print": 1,
    "read": 1,
    "report": 1,
@@ -323,7 +328,6 @@
   {
    "email": 1,
    "export": 1,
-   "if_owner": 0,
    "print": 1,
    "read": 1,
    "report": 1,

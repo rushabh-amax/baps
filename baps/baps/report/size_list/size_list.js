@@ -3,12 +3,7 @@
 
 frappe.query_reports["Size List"] = {
 	"filters": [
-		{
-			"fieldname": "form_number",
-			"label": __("Size List Form No."),
-			"fieldtype": "Link",
-			"options": "Size List Form"
-		},
+		
 		{
 			"fieldname": "baps_project",
 			"label": __("BAPS Project"),
@@ -48,6 +43,11 @@ frappe.query_reports["Size List"] = {
 			"fieldname": "prep_date_to",
 			"label": __("Prep Date To"),
 			"fieldtype": "Date"
+		},
+		{
+			"fieldname": "stone_name",
+			"label": __("Stone Name"),
+			"fieldtype": "Data"
 		}
 	]
 };

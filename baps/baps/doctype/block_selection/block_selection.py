@@ -159,7 +159,7 @@ class BlockSelection(Document):
                 "trade_partner": self.trade_partner,
                 "party": self.party,
                 "material_type": self.material_type,
-                "status": "Available",
+                "status": "Ready for Cutting Planning",
                 "color": getattr(row, 'color', None),
                 "grain": getattr(row, 'grain', None),
                 "site": self.site,

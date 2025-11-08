@@ -1,0 +1,16 @@
+:root {
+  --login-bg: #f7f9fc;
+  --login-card-radius: 14px;
+  --brand-primary: #4c6ef5;
+}
+
+[data-page="login"] .page-card {
+  background: var(--login-bg);
+  border-radius: var(--login-card-radius);
+  padding: 2rem;
+}
+
+[data-login-title="ERPNext"] {
+  font-weight: 600;
+  color: var(--brand-primary);
+}
